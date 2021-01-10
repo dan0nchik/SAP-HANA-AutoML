@@ -14,7 +14,7 @@ class Model:
         self.X = None
         pass
 
-    def fit(self, X_train=None, y_train=None, x_test=None, y_test=None, target=None, file_path=None, url=None, config=None):
+    def fit(self, X_train=None, y_train=None, x_test=None, y_test=None, iterations=10, target=None, file_path=None, url=None, config=None):
         if X_train or y_train is None:
             if url is not None:
                 # TODO: url validation
@@ -27,10 +27,10 @@ class Model:
             self.y = self.df[target]
             self.X = self.df.drop([target], axis=1)
             X_train, X_test, y_train, y_test = self.split_data()
-            pipe = Pipeline(X_train, y_train)
+            pipe = Pipeline(X_train, y_train, iterations=iterations)
         else:
-            pipe = Pipeline(X_train, y_train, x_test, y_test)
-        pipe.start()
+            pipe = Pipeline(X_train, y_train, x_test, y_test, iterations=iterations)
+        pipe.train()
 
     def split_data(self, random_state=42, test_size=0.33):
         if self.config is not None:
