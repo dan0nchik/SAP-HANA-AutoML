@@ -26,3 +26,12 @@ class Pipeline:
     def fit(self, models):
         for model in models:
             model.fit(self.X_train, self.y_train)
+
+
+class Validate:
+    def __init__(self):
+        pass
+
+    # TODO
+    def val(self):
+        return
