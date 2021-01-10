@@ -24,8 +24,10 @@ class Model:
                 self.df = pd.read_csv(file_path)
             self.config = config
             # TODO: exception. if no target provided, ask for it
+            if not isinstance(target, list):
+                target = [target]
             self.y = self.df[target]
-            self.X = self.df.drop([target], axis=1)
+            self.X = self.df.drop(target, axis=1)
             X_train, X_test, y_train, y_test = self.split_data()
             pipe = Pipeline(X_train, y_train, iterations=iterations)
         else:

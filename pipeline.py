@@ -14,13 +14,15 @@ class Pipeline:
     def train(self):
         # TODO: write & start optimizer here
         pr = Preprocessor()
-        # rewrite bad code
-        self.X_train = pr.clean(self.X_train)
-        self.y_train = pr.clean(self.y_train)
-        self.X_test = pr.clean(self.X_test)
-        self.y_test = pr.clean(self.y_test)
-
+        dataframes = [self.X_train, self.y_train, self.X_test, self.y_test]
+        for df in dataframes:
+            pr.clean(df)
+        model_list = pr.set_task(self.y_train)
+        self.fit(model_list)
         # for i in range(0, self.iter):
         # TODO fit, validate, optimize
         # output
 
+    def fit(self, models):
+        for model in models:
+            model.fit(self.X_train, self.y_train)

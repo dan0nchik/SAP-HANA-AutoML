@@ -1,6 +1,11 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer
 import numpy as np
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 
 
 class Preprocessor:
@@ -20,3 +25,12 @@ class Preprocessor:
         #                 imputer = SimpleImputer(fill_value=np.nan, strategy='mean')
         #                 df = imputer.fit_transform(df[column].values.reshape(-1, 1))
         return df
+
+    def set_task(self, y):
+        for col in y:
+            unique = y[col].unique()
+            # TODO make check smarter
+            if unique[0] == 0 and unique[1] == 1:
+                return [DecisionTreeClassifier(), KNeighborsClassifier(), RandomForestClassifier(), SVC(), LogisticRegression()]
+            else:
+                return [LinearRegression(), Ridge(), Lasso(), ElasticNet(), KNeighborsRegressor()]
