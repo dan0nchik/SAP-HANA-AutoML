@@ -18,10 +18,11 @@ class Pipeline:
         dataframes = [self.X_train, self.y_train, self.X_test, self.y_test]
         # for df in dataframes:
         #      pr.clean(df)
-        model_list = pr.set_task(self.y_train)
+        model_list = pr.set_task(self.y_train)[0]
+        task = pr.set_task(self.y_train)[1]
         for model in model_list:
             opt = Optimizer(model[0], self.X_train, self.y_train, self.X_test, self.y_test,
-                            self.iter, model[1])
+                            self.iter, model[1], task)
             best_params = opt.search_hp()['params']
             output(model[0].set_params(**best_params))
 

@@ -9,9 +9,9 @@ class Optimizer:
     def objective(self, **hyperparameters):
         self.model.set_params(**hyperparameters)
         models.Fit.fit(self.model, self.X_train, self.y_train)
-        return models.Validate.val(self.model, self.X_test, self.y_test)
+        return models.Validate.val(self.model, self.X_test, self.y_test, self.problem)
 
-    def __init__(self, model, X_train, y_train, X_test, y_test, iterations, hyperparams):
+    def __init__(self, model, X_train, y_train, X_test, y_test, iterations, hyperparams, problem):
         self.X_train = X_train
         self.y_train = y_train
         self.X_test = X_test
@@ -19,6 +19,7 @@ class Optimizer:
         self.model = model
         self.bounds = hyperparams
         self.iter = iterations
+        self.problem = problem
 
     def search_hp(self):
         optimizer = BayesianOptimization(
