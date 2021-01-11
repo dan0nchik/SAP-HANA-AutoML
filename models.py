@@ -15,7 +15,7 @@ class Model:
         self.X = None
         pass
 
-    def automl(self, X_train=None, y_train=None, x_test=None, y_test=None, iterations=10, target=None, file_path=None,
+    def automl(self, X_train=None, y_train=None, x_test=None, y_test=None, iterations=20, target=None, file_path=None,
                url=None, config=None):
         if X_train or y_train is None:
             if url is not None:
