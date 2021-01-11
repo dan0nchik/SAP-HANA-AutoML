@@ -22,7 +22,6 @@ class Preprocessor:
             self.df = df
         if self.df is not None:
             if not dropempty:
-                if self.df.isnull().sum() != 0:
                     numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
                                                copy=numimpset.copy, missing_values=numimpset.missing_values)
                     stringimputer = SimpleImputer(fill_value=stringimpset.fill_value, strategy=stringimpset.strategy,
@@ -31,13 +30,11 @@ class Preprocessor:
                                                 copy=boolimpset.copy, missing_values=boolimpset.missing_values)
                     for column in self.df:
                         if 'int' or 'float' in str(self.df[column].dtype):
-                            df = numimputer.fit_transform(df[column].values.reshape(-1, 1))
+                            df[[column]] = numimputer.fit_transform(df[[column]].values.reshape(-1, 1))
                         if 'string' in str(self.df[column].dtype):
-                            df = stringimputer.fit_transform(df[column].values.reshape(-1, 1))
+                            df[[column]] = stringimputer.fit_transform(df[[column]].values.reshape(-1, 1))
                         if 'bool' in str(self.df[column].dtype):
-                            df = boolimputer.fit_transform(df[column].values.reshape(-1, 1))
-                else:
-                    print("All values are empty, check the accuracy of your data!")
+                            df[[column]] = boolimputer.fit_transform(df[[column]].values.reshape(-1, 1))
             else:
                 self.df.dropna()
         else:
