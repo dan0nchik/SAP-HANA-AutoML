@@ -35,6 +35,7 @@ class Model:
             X_train, X_test, y_train, y_test = self.split_data()
             pipe = Pipeline(X_train, y_train, X_test, y_test, iterations=iterations)
         else:
+            # TODO: do split if no _test given
             pipe = Pipeline(X_train, y_train, x_test, y_test, iterations=iterations)
         pipe.train()
 
