@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import io
 from pipeline import Pipeline
+from sklearn.metrics import accuracy_score
 
 
 class Model:
@@ -14,7 +15,8 @@ class Model:
         self.X = None
         pass
 
-    def fit(self, X_train=None, y_train=None, x_test=None, y_test=None, iterations=10, target=None, file_path=None, url=None, config=None):
+    def automl(self, X_train=None, y_train=None, x_test=None, y_test=None, iterations=10, target=None, file_path=None,
+               url=None, config=None):
         if X_train or y_train is None:
             if url is not None:
                 # TODO: url validation
@@ -29,7 +31,7 @@ class Model:
             self.y = self.df[target]
             self.X = self.df.drop(target, axis=1)
             X_train, X_test, y_train, y_test = self.split_data()
-            pipe = Pipeline(X_train, y_train, iterations=iterations)
+            pipe = Pipeline(X_train, y_train, X_test, y_test, iterations=iterations)
         else:
             pipe = Pipeline(X_train, y_train, x_test, y_test, iterations=iterations)
         pipe.train()
@@ -42,19 +44,17 @@ class Model:
                                                             test_size=test_size)
         return X_train, X_test, y_train, y_test
 
-# i = BaseEstimator(target='y', file_path='bank.csv')
-# 
-# print(i.split_data()[0].head())
-# #       age          job   marital  education  ... campaign  pdays previous poutcome
-# # 1138   35   technician  divorced  secondary  ...       12     -1        0  unknown
-# # 209    56      retired   married  secondary  ...       14     -1        0  unknown
-# 
-# i_url = BaseEstimator(target='Value', url='https://www.stats.govt.nz/assets/Uploads/Annual-enterprise-survey/Annual'
-#                                   '-enterprise-survey-2019-financial-year-provisional/Download-data/annual-enterprise'
-#                                   '-survey-2019-financial-year-provisional-csv.csv')
-# print(i_url.split_data()[2].head)
-# # 27439        9
-# # 13267      165
-# # 31279      133
-# # 11794      262
-# #          ...
+
+class Validate:
+    @staticmethod
+    def val(model, X_test, y_test, metrics=None):
+        # TODO understand model's class to find out right metric
+        # TODO get metrics from config (?)
+        pred = model.predict(X_test)
+        return accuracy_score(y_test, pred)
+
+
+class Fit:
+    @staticmethod
+    def fit(model, X_train, y_train):
+        model.fit(X_train, y_train)

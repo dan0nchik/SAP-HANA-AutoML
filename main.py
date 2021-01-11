@@ -1,5 +1,7 @@
 from models import Model
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
 cls = Model()
-cls.fit(file_path='train.csv', target='Survived')
+cls.automl(file_path='cleaned_train.csv', target='Survived')
 

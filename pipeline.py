@@ -1,4 +1,6 @@
 from preprocessor import Preprocessor
+from optimizer import DecisionTreeOptimizer
+import models
 
 
 class Pipeline:
@@ -12,26 +14,12 @@ class Pipeline:
         pass
 
     def train(self):
-        # TODO: write & start optimizer here
         pr = Preprocessor()
         dataframes = [self.X_train, self.y_train, self.X_test, self.y_test]
         for df in dataframes:
             pr.clean(df)
         model_list = pr.set_task(self.y_train)
-        self.fit(model_list)
-        # for i in range(0, self.iter):
-        # TODO fit, validate, optimize
-        # output
-
-    def fit(self, models):
-        for model in models:
-            model.fit(self.X_train, self.y_train)
-
-
-class Validate:
-    def __init__(self):
-        pass
-
-    # TODO
-    def val(self):
-        return
+        for model in model_list:
+            opt = DecisionTreeOptimizer(model, self.X_train, self.y_train, self.X_test, self.y_test,
+                                        self.iter)
+            print(opt.search_hp())

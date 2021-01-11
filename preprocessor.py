@@ -31,6 +31,6 @@ class Preprocessor:
             unique = y[col].unique()
             # TODO make check smarter
             if unique[0] == 0 and unique[1] == 1:
-                return [DecisionTreeClassifier(), KNeighborsClassifier(), RandomForestClassifier(), SVC(), LogisticRegression()]
+                return [DecisionTreeClassifier()]
             else:
-                return [LinearRegression(), Ridge(), Lasso(), ElasticNet(), KNeighborsRegressor()]
+                return [LinearRegression()]
