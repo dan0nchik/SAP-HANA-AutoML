@@ -7,9 +7,9 @@ import models
 class Optimizer:
 
     def objective(self, **hyperparameters):
-        model = self.model(hyperparameters)
-        models.Fit.fit(model, self.X_train, self.y_train)
-        return models.Validate.val(model, self.X_test, self.y_test)
+        self.model.set_params(**hyperparameters)
+        models.Fit.fit(self.model, self.X_train, self.y_train)
+        return models.Validate.val(self.model, self.X_test, self.y_test)
 
     def __init__(self, model, X_train, y_train, X_test, y_test, iterations):
         self.X_train = X_train
@@ -34,12 +34,8 @@ class Optimizer:
 
 
 class DecisionTreeOptimizer(Optimizer):
-
-    def objective(self, max_depth):
-        model = self.model.set_params(max_depth=max_depth)
-        models.Fit.fit(model, self.X_train, self.y_train)
-        return models.Validate.val(model, self.X_test, self.y_test)
-
     def __init__(self, model, X_train, y_train, X_test, y_test, iterations):
         super().__init__(model, X_train, y_train, X_test, y_test, iterations)
         self.bounds = {'max_depth': (1, 30)}
+
+# TODO: write other child classes
