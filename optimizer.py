@@ -8,7 +8,6 @@ class Optimizer:
 
     def objective(self, **hyperparameters):
         model = self.model(hyperparameters)
-        print(model)
         models.Fit.fit(model, self.X_train, self.y_train)
         return models.Validate.val(model, self.X_test, self.y_test)
 
@@ -36,13 +35,11 @@ class Optimizer:
 
 class DecisionTreeOptimizer(Optimizer):
 
-    def objective(self, min_samples_leaf, min_samples_split):
-        model = self.model.set_params(min_samples_leaf=min_samples_leaf,
-                                      min_samples_split=min_samples_split)
+    def objective(self, max_depth):
+        model = self.model.set_params(max_depth=max_depth)
         models.Fit.fit(model, self.X_train, self.y_train)
         return models.Validate.val(model, self.X_test, self.y_test)
 
     def __init__(self, model, X_train, y_train, X_test, y_test, iterations):
         super().__init__(model, X_train, y_train, X_test, y_test, iterations)
-        self.bounds = {'min_samples_leaf': (0.1, 0.5),
-                       'min_samples_split': (0.1, 1.0)}
+        self.bounds = {'max_depth': (1, 30)}
