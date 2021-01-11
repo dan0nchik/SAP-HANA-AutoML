@@ -42,10 +42,23 @@ class Preprocessor:
             print("Enter your data or check its accuracy !")
         return self.df
 
-    def catencoder(self, numimpset=ImputerSettings()):
+    def catencoder(self, columns, method="LabelEncoder"):
         if self.df is not None:
-            labelencoder = LabelEncoder()
-            # TODO: Labels or OneHot
+            for cl in columns:
+                if method == "LabelEncoder":
+                    encoder.fit(self.df[cl])
+                    self.df[cl] = encoder.transform(self.df[cl])
+                elif method == "OneHotEncoder_scikit":
+                    encoder = OneHotEncoder()
+                    x = encoder.fit_transform(self.df[cl].values.reshape(-1, 1)).toarray()
+                    x = pd.DataFrame(x, columns=[cl + str(encoder.categories_[0][i])
+                                                 for i in range(len(encoder.categories_[0]))])
+                    self.df = pd.concat([self.df, x])
+                    del self.df[cl]
+                elif method == "OneHotEncoder_pandas":
+                    self.df = pd.get_dummies(self.df, prefix=[cl], columns=[cl])
+                else:
+                    print("Encoder type not found!")
         else:
             print("Enter your data or check its accuracy !")
         return self.df
