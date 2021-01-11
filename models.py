@@ -25,7 +25,9 @@ class Model:
             if file_path is not None:
                 self.df = pd.read_csv(file_path)
             self.config = config
-            # TODO: exception. if no target provided, ask for it
+            if target is None:
+                print("Enter target value!")
+                return
             if not isinstance(target, list):
                 target = [target]
             self.y = self.df[target]

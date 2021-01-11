@@ -3,6 +3,8 @@ from sklearn.impute import SimpleImputer
 import numpy as np
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
@@ -36,7 +38,17 @@ class Preprocessor:
                     print("All values are empty, check the accuracy of your data!")
             else:
                 self.df.dropna()
-        return df
+        else:
+            print("Enter your data or check its accuracy !")
+        return self.df
+
+    def catencoder(self, numimpset=ImputerSettings()):
+        if self.df is not None:
+            labelencoder = LabelEncoder()
+            # TODO: Labels or OneHot
+        else:
+            print("Enter your data or check its accuracy !")
+        return self.df
 
     def set_task(self, y):
         for col in y:
