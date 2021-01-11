@@ -22,19 +22,23 @@ class Preprocessor:
             self.df = df
         if self.df is not None:
             if not dropempty:
-                    numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
-                                               copy=numimpset.copy, missing_values=numimpset.missing_values)
-                    stringimputer = SimpleImputer(fill_value=stringimpset.fill_value, strategy=stringimpset.strategy,
-                                                  copy=stringimpset.copy, missing_values=stringimpset.missing_values)
-                    boolimputer = SimpleImputer(fill_value=boolimpset.fill_value, strategy=boolimpset.strategy,
-                                                copy=boolimpset.copy, missing_values=boolimpset.missing_values)
-                    for column in self.df:
-                        if 'int' or 'float' in str(self.df[column].dtype):
-                            df[[column]] = numimputer.fit_transform(df[[column]].values.reshape(-1, 1))
-                        if 'string' in str(self.df[column].dtype):
-                            df[[column]] = stringimputer.fit_transform(df[[column]].values.reshape(-1, 1))
-                        if 'bool' in str(self.df[column].dtype):
-                            df[[column]] = boolimputer.fit_transform(df[[column]].values.reshape(-1, 1))
+                numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
+                                           copy=numimpset.copy, missing_values=numimpset.missing_values)
+                stringimputer = SimpleImputer(fill_value=stringimpset.fill_value, strategy=stringimpset.strategy,
+                                              copy=stringimpset.copy, missing_values=stringimpset.missing_values)
+                boolimputer = SimpleImputer(fill_value=boolimpset.fill_value, strategy=boolimpset.strategy,
+                                            copy=boolimpset.copy, missing_values=boolimpset.missing_values)
+                for column in self.df:
+                    df2 = df.copy()
+                    if 'int' or 'float' in str(self.df[column].dtype):
+                        df2[[column]] = numimputer.fit_transform(df[[column]].values.reshape(-1, 1))
+                        df = df2.copy()
+                    if 'string' in str(self.df[column].dtype):
+                        df2[[column]] = stringimputer.fit_transform(df[[column]].values.reshape(-1, 1))
+                        df = df2.copy()
+                    if 'bool' in str(self.df[column].dtype):
+                        df2[[column]] = boolimputer.fit_transform(df[[column]].values.reshape(-1, 1))
+                        df = df2.copy()
             else:
                 self.df.dropna()
         else:
