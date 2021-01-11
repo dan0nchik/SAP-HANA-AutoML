@@ -1,0 +1,6 @@
+cls:
+  file_path: 'data/train.csv'
+  target: 'Survived'
+reg:
+  file_path: 'data/reg.csv'
+    target: 'Все 18+_TVR'

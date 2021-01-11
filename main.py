@@ -1,7 +1,11 @@
 from models import Model
-import pandas as pd
-from sklearn.model_selection import train_test_split
 
-cls = Model()
-cls.automl(file_path='data/reg.csv', target='Все 18+_TVR')
 
+def main():
+    m = Model()
+    m.automl(file_path='data/cleaned_train.csv', target='Survived')
+    m.automl(file_path='data/reg.csv', target='Все 18+_TVR')
+
+
+if __name__ == "__main__":
+    main()
