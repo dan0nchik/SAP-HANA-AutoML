@@ -43,6 +43,6 @@ class Preprocessor:
             unique = y[col].unique()
             # TODO make check smarter and check it)
             if unique[0] == 0 and unique[1] == 1:
-                return [DecisionTreeClassifier()]
+                return [(DecisionTreeClassifier(), {'max_depth': (1, 30)})]
             else:
                 return [LinearRegression(), Ridge(), Lasso(), ElasticNet(), KNeighborsRegressor()]

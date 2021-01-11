@@ -1,5 +1,5 @@
 from preprocessor import Preprocessor
-from optimizer import DecisionTreeOptimizer
+from optimizer import Optimizer
 import models
 
 
@@ -21,8 +21,7 @@ class Pipeline:
         model_list = pr.set_task(self.y_train)
         for model in model_list:
             # TODO: make regression optimizer and choose correct here
-            opt = DecisionTreeOptimizer(model, self.X_train, self.y_train, self.X_test, self.y_test,
-                                        self.iter)
+            opt = Optimizer(model[0], self.X_train, self.y_train, self.X_test, self.y_test,
+                            self.iter, model[1])
             print(opt.search_hp())
             # TODO: fit model with tuned parameters and output it
-

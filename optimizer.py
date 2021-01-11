@@ -11,13 +11,13 @@ class Optimizer:
         models.Fit.fit(self.model, self.X_train, self.y_train)
         return models.Validate.val(self.model, self.X_test, self.y_test)
 
-    def __init__(self, model, X_train, y_train, X_test, y_test, iterations):
+    def __init__(self, model, X_train, y_train, X_test, y_test, iterations, hyperparams):
         self.X_train = X_train
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
         self.model = model
-        self.bounds = model.get_params()
+        self.bounds = hyperparams
         self.iter = iterations
 
     def search_hp(self):
@@ -31,11 +31,3 @@ class Optimizer:
             n_iter=self.iter
         )
         return optimizer.max
-
-
-class DecisionTreeOptimizer(Optimizer):
-    def __init__(self, model, X_train, y_train, X_test, y_test, iterations):
-        super().__init__(model, X_train, y_train, X_test, y_test, iterations)
-        self.bounds = {'max_depth': (1, 30)}
-
-# TODO: write other child classes
