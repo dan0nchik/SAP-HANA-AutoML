@@ -45,4 +45,4 @@ class Preprocessor:
             if unique[0] == 0 and unique[1] == 1:
                 return [(DecisionTreeClassifier(), {'max_depth': (1, 30)})]
             else:
-                return [LinearRegression(), Ridge(), Lasso(), ElasticNet(), KNeighborsRegressor()]
+                return [(Ridge(), {'alpha': (1.0, 10.0)})]

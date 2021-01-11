@@ -3,5 +3,5 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 cls = Model()
-cls.automl(file_path='cleaned_train.csv', target='Survived')
+cls.automl(file_path='data/reg.csv', target='Все 18+_TVR')
 

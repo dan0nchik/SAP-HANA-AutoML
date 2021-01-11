@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import io
 from pipeline import Pipeline
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, r2_score
 
 
 class Model:
@@ -48,10 +48,11 @@ class Model:
 class Validate:
     @staticmethod
     def val(model, X_test, y_test, metrics=None):
-        # TODO understand model's class to find out right metric
         # TODO get metrics from config (?)
         pred = model.predict(X_test)
-        return accuracy_score(y_test, pred)
+        # TODO understand model's class to find out right metric
+        return r2_score(y_test, pred)
+        # return accuracy_score(y_test, pred)
 
 
 class Fit:
