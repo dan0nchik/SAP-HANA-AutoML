@@ -15,9 +15,11 @@ class Preprocessor:
     def __init__(self, df=None):
         self.df = df
 
-    def clean(self, dropempty=False, numimpset=ImputerSettings(),
+    def clean(self, df=None, dropempty=False, numimpset=ImputerSettings(),
               stringimpset=ImputerSettings(basicvars="string"),
               boolimpset=ImputerSettings(basicvars="bool")):
+        if not(df is None):
+            self.df = df
         if self.df is not None:
             if not dropempty:
                 if self.df.isnull().sum() != 0:
@@ -42,7 +44,9 @@ class Preprocessor:
             print("Enter your data or check its accuracy !")
         return self.df
 
-    def catencoder(self, columns, method="LabelEncoder"):
+    def catencoder(self, columns, df=None, method="LabelEncoder"):
+        if not(df is None):
+            self.df = df
         if self.df is not None:
             for cl in columns:
                 if method == "LabelEncoder":
@@ -66,8 +70,10 @@ class Preprocessor:
     def set_task(self, y):
         for col in y:
             unique = y[col].unique()
-            # TODO make check smarter and check it)
             if unique[0] == 0 and unique[1] == 1:
                 return [(DecisionTreeClassifier(), {'max_depth': (1, 30)})]
+            elif y[col].nunique() < 10:
+                return [(DecisionTreeClassifier(), {'max_depth': (1, 30)})]
+                #TODO: Not Binary classification
             else:
                 return [(Ridge(), {'alpha': (1.0, 10.0)})]
