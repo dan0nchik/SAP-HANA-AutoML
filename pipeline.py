@@ -1,6 +1,6 @@
 from preprocessor import Preprocessor
 from optimizer import Optimizer
-import models
+from logger import output
 
 
 class Pipeline:
@@ -16,12 +16,12 @@ class Pipeline:
     def train(self):
         pr = Preprocessor()
         dataframes = [self.X_train, self.y_train, self.X_test, self.y_test]
-        for df in dataframes:
-             pr.clean(df)
+        # for df in dataframes:
+        #      pr.clean(df)
         model_list = pr.set_task(self.y_train)
         for model in model_list:
-            # TODO: make regression optimizer and choose correct here
             opt = Optimizer(model[0], self.X_train, self.y_train, self.X_test, self.y_test,
                             self.iter, model[1])
-            print(opt.search_hp())
-            # TODO: fit model with tuned parameters and output it
+            best_params = opt.search_hp()['params']
+            output(model[0].set_params(**best_params))
+

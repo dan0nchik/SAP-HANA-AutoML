@@ -53,8 +53,8 @@ class Validate:
         # TODO get metrics from config (?)
         pred = model.predict(X_test)
         # TODO understand model's class to find out right metric
-        return r2_score(y_test, pred)
-        # return accuracy_score(y_test, pred)
+        # return r2_score(y_test, pred)
+        return accuracy_score(y_test, pred)
 
 
 class Fit:
