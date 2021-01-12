@@ -1,14 +1,9 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer
-import numpy as np
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.linear_model import Ridge
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from impsettings import ImputerSettings
+from preprocess.impsettings import ImputerSettings
 
 
 class Preprocessor:
@@ -72,9 +67,9 @@ class Preprocessor:
         for col in y:
             unique = y[col].unique()
             if unique[0] == 0 and unique[1] == 1:
-                return [(DecisionTreeClassifier(), {'max_depth': (1, 30)})], 'cls'
+                return 'cls'
             elif y[col].nunique() < 10:
-                return [(DecisionTreeClassifier(), {'max_depth': (1, 30)})], 'cls'
+                return 'cls'
                 # TODO: Not Binary classification
             else:
-                return [(Ridge(), {'alpha': (1.0, 10.0)})], 'reg'
+                return 'reg'
