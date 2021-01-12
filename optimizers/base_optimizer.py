@@ -10,7 +10,7 @@ class BaseOptimizer:
         Fit.fit(self.model, self.X_train, self.y_train)
         return Validate.val(self.model, self.X_test, self.y_test, self.problem)
 
-    def __init__(self, model: base_algo, data, iterations, problem):
+    def __init__(self, model, data, iterations, problem):
         self.X_train = data.X_train
         self.y_train = data.y_train
         self.X_test = data.X_test

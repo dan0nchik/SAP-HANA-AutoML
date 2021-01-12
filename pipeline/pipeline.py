@@ -19,6 +19,6 @@ class Pipeline:
         #     pr.clean(df)
         task = pr.set_task(self.data.y_train)
         algo_list = [DecisionTree()]
-        opt = BayesianOptimizer(DecisionTree(), self.data, self.iter)
+        opt = BayesianOptimizer(DecisionTree(), self.data, self.iter, 'cls')
         opt.get_tuned_params()
 

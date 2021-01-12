@@ -6,6 +6,7 @@ class Validate:
     def val(model, X_test, y_test, task, metrics=None):
         # TODO get metrics from config (?)
         pred = model.predict(X_test)
+        print(pred)
         # TODO understand model's class to find out right metric
         if task == 'cls':
             return accuracy_score(y_test, pred)

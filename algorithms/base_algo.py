@@ -7,7 +7,6 @@ class BaseAlgorithm:
             # self.params_range[custom_params.keys()] = custom_params.values()
             pass
 
-    @property
     def get_params(self):
         return self.params_range
 
