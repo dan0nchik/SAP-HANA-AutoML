@@ -2,19 +2,23 @@ import requests
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import io
-import numpy as np
+from pipeline.data import Data
 
 
 class Input:
-    def __init__(self, X_train, y_train, X_test, y_test, target, file_path,
-                 url, config):
+    def __init__(self, data: Data,
+                 target,
+                 file_path,
+                 url,
+                 config):
         self.config = config
+        self.data = data
         df = pd.DataFrame()
-        if X_train or y_train is None:
+        if data.X_train or data.y_train is None:
             if url is not None:
                 # TODO: url validation
-                data = requests.get(url).content.decode('utf-8')
-                df = pd.read_csv(io.StringIO(data))
+                url_data = requests.get(url).content.decode('utf-8')
+                df = pd.read_csv(io.StringIO(url_data))
             if file_path is not None:
                 # TODO: Add other file types
                 df = pd.read_csv(file_path)
@@ -26,11 +30,10 @@ class Input:
                 target = [target]
             y = df[target]
             X = df.drop(target, axis=1)
-            self.X_train, self.X_test, self.y_train, self.y_test = self.split_data(X, y)
-        else:
-            self.X_train, self.y_train = X_train, y_train
-        if X_test is not None:
-            self.X_test, self.y_test = X_test, y_test
+            self.data.X_train, self.data.X_test, self.data.y_train, self.data.y_test = self.split_data(X, y)
+
+    def return_data(self):
+        return self.data
 
     def split_data(self, X, y, random_state=42, test_size=0.33):
         if self.config is not None:

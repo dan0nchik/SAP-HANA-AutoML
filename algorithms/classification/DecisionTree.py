@@ -7,7 +7,7 @@ class DecisionTree(BaseAlgorithm):
         super(DecisionTree, self).__init__()
         self.title = 'DecisionTreeClassifier'
         self.params_range = {
-            'max_depth': (1, 30),
-            'min_samples_split': (2, 4)
+            'max_depth': (1, 20)
             #     ...
         }
+        self.model = DecisionTreeClassifier()
