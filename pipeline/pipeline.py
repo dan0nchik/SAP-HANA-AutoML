@@ -1,10 +1,8 @@
+from algorithms.classification import DecisionTree
+from algorithms.regression import Ridge
+from optimizers.bayes import BayesianOptimizer
 from pipeline.data import Data
 from preprocess.preprocessor import Preprocessor
-from optimizers.base_optimizer import BaseOptimizer
-from optimizers.bayes import BayesianOptimizer
-from utils.logger import output
-from pipeline.input_ import Input
-from algorithms.classification.DecisionTree import DecisionTree
 
 
 class Pipeline:
@@ -18,7 +16,12 @@ class Pipeline:
         # for df in dataframes:
         #     pr.clean(df)
         task = pr.set_task(self.data.y_train)
-        algo_list = [DecisionTree()]
-        opt = BayesianOptimizer(DecisionTree(), self.data, self.iter, 'cls')
-        print(opt.get_tuned_params())
+        algo_list = []
+        if task == 'cls':
+            algo_list = [DecisionTree()]
+        if task == 'reg':
+            algo_list = [Ridge()]
+        for i in algo_list:
+            opt = BayesianOptimizer(i, self.data, self.iter, task)
+            opt.get_tuned_params()
 

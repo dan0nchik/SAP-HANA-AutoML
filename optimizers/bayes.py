@@ -9,5 +9,7 @@ class BayesianOptimizer(BaseOptimizer):
             f=self.objective,
             pbounds=self.algorithm.get_params()
         )
-        opt.maximize()
+        opt.maximize(
+            n_iter=iterations
+        )
         self.tuned = opt.max

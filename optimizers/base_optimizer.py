@@ -21,4 +21,4 @@ class BaseOptimizer:
         self.tuned = {}
 
     def get_tuned_params(self):
-        return self.tuned
+        print(self.algorithm.title, self.tuned)

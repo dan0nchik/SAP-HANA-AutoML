@@ -1,6 +1,6 @@
 class BaseAlgorithm:
     def __init__(self, custom_params: dict = None):
-        self.title = ''
+        self.title = ''  # for leaderboard
         self.model = None
         self.params_range = {}
         if custom_params is not None:
