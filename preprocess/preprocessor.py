@@ -12,12 +12,15 @@ class Preprocessor:
     def __init__(self, df=None):
         self.df = df
 
-    def clean(self, df=None, dropempty=False, numimpset=ImputerSettings(),
+    def clean(self, df=None, colmnsforremv=None, dropempty=False, numimpset=ImputerSettings(),
               stringimpset=ImputerSettings(basicvars="string"),
               boolimpset=ImputerSettings(basicvars="bool")):
         if not (df is None):
             self.df = df
         if self.df is not None:
+            if not (colmnsforremv is None):
+                self.df = self.removecolumns(colmnsforremv)
+                print(self.df.info())
             if not dropempty:
                 numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
                                            copy=numimpset.copy, missing_values=numimpset.missing_values)
@@ -27,19 +30,21 @@ class Preprocessor:
                                             copy=boolimpset.copy, missing_values=boolimpset.missing_values)
                 for column in self.df:
                     df2 = self.df.copy()
-                    if 'int' or 'float' in str(self.df[column].dtype):
-                        df2[[column]] = numimputer.fit_transform(df[[column]].values.reshape(-1, 1))
+                    if 'int' or 'float' == str(self.df[column].dtype):
+                        df2[column] = numimputer.fit_transform(df[column].values.reshape(-1, 1))
                         df = df2.copy()
-                    if 'string' in str(self.df[column].dtype):
+                    if 'object' == str(self.df[column].dtype):
                         df2[[column]] = stringimputer.fit_transform(df[[column]].values.reshape(-1, 1))
                         df = df2.copy()
-                    if 'bool' in str(self.df[column].dtype):
+                    if 'bool' == str(self.df[column].dtype):
                         df2[[column]] = boolimputer.fit_transform(df[[column]].values.reshape(-1, 1))
                         df = df2.copy()
             else:
                 self.df.dropna()
         else:
             print("Enter your data or check its accuracy !")
+        print("Done: \n")
+        print(self.df.info())
         return self.df
 
     def catencoder(self, columns, df=None, method="LabelEncoder"):
@@ -65,7 +70,21 @@ class Preprocessor:
             print("Enter your data or check its accuracy !")
         return self.df
 
-    def set_task(self, y, algo_exceptions=[]):
+    def removecolumns(self, columns, df=None):
+        if not (df is None):
+            self.df = df
+        if self.df is not None:
+            for cl in self.df:
+                print('object     ' + str(self.df[cl].dtype))
+                if ('object' == str(self.df[cl].dtype) and self.df[cl].nunique() > self.df[cl].shape[0] / 100 * 7) or cl in columns:
+                    self.df = self.df.drop([cl], axis=1)
+        else:
+            print("Enter your data or check its accuracy !")
+        return self.df
+
+    def set_task(self, y, algo_exceptions=None):
+        if algo_exceptions is None:
+            algo_exceptions = []
         for col in y:
             if y[col].nunique() == 2:
                 clslist = [DecisionTree()]
@@ -82,4 +101,3 @@ class Preprocessor:
                 if 'Ridge' in algo_exceptions:
                     reglist.remove(Ridge())
                 return reglist, 'reg'
-

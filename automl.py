@@ -14,10 +14,11 @@ class AutoML:
             target: str = None,
             file_path=None,
             url=None,
+            colmnsforremv=None,
             config=None):
         data = Data(X_train, X_test, y_train, y_test)
         data_after_input = Input(data, target, file_path,
                                  url, config).return_data()
 
         pipe = Pipeline(data_after_input, steps)
-        pipe.train()
+        pipe.train(colmnsforremv=colmnsforremv)
