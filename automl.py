@@ -15,10 +15,11 @@ class AutoML:
             file_path=None,
             url=None,
             colmnsforremv=None,
+            categorical=None,
             config=None):
         data = Data(X_train, X_test, y_train, y_test)
         data_after_input = Input(data, target, file_path,
                                  url, config).return_data()
 
         pipe = Pipeline(data_after_input, steps)
-        pipe.train(colmnsforremv=colmnsforremv)
+        pipe.train(colmnsforremv=colmnsforremv, categorical=categorical)

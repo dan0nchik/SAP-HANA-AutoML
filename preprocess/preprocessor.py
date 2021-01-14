@@ -2,85 +2,100 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 from algorithms.classification import DecisionTree
 from preprocess.impsettings import ImputerSettings
 
 
 class Preprocessor:
-    def __init__(self, df=None):
-        self.df = df
 
-    def clean(self, df=None, colmnsforremv=None, dropempty=False, numimpset=ImputerSettings(),
+    def clean(self, data, droplist_columns=None, categorlist=None, predict_column_importance=True, dropempty=False,
+              encoder_method="OneHotEncoder_pandas",
+              numimpset=ImputerSettings(),
               stringimpset=ImputerSettings(basicvars="string"),
               boolimpset=ImputerSettings(basicvars="bool")):
-        if not (df is None):
-            self.df = df
-        if self.df is not None:
-            if not (colmnsforremv is None):
-                self.df = self.removecolumns(colmnsforremv)
-                print(self.df.info())
-            if not dropempty:
-                numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
-                                           copy=numimpset.copy, missing_values=numimpset.missing_values)
-                stringimputer = SimpleImputer(fill_value=stringimpset.fill_value, strategy=stringimpset.strategy,
-                                              copy=stringimpset.copy, missing_values=stringimpset.missing_values)
-                boolimputer = SimpleImputer(fill_value=boolimpset.fill_value, strategy=boolimpset.strategy,
-                                            copy=boolimpset.copy, missing_values=boolimpset.missing_values)
-                for column in self.df:
-                    df2 = self.df.copy()
-                    if 'int' or 'float' == str(self.df[column].dtype):
-                        df2[column] = numimputer.fit_transform(df[column].values.reshape(-1, 1))
-                        df = df2.copy()
-                    if 'object' == str(self.df[column].dtype):
-                        df2[[column]] = stringimputer.fit_transform(df[[column]].values.reshape(-1, 1))
-                        df = df2.copy()
-                    if 'bool' == str(self.df[column].dtype):
-                        df2[[column]] = boolimputer.fit_transform(df[[column]].values.reshape(-1, 1))
-                        df = df2.copy()
+        if data is None:
+            print('Enter not null data!')
+            return data
+        if droplist_columns is not None or predict_column_importance:
+            data.X_train = self.removecolumns(columns=droplist_columns, autoremove=predict_column_importance,
+                                              df=data.X_train)
+            data.X_test = self.removecolumns(columns=droplist_columns, autoremove=predict_column_importance,
+                                             df=data.X_test)
+        data.X_train = self.autoimput(df=data.X_train, dropempty=dropempty, numimpset=numimpset,
+                                      stringimpset=stringimpset,
+                                      boolimpset=boolimpset)
+        data.X_test = self.autoimput(df=data.X_test, dropempty=dropempty, numimpset=numimpset,
+                                     stringimpset=stringimpset,
+                                     boolimpset=boolimpset)
+        data.X_train = self.catencoder(df=data.X_train, columns=categorlist, method=encoder_method)
+        data.X_test = self.catencoder(df=data.X_test, columns=categorlist, method=encoder_method)
+
+        return data
+
+    def autoimput(self, df, numimpset, stringimpset, boolimpset, dropempty=False):
+        if df is None:
+            print('Enter not null data!')
+            return df
+        if not dropempty:
+            numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
+                                       missing_values=numimpset.missing_values)
+            stringimputer = SimpleImputer(fill_value=stringimpset.fill_value, strategy=stringimpset.strategy,
+                                          missing_values=stringimpset.missing_values)
+            boolimputer = SimpleImputer(fill_value=boolimpset.fill_value, strategy=boolimpset.strategy,
+                                        missing_values=boolimpset.missing_values)
+            for column in df:
+                df2 = df.copy()
+                dtype = str(df[column].dtype)
+                if 'object' == dtype:
+                    df2[column] = stringimputer.fit_transform(df[column].values.reshape(-1, 1))[:,0]
+                    df = df2.copy()
+                if 'uint8' == dtype or 'float64' == dtype or 'int64' == dtype:
+                    df2[column] = numimputer.fit_transform(df[column].values.reshape(-1, 1))[:,0]
+                    df = df2.copy()
+                if 'bool' == dtype:
+                    df2[column] = boolimputer.fit_transform(df[column].values.reshape(-1, 1))[:,0]
+                    df = df2.copy()
+        else:
+            df.dropna()
+        return df
+
+    def catencoder(self, columns, df, method):
+        if df is None:
+            print('Enter not null data!')
+            return df
+        for cl in columns:
+            if method == "LabelEncoder":
+                encoder = LabelEncoder()
+                encoder.fit(df[cl])
+                df[cl] = encoder.transform(df[cl])
+            elif method == "OneHotEncoder_scikit":
+                encoder = OneHotEncoder()
+                x = encoder.fit_transform(df[cl].values.reshape(-1, 1)).toarray()
+                x = pd.DataFrame(x, columns=[cl + str(encoder.categories_[0][i])
+                                             for i in range(len(encoder.categories_[0]))])
+                df = pd.concat([df, x])
+                del df[cl]
+            elif method == "OneHotEncoder_pandas":
+                df = pd.get_dummies(df, prefix=[cl], columns=[cl])
             else:
-                self.df.dropna()
-        else:
-            print("Enter your data or check its accuracy !")
-        print("Done: \n")
-        print(self.df.info())
-        return self.df
+                print("Encoder type not found!")
+        return df
 
-    def catencoder(self, columns, df=None, method="LabelEncoder"):
-        if not (df is None):
-            self.df = df
-        if self.df is not None:
-            for cl in columns:
-                if method == "LabelEncoder":
-                    encoder.fit(self.df[cl])
-                    self.df[cl] = encoder.transform(self.df[cl])
-                elif method == "OneHotEncoder_scikit":
-                    encoder = OneHotEncoder()
-                    x = encoder.fit_transform(self.df[cl].values.reshape(-1, 1)).toarray()
-                    x = pd.DataFrame(x, columns=[cl + str(encoder.categories_[0][i])
-                                                 for i in range(len(encoder.categories_[0]))])
-                    self.df = pd.concat([self.df, x])
-                    del self.df[cl]
-                elif method == "OneHotEncoder_pandas":
-                    self.df = pd.get_dummies(self.df, prefix=[cl], columns=[cl])
-                else:
-                    print("Encoder type not found!")
-        else:
-            print("Enter your data or check its accuracy !")
-        return self.df
-
-    def removecolumns(self, columns, df=None):
-        if not (df is None):
-            self.df = df
-        if self.df is not None:
-            for cl in self.df:
-                print('object     ' + str(self.df[cl].dtype))
-                if ('object' == str(self.df[cl].dtype) and self.df[cl].nunique() > self.df[cl].shape[0] / 100 * 7) or cl in columns:
-                    self.df = self.df.drop([cl], axis=1)
-        else:
-            print("Enter your data or check its accuracy !")
-        return self.df
+    def removecolumns(self, columns, autoremove, df):
+        if df is None:
+            print('Enter not null data!')
+            return df
+        if columns is not None:
+            for cl in df:
+                if cl in columns:
+                    df = df.drop([cl], axis=1)
+        if autoremove:
+            for cl in df:
+                if 'object' == str(df[cl].dtype) and df[cl].nunique() > df[cl].shape[0] / 100 * 7:
+                    df = df.drop([cl], axis=1)
+        return df
 
     def set_task(self, y, algo_exceptions=None):
         if algo_exceptions is None:
