@@ -3,6 +3,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import OneHotEncoder
+
+from algorithms.classification import DecisionTree
 from preprocess.impsettings import ImputerSettings
 
 
@@ -24,7 +26,7 @@ class Preprocessor:
                 boolimputer = SimpleImputer(fill_value=boolimpset.fill_value, strategy=boolimpset.strategy,
                                             copy=boolimpset.copy, missing_values=boolimpset.missing_values)
                 for column in self.df:
-                    df2 = df.copy()
+                    df2 = self.df.copy()
                     if 'int' or 'float' in str(self.df[column].dtype):
                         df2[[column]] = numimputer.fit_transform(df[[column]].values.reshape(-1, 1))
                         df = df2.copy()
@@ -63,13 +65,21 @@ class Preprocessor:
             print("Enter your data or check its accuracy !")
         return self.df
 
-    def set_task(self, y):
+    def set_task(self, y, algo_exceptions=[]):
         for col in y:
-            unique = y[col].unique()
-            if unique[0] == 0 and unique[1] == 1:
-                return 'cls'
+            if y[col].nunique() == 2:
+                clslist = [DecisionTree()]
+                if 'DecisionTree' in algo_exceptions:
+                    clslist.remove(DecisionTree())
+                return clslist, 'cls'
             elif y[col].nunique() < 10:
-                return 'cls'
-                # TODO: Not Binary classification
+                clslist = [DecisionTree()]
+                if 'DecisionTree' in algo_exceptions:
+                    clslist.remove(DecisionTree())
+                return clslist, 'cls'
             else:
-                return 'reg'
+                reglist = [Ridge()]
+                if 'Ridge' in algo_exceptions:
+                    reglist.remove(Ridge())
+                return reglist, 'reg'
+

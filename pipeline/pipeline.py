@@ -12,15 +12,11 @@ class Pipeline:
 
     def train(self):
         pr = Preprocessor()
+        # Что это?
         dataframes = filter(lambda a: not a.startswith('__'), dir(self.data))
-        # for df in dataframes:
-        #     pr.clean(df)
-        task = pr.set_task(self.data.y_train)
-        algo_list = []
-        if task == 'cls':
-            algo_list = [DecisionTree()]
-        if task == 'reg':
-            algo_list = [Ridge()]
+        pr.clean(self.data.X_train)
+        pr.clean(self.data.X_test)
+        algo_list, task = pr.set_task(self.data.y_train)
         for i in algo_list:
             opt = BayesianOptimizer(i, self.data, self.iter, task)
             opt.get_tuned_params()
