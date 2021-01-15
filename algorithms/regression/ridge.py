@@ -6,7 +6,7 @@ class RidgeRegression(BaseAlgorithm):
     def __init__(self):
         super(RidgeRegression, self).__init__()
         self.title = 'Ridge'
-        self.model = Ridge()
         self.params_range = {
-            'alpha': (1, 2)
+            'alpha': (1, 50)
         }
+        self.model = Ridge()

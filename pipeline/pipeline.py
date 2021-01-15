@@ -1,5 +1,3 @@
-from algorithms.classification import DecisionTree
-from algorithms.regression import Ridge
 from optimizers.bayes import BayesianOptimizer
 from pipeline.data import Data
 from preprocess.preprocessor import Preprocessor

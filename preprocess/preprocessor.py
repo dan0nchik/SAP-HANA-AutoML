@@ -1,10 +1,10 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import Ridge
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
-from algorithms.classification import DecisionTree
+from algorithms.classification.decisiontree import DecisionTree
+
+from algorithms.regression.ridge import RidgeRegression
 from preprocess.impsettings import ImputerSettings
 
 
@@ -65,22 +65,23 @@ class Preprocessor:
         if df is None:
             print('Enter not null data!')
             return df
-        for cl in columns:
-            if method == "LabelEncoder":
-                encoder = LabelEncoder()
-                encoder.fit(df[cl])
-                df[cl] = encoder.transform(df[cl])
-            elif method == "OneHotEncoder_scikit":
-                encoder = OneHotEncoder()
-                x = encoder.fit_transform(df[cl].values.reshape(-1, 1)).toarray()
-                x = pd.DataFrame(x, columns=[cl + str(encoder.categories_[0][i])
-                                             for i in range(len(encoder.categories_[0]))])
-                df = pd.concat([df, x])
-                del df[cl]
-            elif method == "OneHotEncoder_pandas":
-                df = pd.get_dummies(df, prefix=[cl], columns=[cl])
-            else:
-                print("Encoder type not found!")
+        if columns is not None:
+            for cl in columns:
+                if method == "LabelEncoder":
+                    encoder = LabelEncoder()
+                    encoder.fit(df[cl])
+                    df[cl] = encoder.transform(df[cl])
+                elif method == "OneHotEncoder_scikit":
+                    encoder = OneHotEncoder()
+                    x = encoder.fit_transform(df[cl].values.reshape(-1, 1)).toarray()
+                    x = pd.DataFrame(x, columns=[cl + str(encoder.categories_[0][i])
+                                                 for i in range(len(encoder.categories_[0]))])
+                    df = pd.concat([df, x])
+                    del df[cl]
+                elif method == "OneHotEncoder_pandas":
+                    df = pd.get_dummies(df, prefix=[cl], columns=[cl])
+                else:
+                    print("Encoder type not found!")
         return df
 
     def removecolumns(self, columns, autoremove, df):
@@ -93,7 +94,8 @@ class Preprocessor:
                     df = df.drop([cl], axis=1)
         if autoremove:
             for cl in df:
-                if 'object' == str(df[cl].dtype) and df[cl].nunique() > df[cl].shape[0] / 100 * 7:
+                if ('object' == str(df[cl].dtype) and df[cl].nunique() > df[cl].shape[0] / 100 * 7) or \
+                        (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
                     df = df.drop([cl], axis=1)
         return df
 
@@ -112,7 +114,7 @@ class Preprocessor:
                     clslist.remove(DecisionTree())
                 return clslist, 'cls'
             else:
-                reglist = [Ridge()]
+                reglist = [RidgeRegression()]
                 if 'Ridge' in algo_exceptions:
-                    reglist.remove(Ridge())
+                    reglist.remove(RidgeRegression())
                 return reglist, 'reg'

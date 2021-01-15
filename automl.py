@@ -1,4 +1,4 @@
-from pipeline.input_ import Input
+from pipeline.input import Input
 from pipeline.pipeline import Pipeline
 from numpy import ndarray
 from pipeline.data import Data
