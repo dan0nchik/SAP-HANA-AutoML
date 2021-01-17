@@ -13,8 +13,8 @@ class BaseAlgorithm:
     def set_params(self, **params):
         self.model.set_params(**params)
 
-    def fit(self, X_train, y_train):
-        self.model.fit(X_train, y_train)
+    def fit(self, x_train, y_train):
+        self.model.fit(x_train, y_train)
 
     def predict(self, y_test):
         self.model.predict(y_test)

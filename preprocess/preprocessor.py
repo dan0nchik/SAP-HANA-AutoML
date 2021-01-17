@@ -5,6 +5,7 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from algorithms.classification.decisiontree import DecisionTree
 
 from algorithms.regression.ridge import RidgeRegression
+from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
 
 
@@ -49,13 +50,13 @@ class Preprocessor:
                 df2 = df.copy()
                 dtype = str(df[column].dtype)
                 if 'object' == dtype:
-                    df2[column] = stringimputer.fit_transform(df[column].values.reshape(-1, 1))[:,0]
+                    df2[column] = stringimputer.fit_transform(df[column].values.reshape(-1, 1))[:, 0]
                     df = df2.copy()
                 if 'uint8' == dtype or 'float64' == dtype or 'int64' == dtype:
-                    df2[column] = numimputer.fit_transform(df[column].values.reshape(-1, 1))[:,0]
+                    df2[column] = numimputer.fit_transform(df[column].values.reshape(-1, 1))[:, 0]
                     df = df2.copy()
                 if 'bool' == dtype:
-                    df2[column] = boolimputer.fit_transform(df[column].values.reshape(-1, 1))[:,0]
+                    df2[column] = boolimputer.fit_transform(df[column].values.reshape(-1, 1))[:, 0]
                     df = df2.copy()
         else:
             df.dropna()
@@ -114,7 +115,7 @@ class Preprocessor:
                     clslist.remove(DecisionTree())
                 return clslist, 'cls'
             else:
-                reglist = [RidgeRegression()]
+                reglist = [RidgeRegression()]  # SVRRegression()
                 if 'Ridge' in algo_exceptions:
                     reglist.remove(RidgeRegression())
                 return reglist, 'reg'

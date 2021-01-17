@@ -16,10 +16,11 @@ class AutoML:
             url=None,
             colmnsforremv=None,
             categorical=None,
+            optimizer='BayesianOptimizer',
             config=None):
         data = Data(X_train, X_test, y_train, y_test)
         data_after_input = Input(data, target, file_path,
                                  url, config).return_data()
 
         pipe = Pipeline(data_after_input, steps)
-        pipe.train(colmnsforremv=colmnsforremv, categorical=categorical)
+        pipe.train(colmnsforremv=colmnsforremv, categorical=categorical, optimizer=optimizer)
