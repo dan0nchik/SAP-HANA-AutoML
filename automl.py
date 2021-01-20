@@ -14,8 +14,8 @@ class AutoML:
             target: str = None,
             file_path=None,
             url=None,
-            colmnsforremv=None,
-            categorical=None,
+            columns_to_remove=None,
+            categorical_features=None,
             optimizer='BayesianOptimizer',
             config=None):
         data = Data(X_train, X_test, y_train, y_test)
@@ -23,4 +23,4 @@ class AutoML:
                                  url, config).return_data()
 
         pipe = Pipeline(data_after_input, steps)
-        pipe.train(colmnsforremv=colmnsforremv, categorical=categorical, optimizer=optimizer)
+        pipe.train(columns_to_remove=columns_to_remove, categorical_features=categorical_features, optimizer=optimizer)

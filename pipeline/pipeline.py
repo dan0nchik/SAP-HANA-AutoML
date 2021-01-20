@@ -9,9 +9,9 @@ class Pipeline:
         self.data = data
         self.iter = steps
 
-    def train(self, colmnsforremv=None, categorical=None, optimizer=None):
+    def train(self, columns_to_remove=None, categorical_features=None, optimizer=None):
         pr = Preprocessor()
-        self.data = pr.clean(data=self.data, droplist_columns=colmnsforremv, categorlist=categorical)
+        self.data = pr.clean(data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
         algo_list, task = pr.set_task(self.data.y_train)
         for alg in algo_list:
             if optimizer == 'BayesianOptimizer':

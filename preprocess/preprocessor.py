@@ -7,38 +7,41 @@ from algorithms.classification.decisiontree import DecisionTree
 from algorithms.regression.ridge import RidgeRegression
 from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
+from error import PreprocessError
 
 
 class Preprocessor:
 
-    def clean(self, data, droplist_columns=None, categorlist=None, predict_column_importance=True, dropempty=False,
+    def clean(self, data, droplist_columns=None, categorical_list=None, predict_column_importance=True, dropempty=False,
               encoder_method="OneHotEncoder_pandas",
               numimpset=ImputerSettings(),
               stringimpset=ImputerSettings(basicvars="string"),
               boolimpset=ImputerSettings(basicvars="bool")):
         if data is None:
-            print('Enter not null data!')
-            return data
-        if droplist_columns is not None or predict_column_importance:
-            data.X_train = self.removecolumns(columns=droplist_columns, autoremove=predict_column_importance,
+            raise PreprocessError('Enter not null data!')
+        if droplist_columns is not None:
+            data.X_train = self.removecolumns(columns=droplist_columns,
                                               df=data.X_train)
-            data.X_test = self.removecolumns(columns=droplist_columns, autoremove=predict_column_importance,
+            data.X_test = self.removecolumns(columns=droplist_columns,
                                              df=data.X_test)
+        if predict_column_importance:
+            data.X_train = self.autoremovecolumns(df=data.X_train)
+            data.X_test = self.autoremovecolumns(df=data.X_test)
+
         data.X_train = self.autoimput(df=data.X_train, dropempty=dropempty, numimpset=numimpset,
                                       stringimpset=stringimpset,
                                       boolimpset=boolimpset)
         data.X_test = self.autoimput(df=data.X_test, dropempty=dropempty, numimpset=numimpset,
                                      stringimpset=stringimpset,
                                      boolimpset=boolimpset)
-        data.X_train = self.catencoder(df=data.X_train, columns=categorlist, method=encoder_method)
-        data.X_test = self.catencoder(df=data.X_test, columns=categorlist, method=encoder_method)
+        data.X_train = self.catencoder(df=data.X_train, columns=categorical_list, method=encoder_method)
+        data.X_test = self.catencoder(df=data.X_test, columns=categorical_list, method=encoder_method)
 
         return data
 
     def autoimput(self, df, numimpset, stringimpset, boolimpset, dropempty=False):
         if df is None:
-            print('Enter not null data!')
-            return df
+            raise PreprocessError('Enter not null data!')
         if not dropempty:
             numimputer = SimpleImputer(fill_value=numimpset.fill_value, strategy=numimpset.strategy,
                                        missing_values=numimpset.missing_values)
@@ -64,52 +67,52 @@ class Preprocessor:
 
     def catencoder(self, columns, df, method):
         if df is None:
-            print('Enter not null data!')
-            return df
+            raise PreprocessError('Enter not null data!')
         if columns is not None:
-            for cl in columns:
+            for column in columns:
                 if method == "LabelEncoder":
                     encoder = LabelEncoder()
-                    encoder.fit(df[cl])
-                    df[cl] = encoder.transform(df[cl])
+                    encoder.fit(df[column])
+                    df[column] = encoder.transform(df[column])
                 elif method == "OneHotEncoder_scikit":
                     encoder = OneHotEncoder()
-                    x = encoder.fit_transform(df[cl].values.reshape(-1, 1)).toarray()
-                    x = pd.DataFrame(x, columns=[cl + str(encoder.categories_[0][i])
+                    x = encoder.fit_transform(df[column].values.reshape(-1, 1)).toarray()
+                    x = pd.DataFrame(x, columns=[column + str(encoder.categories_[0][i])
                                                  for i in range(len(encoder.categories_[0]))])
                     df = pd.concat([df, x])
-                    del df[cl]
+                    del df[column]
                 elif method == "OneHotEncoder_pandas":
-                    df = pd.get_dummies(df, prefix=[cl], columns=[cl])
+                    df = pd.get_dummies(df, prefix=[column], columns=[column])
                 else:
-                    print("Encoder type not found!")
+                    raise PreprocessError("Encoder type not found!")
         return df
 
-    def removecolumns(self, columns, autoremove, df):
+    def removecolumns(self, columns, df):
         if df is None:
-            print('Enter not null data!')
-            return df
+            raise PreprocessError('Enter not null data!')
         if columns is not None:
             for cl in df:
                 if cl in columns:
                     df = df.drop([cl], axis=1)
-        if autoremove:
-            for cl in df:
-                if ('object' == str(df[cl].dtype) and df[cl].nunique() > df[cl].shape[0] / 100 * 7) or \
-                        (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
-                    df = df.drop([cl], axis=1)
+        return df
+
+    def autoremovecolumns(self, df):
+        for cl in df:
+            if ('object' == str(df[cl].dtype) and df[cl].nunique() > df[cl].shape[0] / 100 * 7) or \
+                    (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
+                df = df.drop([cl], axis=1)
         return df
 
     def set_task(self, y, algo_exceptions=None):
         if algo_exceptions is None:
             algo_exceptions = []
-        for col in y:
-            if y[col].nunique() == 2:
+        for column in y:
+            if y[column].nunique() == 2:
                 clslist = [DecisionTree()]
                 if 'DecisionTree' in algo_exceptions:
                     clslist.remove(DecisionTree())
                 return clslist, 'cls'
-            elif y[col].nunique() < 10:
+            elif y[column].nunique() < 10:
                 clslist = [DecisionTree()]
                 if 'DecisionTree' in algo_exceptions:
                     clslist.remove(DecisionTree())

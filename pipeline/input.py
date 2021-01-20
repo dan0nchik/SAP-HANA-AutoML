@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import io
 from pipeline.data import Data
+from error import InputError
 
 
 class Input:
@@ -22,10 +23,8 @@ class Input:
             if file_path is not None:
                 # TODO: Add other file types
                 df = pd.read_csv(file_path)
-            if target is None:
-                # TODO: throw excep. instead of print
-                print("Enter target value!")
-                return
+            if target is None or target == '':
+                raise InputError('No target variable provided!')
             if not isinstance(target, list):
                 target = [target]
             y = df[target]
