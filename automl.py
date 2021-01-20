@@ -20,8 +20,10 @@ class AutoML:
             optimizer='BayesianOptimizer',
             config=None):
         data = Data(X_train, X_test, y_train, y_test)
-        data_after_input = Input(data, target, file_path,
-                                 url, config).return_data()
+        inputted = Input(data, target, file_path,
+                         url, config)
+        inputted.handle_data()
+        data_after_input = inputted.return_data()
 
         pipe = Pipeline(data_after_input, steps)
         pipe.train(columns_to_remove=columns_to_remove, categorical_features=categorical_features, optimizer=optimizer)
