@@ -3,15 +3,19 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 from algorithms.classification.decisiontree import DecisionTree
-
 from algorithms.regression.ridge import RidgeRegression
+from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 
 
 class Preprocessor:
 
-    def clean(self, data, droplist_columns=None, categorical_list=None, predict_column_importance=True, dropempty=False,
+    def clean(self, data,
+              droplist_columns=None,
+              categorical_list=None,
+              predict_column_importance=True,
+              dropempty=False,
               encoder_method="OneHotEncoder_pandas",
               numimpset=ImputerSettings(),
               stringimpset=ImputerSettings(basicvars="string"),

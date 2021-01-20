@@ -1,4 +1,5 @@
 from bayes_opt import BayesianOptimization
+
 from optimizers.base_optimizer import BaseOptimizer
 
 

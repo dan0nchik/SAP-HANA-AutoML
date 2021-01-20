@@ -1,8 +1,8 @@
 from optimizers.bayes import BayesianOptimizer
 from optimizers.grid_search import GridSearch
 from pipeline.data import Data
-from preprocess.preprocessor import Preprocessor
 from pipeline.leaderboard import Leaderboard
+from preprocess.preprocessor import Preprocessor
 
 
 class Pipeline:

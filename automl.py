@@ -1,7 +1,8 @@
+from numpy import ndarray
+
+from pipeline.data import Data
 from pipeline.input import Input
 from pipeline.pipeline import Pipeline
-from numpy import ndarray
-from pipeline.data import Data
 
 
 class AutoML:

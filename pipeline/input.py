@@ -17,11 +17,8 @@ class Input:
         df = pd.DataFrame()
         if data.X_train or data.y_train is None:
             if url is not None:
-                # TODO: url validation
-                url_data = requests.get(url).content.decode('utf-8')
-                df = pd.read_csv(io.StringIO(url_data))
+                df = self.load_from_url(url)
             if file_path is not None:
-                # TODO: Add other file types
                 df = pd.read_csv(file_path)
             if target is None or target == '':
                 raise InputError('No target variable provided!')
@@ -41,3 +38,8 @@ class Input:
         X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=random_state,
                                                             test_size=test_size)
         return X_train, X_test, y_train, y_test
+
+    def load_from_url(self, url):
+        # TODO: url validation
+        url_data = requests.get(url).content.decode('utf-8')
+        return pd.read_csv(io.StringIO(url_data))
