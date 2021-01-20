@@ -12,4 +12,4 @@ class BayesianOptimizer(BaseOptimizer):
         opt.maximize(
             n_iter=iterations
         )
-        self.tuned = opt.max
+        self.tuned_params = opt.max

@@ -18,7 +18,7 @@ class BaseOptimizer:
         self.algorithm = algorithm
         self.iter = iterations
         self.problem = problem
-        self.tuned = {}
+        self.tuned_params = {}
 
     def get_tuned_params(self):
-        print(self.algorithm.title, self.tuned)
+        return self.algorithm.title, self.tuned_params

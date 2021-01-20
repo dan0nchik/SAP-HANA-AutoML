@@ -2,6 +2,7 @@ from optimizers.bayes import BayesianOptimizer
 from optimizers.grid_search import GridSearch
 from pipeline.data import Data
 from preprocess.preprocessor import Preprocessor
+from pipeline.leaderboard import Leaderboard
 
 
 class Pipeline:
@@ -11,6 +12,7 @@ class Pipeline:
 
     def train(self, columns_to_remove=None, categorical_features=None, optimizer=None):
         pr = Preprocessor()
+        leaderboard = Leaderboard()
         self.data = pr.clean(data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
         algo_list, task = pr.set_task(self.data.y_train)
         for alg in algo_list:
@@ -21,4 +23,5 @@ class Pipeline:
             else:
                 print('Optimizer not found. Bayesian optimizer will be used')
                 opt = BayesianOptimizer(alg, self.data, self.iter, task)
-            opt.get_tuned_params()
+            leaderboard.add(opt.get_tuned_params())
+        leaderboard.show()

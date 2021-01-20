@@ -5,9 +5,8 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from algorithms.classification.decisiontree import DecisionTree
 
 from algorithms.regression.ridge import RidgeRegression
-from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
-from error import PreprocessError
+from utils.error import PreprocessError
 
 
 class Preprocessor:

@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import io
 from pipeline.data import Data
-from error import InputError
+from utils.error import InputError
 
 
 class Input:
