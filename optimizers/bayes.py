@@ -4,11 +4,12 @@ from optimizers.base_optimizer import BaseOptimizer
 
 
 class BayesianOptimizer(BaseOptimizer):
-    def __init__(self, algorithm, data, iterations, problem):
-        super(BayesianOptimizer, self).__init__(algorithm, data, iterations, problem)
+    def __init__(self, algo_list, data, problem, iterations=10):
+        super(BayesianOptimizer, self).__init__(algo_list, data, iterations, problem)
         opt = BayesianOptimization(
             f=self.objective,
-            pbounds=self.algorithm.get_params()
+            pbounds={'algo_index_tuned': (0, len(algo_list)-1), **self.algo_list[self.algo_index].get_params()},
+            random_state=17
         )
         opt.maximize(
             n_iter=iterations

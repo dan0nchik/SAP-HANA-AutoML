@@ -3,6 +3,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 from algorithms.classification.decisiontree import DecisionTree
+from algorithms.classification.logregression import LogRegression
 from algorithms.regression.ridge import RidgeRegression
 from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
@@ -111,7 +112,7 @@ class Preprocessor:
             algo_exceptions = []
         for column in y:
             if y[column].nunique() == 2:
-                clslist = [DecisionTree()]
+                clslist = [DecisionTree(), LogRegression()]
                 if 'DecisionTree' in algo_exceptions:
                     clslist.remove(DecisionTree())
                 return clslist, 'cls'
