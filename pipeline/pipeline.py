@@ -1,4 +1,4 @@
-from optimizers.bayes import BayesianOptimizer
+from optimizers.bayes import BayesianOptimizer, ScikitBayesianOptimizer
 from optimizers.grid_search import GridSearch
 from pipeline.data import Data
 from pipeline.leaderboard import Leaderboard
@@ -18,7 +18,7 @@ class Pipeline:
         algo_list, task = pr.set_task(self.data.y_train)
         while self.iter > 0:
             if optimizer == 'BayesianOptimizer':
-                opt = BayesianOptimizer(algo_list, self.data, task)
+                opt = ScikitBayesianOptimizer(algo_list, self.data, task)
             elif optimizer == 'GridSearch':
                 opt = GridSearch(algo_list, self.data, 10, task)
             else:
