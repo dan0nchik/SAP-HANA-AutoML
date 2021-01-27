@@ -1,3 +1,4 @@
+from bayes_opt.bayesian_optimization import BayesianOptimization
 from pipeline.validator import Validate
 from pipeline.fit import Fit
 from algorithms import base_algo
@@ -5,17 +6,28 @@ from algorithms import base_algo
 
 class BaseOptimizer:
 
-    # алгоритм, способ обработки
-    def objective(self, algo_index_tuned, **hyperparameters):
+    # TODO add preprocess method
+    def objective(self, algo_index_tuned):
         self.algo_index = round(algo_index_tuned)
-        print(self.algo_index) # берет реш. деревья из массива
-        print(hyperparameters) # параметры от лог. регрессии -> ошибка
+        opt = BayesianOptimization(
+            f=self.child_objective,
+            pbounds={**self.algo_list[self.algo_index].get_params()},
+            verbose=False
+        )
+        opt.maximize(
+            n_iter=10
+        )
+        self.algo_list[self.algo_index].set_params(**opt.max['params'])
+        return opt.max['target']
 
-        self.algo_list[self.algo_index].set_params(**hyperparameters)
+    def child_objective(self, **hyperparameters):
+        model = self.algo_list[self.algo_index]
+        print("Child objective")
+        model.set_params(**hyperparameters)
 
-        Fit.fit(self.algo_list[self.algo_index], self.X_train, self.y_train)
+        Fit.fit(model, self.X_train, self.y_train)
 
-        return Validate.val(self.algo_list[self.algo_index], self.X_test, self.y_test, self.problem)
+        return Validate.val(model, self.X_test, self.y_test, self.problem)
 
     def __init__(self, algo_list: list, data, iterations, problem):
         self.X_train = data.X_train
@@ -29,4 +41,6 @@ class BaseOptimizer:
         self.algo_index = 0
 
     def get_tuned_params(self):
-        return self.algo_list[self.algo_index].title, self.tuned_params
+        print('Title: ', self.algo_list[self.algo_index].title, '\nInfo:',
+              self.tuned_params
+              , '\nModel:', self.algo_list[self.algo_index].model)

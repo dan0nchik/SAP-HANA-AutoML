@@ -17,13 +17,11 @@ class Pipeline:
         self.data = pr.clean(
             data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
         algo_list, task = pr.set_task(self.data.y_train)
-        while self.iter > 0:
-            if optimizer == 'BayesianOptimizer':
-                opt = BayesianOptimizer(algo_list, self.data, task)
-            elif optimizer == 'GridSearch':
-                opt = GridSearch(algo_list, self.data, 10, task)
-            else:
-                print('Optimizer not found. Bayesian optimizer will be used')
-                opt = BayesianOptimizer(algo_list, self.data, task)
-            print(opt.get_tuned_params())
-            self.iter -= 1
+        if optimizer == 'BayesianOptimizer':
+            opt = BayesianOptimizer(algo_list, self.data, task, self.iter)
+        elif optimizer == 'GridSearch':
+            opt = GridSearch(algo_list, self.data, 10, task)
+        else:
+            print('Optimizer not found. Bayesian optimizer will be used')
+            opt = BayesianOptimizer(algo_list, self.data, task, self.iter)
+        opt.get_tuned_params()
