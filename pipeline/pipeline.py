@@ -14,11 +14,12 @@ class Pipeline:
         pr = Preprocessor()
         leaderboard = Leaderboard()
         # поместить в оптимайзер
-        self.data = pr.clean(data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
+        self.data = pr.clean(
+            data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
         algo_list, task = pr.set_task(self.data.y_train)
         while self.iter > 0:
             if optimizer == 'BayesianOptimizer':
-                opt = ScikitBayesianOptimizer(algo_list, self.data, task)
+                opt = BayesianOptimizer(algo_list, self.data, task)
             elif optimizer == 'GridSearch':
                 opt = GridSearch(algo_list, self.data, 10, task)
             else:
