@@ -9,8 +9,8 @@ class DecisionTree(BaseAlgorithm):
         super(DecisionTree, self).__init__()
         self.title = 'DecisionTreeClassifier'
         self.params_range = {
-            'model': Categorical([DecisionTreeClassifier()]),
-            'model__max_depth': Integer(1, 20),
-            'model__splitter': Categorical(['best', 'random'])
+            'max_depth': (1, 20),
+            'max_leaf_nodes': (2, 100)
+            #     ...
         }
         self.model = DecisionTreeClassifier()

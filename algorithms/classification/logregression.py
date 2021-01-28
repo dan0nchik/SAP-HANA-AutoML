@@ -10,8 +10,7 @@ class LogRegression(BaseAlgorithm):
         super(LogRegression, self).__init__()
         self.title = 'Logistic Regression'
         self.params_range = {
-            'model': Categorical([LogisticRegression()]),
-            'model__C': Real(1e-6, 1e+6, prior='log-uniform')
+            'C': (1.0, 10)
             #     ...
         }
         self.model = LogisticRegression()

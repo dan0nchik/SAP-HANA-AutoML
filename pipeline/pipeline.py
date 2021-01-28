@@ -1,5 +1,6 @@
 from optimizers.bayes import BayesianOptimizer, ScikitBayesianOptimizer
 from optimizers.grid_search import GridSearch
+from optimizers.optuna_optimizer import OptunaOptimizer
 from pipeline.data import Data
 from pipeline.leaderboard import Leaderboard
 from preprocess.preprocessor import Preprocessor
@@ -14,14 +15,17 @@ class Pipeline:
         pr = Preprocessor()
         leaderboard = Leaderboard()
         # поместить в оптимайзер
-        self.data = pr.clean(
-            data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
+        #self.data = pr.clean(
+        #    data=self.data, droplist_columns=columns_to_remove, categorical_list=categorical_features)
         algo_list, task = pr.set_task(self.data.y_train)
         while self.iter > 0:
             if optimizer == 'BayesianOptimizer':
                 opt = BayesianOptimizer(algo_list, self.data, task)
             elif optimizer == 'GridSearch':
                 opt = GridSearch(algo_list, self.data, 10, task)
+            elif optimizer == 'OptunaSearch':
+                opt = OptunaOptimizer(algo_list, self.data, task, 10, algo_names=task,
+                                      categorical_features=categorical_features, droplist_columns=columns_to_remove)
             else:
                 print('Optimizer not found. Bayesian optimizer will be used')
                 opt = BayesianOptimizer(algo_list, self.data, task)
