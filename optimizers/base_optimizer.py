@@ -12,13 +12,11 @@ class BaseOptimizer:
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
-            verbose=False
+            verbose=False,
         )
-        opt.maximize(
-            n_iter=10
-        )
-        self.algo_list[self.algo_index].set_params(**opt.max['params'])
-        return opt.max['target']
+        opt.maximize(n_iter=10)
+        self.algo_list[self.algo_index].set_params(**opt.max["params"])
+        return opt.max["target"]
 
     def child_objective(self, **hyperparameters):
         model = self.algo_list[self.algo_index]
@@ -41,6 +39,11 @@ class BaseOptimizer:
         self.algo_index = 0
 
     def get_tuned_params(self):
-        print('Title: ', self.algo_list[self.algo_index].title, '\nInfo:',
-              self.tuned_params
-              , '\nModel:', self.algo_list[self.algo_index].model)
+        print(
+            "Title: ",
+            self.algo_list[self.algo_index].title,
+            "\nInfo:",
+            self.tuned_params,
+            "\nModel:",
+            self.algo_list[self.algo_index].model,
+        )
