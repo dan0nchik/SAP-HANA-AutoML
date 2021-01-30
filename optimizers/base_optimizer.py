@@ -1,14 +1,28 @@
 from bayes_opt.bayesian_optimization import BayesianOptimization
 from pipeline.validator import Validate
 from pipeline.fit import Fit
+from preprocess.preprocessor import Preprocessor
 from algorithms import base_algo
+from pipeline.data import Data
+import pandas as pd
+import numpy as np
+import copy
 
 
 class BaseOptimizer:
-
-    # TODO add preprocess method
-    def objective(self, algo_index_tuned):
+    def objective(self, algo_index_tuned, preprocess_method):
+        self.data = copy.deepcopy(self.raw_data)
         self.algo_index = round(algo_index_tuned)
+        rounded_preprocess_method = round(preprocess_method)
+        pr = Preprocessor()
+        print(self.data.X_train.shape)
+        self.data = pr.clean(
+            data=self.data,
+            encoder_method=self.preprocess_list[rounded_preprocess_method],
+            categorical_list=self.categorical_list,
+            droplist_columns=self.droplist_columns,
+        )
+        print(self.data.X_train.shape)
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
@@ -23,20 +37,29 @@ class BaseOptimizer:
         print("Child objective")
         model.set_params(**hyperparameters)
 
-        Fit.fit(model, self.X_train, self.y_train)
+        Fit.fit(model, self.data.X_train, self.data.y_train)
 
-        return Validate.val(model, self.X_test, self.y_test, self.problem)
+        return Validate.val(model, self.data.X_test, self.data.y_test, self.problem)
 
-    def __init__(self, algo_list: list, data, iterations, problem):
-        self.X_train = data.X_train
-        self.y_train = data.y_train
-        self.X_test = data.X_test
-        self.y_test = data.y_test
+    def __init__(
+        self,
+        algo_list: list,
+        data,
+        iterations,
+        problem,
+        categorical_list=None,
+        droplist_columns=None,
+    ):
+        self.data = data
+        self.raw_data = data
         self.algo_list = algo_list
         self.iter = iterations
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
+        self.preprocess_list = ["LabelEncoder", "OneHotEncoder_pandas"]
+        self.categorical_list = categorical_list
+        self.droplist_columns = droplist_columns
 
     def get_tuned_params(self):
         print(

@@ -105,20 +105,6 @@ class Preprocessor:
                     encoder = LabelEncoder()
                     encoder.fit(df[column])
                     df[column] = encoder.transform(df[column])
-                elif method == "OneHotEncoder_scikit":
-                    encoder = OneHotEncoder()
-                    x = encoder.fit_transform(
-                        df[column].values.reshape(-1, 1)
-                    ).toarray()
-                    x = pd.DataFrame(
-                        x,
-                        columns=[
-                            column + str(encoder.categories_[0][i])
-                            for i in range(len(encoder.categories_[0]))
-                        ],
-                    )
-                    df = pd.concat([df, x])
-                    del df[column]
                 elif method == "OneHotEncoder_pandas":
                     df = pd.get_dummies(df, prefix=[column], columns=[column])
                 else:

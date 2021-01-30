@@ -10,11 +10,30 @@ from optimizers.base_optimizer import BaseOptimizer
 
 
 class BayesianOptimizer(BaseOptimizer):
-    def __init__(self, algo_list, data, problem, iterations=10):
-        super(BayesianOptimizer, self).__init__(algo_list, data, iterations, problem)
-        print(algo_list)
+    def __init__(
+        self,
+        algo_list,
+        data,
+        problem,
+        categorical_list,
+        droplist_columns,
+        iterations=10,
+    ):
+        super(BayesianOptimizer, self).__init__(
+            algo_list=algo_list,
+            data=data,
+            problem=problem,
+            categorical_list=categorical_list,
+            droplist_columns=droplist_columns,
+            iterations=iterations,
+        )
+        print(data.X_train.columns)
         opt = BayesianOptimization(
-            f=self.objective, pbounds={"algo_index_tuned": (0, len(algo_list) - 1)}
+            f=self.objective,
+            pbounds={
+                "algo_index_tuned": (0, len(algo_list) - 1),
+                "preprocess_method": (0, len(self.preprocess_list) - 1),
+            },
         )
         opt.maximize(n_iter=iterations)
         self.tuned_params = opt.max
