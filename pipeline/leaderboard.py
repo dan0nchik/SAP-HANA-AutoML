@@ -6,7 +6,7 @@ class Leaderboard:
         self.params_list.append(params)
 
     def show(self):
-        print('=========== LEADERBOARD ===========')
+        print("=========== LEADERBOARD ===========")
         place = 1
         for param in sorted(self.params_list):
-            print(place, '.', param)
+            print(place, ".", param)

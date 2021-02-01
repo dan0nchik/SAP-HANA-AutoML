@@ -1,32 +1,23 @@
+from bayes_opt.bayesian_optimization import BayesianOptimization
 from pipeline.validator import Validate
 from pipeline.fit import Fit
+from preprocess.preprocessor import Preprocessor
 from algorithms import base_algo
+from pipeline.data import Data
+import pandas as pd
+import numpy as np
+import copy
+from abc import ABC, abstractmethod
 
 
-class BaseOptimizer:
+class BaseOptimizer(ABC):
+    @abstractmethod
+    def objective():
+        """Implement the objective function here.
+        It must take hyperparameters to be tuned in optimizer"""
+        pass
 
-    # алгоритм, способ обработки
-    def objective(self, algo_index_tuned, **hyperparameters):
-        self.algo_index = round(algo_index_tuned)
-        print(self.algo_index) # берет реш. деревья из массива
-        print(hyperparameters) # параметры от лог. регрессии -> ошибка
-
-        self.algo_list[self.algo_index].set_params(**hyperparameters)
-
-        Fit.fit(self.algo_list[self.algo_index], self.X_train, self.y_train)
-
-        return Validate.val(self.algo_list[self.algo_index], self.X_test, self.y_test, self.problem)
-
-    def __init__(self, algo_list: list, data, iterations, problem):
-        self.X_train = data.X_train
-        self.y_train = data.y_train
-        self.X_test = data.X_test
-        self.y_test = data.y_test
-        self.algo_list = algo_list
-        self.iter = iterations
-        self.problem = problem
-        self.tuned_params = {}
-        self.algo_index = 0
-
-    def get_tuned_params(self):
-        return self.algo_list[self.algo_index].title, self.tuned_params
+    @abstractmethod
+    def get_tuned_params():
+        """Return hyperparameters that your optimizer has tuned"""
+        pass

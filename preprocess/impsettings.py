@@ -2,8 +2,9 @@ import numpy as np
 
 
 class ImputerSettings:
-
-    def __init__(self, missing_values=np.NaN, strategy="mean", fill_value="0", basicvars="num"):
+    def __init__(
+        self, missing_values=np.NaN, strategy="mean", fill_value="0", basicvars="num"
+    ):
         self.missing_values = missing_values
         self.strategy = strategy
         self.fill_value = fill_value
