@@ -11,7 +11,7 @@ def main():
         target="Survived",
         columns_to_remove=["PassengerId"],
         categorical_features=["Sex", "Embarked"],
-        optimizer="BayesianOptimizer",
+        optimizer="OptunaSearch",
     )
     # m.fit(file_path="data/reg.csv", target="Все 18+_TVR")
     # m.fit(file_path='data/cleaned_train.csv', target='Survived')

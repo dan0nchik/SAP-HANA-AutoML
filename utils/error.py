@@ -4,3 +4,7 @@ class InputError(Exception):
 
 class PreprocessError(Exception):
     pass
+
+
+class OptimizerError(Exception):
+    pass

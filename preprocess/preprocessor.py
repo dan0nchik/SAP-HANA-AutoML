@@ -5,20 +5,20 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from algorithms.classification.decisiontree import DecisionTree
 from algorithms.classification.logregression import LogRegression
 from algorithms.regression.ridge import RidgeRegression
-from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
+from pipeline.data import Data
 
 
 class Preprocessor:
     def clean(
         self,
-        data,
+        data: Data,
         droplist_columns=None,
         categorical_list=None,
         predict_column_importance=True,
         dropempty=False,
-        encoder_method="OneHotEncoder_pandas",
+        encoder_method="OneHotEncoder",
         numimpset=ImputerSettings(),
         stringimpset=ImputerSettings(basicvars="string"),
         boolimpset=ImputerSettings(basicvars="bool"),
@@ -105,7 +105,7 @@ class Preprocessor:
                     encoder = LabelEncoder()
                     encoder.fit(df[column])
                     df[column] = encoder.transform(df[column])
-                elif method == "OneHotEncoder_pandas":
+                elif method == "OneHotEncoder":
                     df = pd.get_dummies(df, prefix=[column], columns=[column])
                 else:
                     raise PreprocessError("Encoder type not found!")
@@ -133,16 +133,16 @@ class Preprocessor:
         if algo_exceptions is None:
             algo_exceptions = []
         for column in y:
-            if y[column].nunique() == 2:
+            if y[column].nunique() == 2 or y[column].nunique() < 10:
                 clslist = [DecisionTree(), LogRegression()]
+                clsnames = ["DecisionTree", "Logistic Regression"]
                 if "DecisionTree" in algo_exceptions:
                     clslist.remove(DecisionTree())
-                return clslist, "cls"
-            elif y[column].nunique() < 10:
-                clslist = [DecisionTree()]
-                if "DecisionTree" in algo_exceptions:
-                    clslist.remove(DecisionTree())
-                return clslist, "cls"
+                    clsnames.remove("DecisionTree")
+                if "Logistic Regression" in algo_exceptions:
+                    clslist.remove(LogRegression())
+                    clsnames.remove("Logistic Regression")
+                return clslist, clsnames
             else:
                 reglist = [RidgeRegression(), SVRRegression()]  # SVRRegression()
                 if "Ridge" in algo_exceptions:

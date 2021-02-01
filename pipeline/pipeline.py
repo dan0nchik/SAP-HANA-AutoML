@@ -1,5 +1,6 @@
 from optimizers.bayes import BayesianOptimizer
 from optimizers.grid_search import GridSearch
+from optimizers.optuna_optimizer import OptunaOptimizer
 from pipeline.data import Data
 from pipeline.leaderboard import Leaderboard
 from preprocess.preprocessor import Preprocessor
@@ -31,6 +32,16 @@ class Pipeline:
             )
         elif optimizer == "GridSearch":
             opt = GridSearch(algo_list, self.data, 10, task)
+        elif optimizer == "OptunaSearch":
+            opt = OptunaOptimizer(
+                algo_list=algo_list,
+                data=self.data,
+                problem=task,
+                iterations=10,
+                algo_names=task,
+                categorical_features=categorical_features,
+                droplist_columns=columns_to_remove,
+            )
         else:
             print("Optimizer not found. Bayesian optimizer will be used")
             opt = BayesianOptimizer(
