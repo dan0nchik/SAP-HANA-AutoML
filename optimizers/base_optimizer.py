@@ -7,6 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 from pipeline.validator import Validate
 from pipeline.fit import Fit
 from algorithms import base_algo
+from preprocess.impsettings import ImputerSettings
 from preprocess.preprocessor import Preprocessor
 
 
@@ -26,18 +27,25 @@ class BaseOptimizer:
 
     def optobjective(self, trial):
         algo = trial.suggest_categorical("algo", self.algo_names)
+        encoder_method = 'LabelEncoder'
         if self.categorical_features is not None:
             catencoder = trial.suggest_categorical("catencoder", ["LabelEncoder", "OneHotEncoder"])
             pr = Preprocessor()
             if catencoder == "LabelEncoder":
-                print(catencoder)
-                data2 = pr.clean(
-                    data=copy.copy(self.data), categorical_list=self.categorical_features, encoder_method='LabelEncoder',
-                    droplist_columns=self.droplist_columns)
+                encoder_method = 'LabelEncoder'
             elif catencoder == "OneHotEncoder":
-                data2 = pr.clean(
-                    data=copy.copy(self.data), categorical_list=self.categorical_features, encoder_method='OneHotEncoder',
-                    droplist_columns=self.droplist_columns)
+                encoder_method = 'OneHotEncoder'
+        numimputer = trial.suggest_categorical("numimputer", ['mean',
+                                                              'most_frequent',
+                                                              'median'])
+        stringimputer = trial.suggest_categorical("stringimputer", ['most_frequent',
+                                                                    'constant'])
+        boolimputer = trial.suggest_categorical("boolimputer", ['most_frequent'])
+        data2 = pr.clean(
+            data=copy.copy(self.data), categorical_list=self.categorical_features, encoder_method=encoder_method,
+            droplist_columns=self.droplist_columns, numimpset=ImputerSettings(strategy=numimputer),
+            stringimpset=ImputerSettings(basicvars="string", strategy=stringimputer),
+            boolimpset=ImputerSettings(basicvars="bool", strategy=boolimputer))
         print(algo)
         if algo == 'DecisionTree':
             max_depth = trial.suggest_int("max_depth", 1, 20, log=True)
