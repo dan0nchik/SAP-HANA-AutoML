@@ -7,66 +7,17 @@ from pipeline.data import Data
 import pandas as pd
 import numpy as np
 import copy
+from abc import ABC, abstractmethod
 
 
-class BaseOptimizer:
-    def objective(self, algo_index_tuned, preprocess_method):
-        self.data = copy.deepcopy(self.raw_data)
-        self.algo_index = round(algo_index_tuned)
-        rounded_preprocess_method = round(preprocess_method)
-        pr = Preprocessor()
-        print(self.data.X_train.shape)
-        self.data = pr.clean(
-            data=self.data,
-            encoder_method=self.preprocess_list[rounded_preprocess_method],
-            categorical_list=self.categorical_list,
-            droplist_columns=self.droplist_columns,
-        )
-        print(self.data.X_train.shape)
-        opt = BayesianOptimization(
-            f=self.child_objective,
-            pbounds={**self.algo_list[self.algo_index].get_params()},
-            verbose=False,
-        )
-        opt.maximize(n_iter=10)
-        self.algo_list[self.algo_index].set_params(**opt.max["params"])
-        return opt.max["target"]
+class BaseOptimizer(ABC):
+    @abstractmethod
+    def objective():
+        """Implement the objective function here.
+        It must take hyperparameters to be tuned in optimizer"""
+        pass
 
-    def child_objective(self, **hyperparameters):
-        model = self.algo_list[self.algo_index]
-        print("Child objective")
-        model.set_params(**hyperparameters)
-
-        Fit.fit(model, self.data.X_train, self.data.y_train)
-
-        return Validate.val(model, self.data.X_test, self.data.y_test, self.problem)
-
-    def __init__(
-        self,
-        algo_list: list,
-        data,
-        iterations,
-        problem,
-        categorical_list=None,
-        droplist_columns=None,
-    ):
-        self.data = data
-        self.raw_data = data
-        self.algo_list = algo_list
-        self.iter = iterations
-        self.problem = problem
-        self.tuned_params = {}
-        self.algo_index = 0
-        self.preprocess_list = ["LabelEncoder", "OneHotEncoder_pandas"]
-        self.categorical_list = categorical_list
-        self.droplist_columns = droplist_columns
-
-    def get_tuned_params(self):
-        print(
-            "Title: ",
-            self.algo_list[self.algo_index].title,
-            "\nInfo:",
-            self.tuned_params,
-            "\nModel:",
-            self.algo_list[self.algo_index].model,
-        )
+    @abstractmethod
+    def get_tuned_params():
+        """Return hyperparameters that your optimizer has tuned"""
+        pass

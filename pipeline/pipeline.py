@@ -1,9 +1,10 @@
-from optimizers.bayes import BayesianOptimizer, ScikitBayesianOptimizer
+from optimizers.bayes import BayesianOptimizer
 from optimizers.grid_search import GridSearch
 from pipeline.data import Data
 from pipeline.leaderboard import Leaderboard
 from preprocess.preprocessor import Preprocessor
 import copy
+
 
 class Pipeline:
     def __init__(self, data: Data, steps, budget=None):

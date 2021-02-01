@@ -1,33 +1,79 @@
-from bayes_opt import BayesianOptimization
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from skopt import BayesSearchCV
-from skopt.space import Categorical, Integer
+from bayes_opt.bayesian_optimization import BayesianOptimization
+from pipeline.validator import Validate
+from pipeline.fit import Fit
+from preprocess.preprocessor import Preprocessor
+from algorithms import base_algo
+from pipeline.data import Data
+import pandas as pd
+import numpy as np
+import copy
 
 from optimizers.base_optimizer import BaseOptimizer
 
 
 class BayesianOptimizer(BaseOptimizer):
+    def objective(self, algo_index_tuned, preprocess_method):
+        self.data = copy.deepcopy(self.raw_data)
+        self.algo_index = round(algo_index_tuned)
+        rounded_preprocess_method = round(preprocess_method)
+        pr = Preprocessor()
+        print(self.data.X_train.shape)
+        self.data = pr.clean(
+            data=self.data,
+            encoder_method=self.preprocess_list[rounded_preprocess_method],
+            categorical_list=self.categorical_list,
+            droplist_columns=self.droplist_columns,
+        )
+        print(self.data.X_train.shape)
+        opt = BayesianOptimization(
+            f=self.child_objective,
+            pbounds={**self.algo_list[self.algo_index].get_params()},
+            verbose=False,
+        )
+        opt.maximize(n_iter=10)
+        self.algo_list[self.algo_index].set_params(**opt.max["params"])
+        return opt.max["target"]
+
+    def child_objective(self, **hyperparameters):
+        model = self.algo_list[self.algo_index]
+        print("Child objective")
+        model.set_params(**hyperparameters)
+
+        Fit.fit(model, self.data.X_train, self.data.y_train)
+
+        return Validate.val(model, self.data.X_test, self.data.y_test, self.problem)
+
+    def get_tuned_params(self):
+        print(
+            "Title: ",
+            self.algo_list[self.algo_index].title,
+            "\nInfo:",
+            self.tuned_params,
+            "\nModel:",
+            self.algo_list[self.algo_index].model,
+        )
+
     def __init__(
         self,
-        algo_list,
+        algo_list: list,
         data,
+        iterations,
         problem,
-        categorical_list,
-        droplist_columns,
-        iterations=10,
+        categorical_list=None,
+        droplist_columns=None,
     ):
-        super(BayesianOptimizer, self).__init__(
-            algo_list=algo_list,
-            data=data,
-            problem=problem,
-            categorical_list=categorical_list,
-            droplist_columns=droplist_columns,
-            iterations=iterations,
-        )
+        self.data = data
+        self.raw_data = data
+        self.algo_list = algo_list
+        self.iter = iterations
+        self.problem = problem
+        self.tuned_params = {}
+        self.algo_index = 0
+        self.preprocess_list = ["LabelEncoder", "OneHotEncoder_pandas"]
+        self.categorical_list = categorical_list
+        self.droplist_columns = droplist_columns
         print(data.X_train.columns)
+
         opt = BayesianOptimization(
             f=self.objective,
             pbounds={
@@ -37,18 +83,3 @@ class BayesianOptimizer(BaseOptimizer):
         )
         opt.maximize(n_iter=iterations)
         self.tuned_params = opt.max
-
-
-class ScikitBayesianOptimizer(BaseOptimizer):
-    def __init__(self, algo_list, data, problem, iterations=10):
-        super(ScikitBayesianOptimizer, self).__init__(
-            algo_list, data, iterations, problem
-        )
-        algl = []
-        for alg in algo_list:
-            algl.append((alg.params_range, iterations))
-        print(algl)
-        pipe = Pipeline([("model", algo_list[0].model)])
-        opt = BayesSearchCV(pipe, algl, n_jobs=-1, verbose=3)
-        opt.fit(self.X_train, self.y_train)
-        self.tuned_params = opt.best_params_
