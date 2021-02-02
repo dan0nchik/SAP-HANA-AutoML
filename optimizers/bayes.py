@@ -17,14 +17,14 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = round(algo_index_tuned)
         rounded_preprocess_method = round(preprocess_method)
         pr = Preprocessor()
-        print(self.data.X_train.shape)
+
         self.data = pr.clean(
             data=self.data,
             encoder_method=self.preprocess_list[rounded_preprocess_method],
             categorical_list=self.categorical_list,
             droplist_columns=self.droplist_columns,
         )
-        print(self.data.X_train.shape)
+        print(self.data.X_train.columns)
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},

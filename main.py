@@ -9,11 +9,11 @@ def main():
     m.fit(
         file_path="data/train.csv",
         target="Survived",
-        columns_to_remove=["PassengerId"],
+        columns_to_remove=["PassengerId", "Name", "Ticket", "Cabin"],
         categorical_features=["Sex", "Embarked"],
         # optimizer='OptunaSearch'
     )
-    m.fit(file_path="data/reg.csv", target="Все 18+_TVR", optimizer='OptunaSearch')
+    # m.fit(file_path="data/reg.csv", target="Все 18+_TVR", optimizer="OptunaSearch")
     # m.fit(file_path='data/cleaned_train.csv', target='Survived')
 
 
