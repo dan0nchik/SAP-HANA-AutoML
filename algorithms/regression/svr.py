@@ -14,3 +14,10 @@ class SVRRegression(BaseAlgorithm):
             # 'kernel': ['linear', 'poly', 'rbf']
         }
         self.model = SVR()
+
+    def optunatune(self, trial):
+        gamma = trial.suggest_float("gamma", 1e-6, 1e1, log=True)
+        c = trial.suggest_float("SVR_C", 1e-6, 1e6, log=True)
+        degree = trial.suggest_int("SVR_degree", 1, 8, log=True)
+        model = SVR(gamma=gamma, C=c, degree=degree)
+        return model
