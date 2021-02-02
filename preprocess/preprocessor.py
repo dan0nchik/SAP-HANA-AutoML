@@ -5,6 +5,7 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from algorithms.classification.decisiontree import DecisionTree
 from algorithms.classification.logregression import LogRegression
 from algorithms.regression.ridge import RidgeRegression
+from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 from pipeline.data import Data
@@ -149,6 +150,9 @@ class Preprocessor:
                 return clslist, clsnames
             else:
                 reglist = [RidgeRegression(), SVRRegression()]  # SVRRegression()
+                regnames = ["DecisionTree", "Logistic Regression"]
                 if "Ridge" in algo_exceptions:
                     reglist.remove(RidgeRegression())
-                return reglist, "reg"
+                    print('reg')
+                print('regППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППП')
+                return reglist, regnames

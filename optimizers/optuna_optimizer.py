@@ -33,13 +33,13 @@ class OptunaOptimizer(BaseOptimizer):
         self.tuned_params = opt.best_trial
 
     def objective(self, trial):
-        algo = trial.suggest_categorical("algo", self.algo_names)
+        algo = trial.suggest_categorical("algo", self.algo_list)
         encoder_method = "LabelEncoder"
+        pr = Preprocessor()
         if self.categorical_features is not None:
             catencoder = trial.suggest_categorical(
                 "catencoder", ["LabelEncoder", "OneHotEncoder"]
             )
-            pr = Preprocessor()
             if catencoder == "LabelEncoder":
                 encoder_method = "LabelEncoder"
             elif catencoder == "OneHotEncoder":
@@ -61,6 +61,8 @@ class OptunaOptimizer(BaseOptimizer):
             boolimpset=ImputerSettings(basicvars="bool", strategy=boolimputer),
         )
         print(algo)
+        model = algo.optunatune(trial)
+        ''' Warnings, hello!
         if algo == "DecisionTree":
             max_depth = trial.suggest_int("max_depth", 1, 20, log=True)
             max_leaf_nodes = trial.suggest_int("max_leaf_nodes", 2, 100, log=True)
@@ -72,6 +74,7 @@ class OptunaOptimizer(BaseOptimizer):
             tol = trial.suggest_float("tol", 1e-10, 1e10, log=True)
             c = trial.suggest_float("C", 0.1, 10.0, log=True)
             model = LogisticRegression(tol=tol, C=c)
+        '''
         score = cross_val_score(
             model, data2.X_train, data2.y_train.values.ravel(), n_jobs=-1, cv=3
         )
