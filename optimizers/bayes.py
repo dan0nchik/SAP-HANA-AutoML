@@ -73,7 +73,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
-        self.preprocess_list = ["LabelEncoder", "OneHotEncoder"]
+        self.preprocess_list = ["LabelEncoder", "OneHotEncoder_pandas"]
         self.categorical_list = categorical_list
         self.droplist_columns = droplist_columns
         print(data.X_train.columns)
