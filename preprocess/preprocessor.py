@@ -8,6 +8,7 @@ from algorithms.regression.ridge import RidgeRegression
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 from pipeline.data import Data
+from algorithms.regression.svr import SVRRegression
 
 
 class Preprocessor:
@@ -106,6 +107,9 @@ class Preprocessor:
                     encoder.fit(df[column])
                     df[column] = encoder.transform(df[column])
                 elif method == "OneHotEncoder":
+                    # encoder = OneHotEncoder()
+                    # encoder.fit(df[column])
+                    # df[column] = encoder.transform(df[column])
                     df = pd.get_dummies(df, prefix=[column], columns=[column])
                 else:
                     raise PreprocessError("Encoder type not found!")
