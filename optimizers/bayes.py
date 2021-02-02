@@ -1,4 +1,3 @@
-from preprocess.impsettings import ImputerSettings
 from bayes_opt.bayesian_optimization import BayesianOptimization
 from pipeline.validator import Validate
 from pipeline.fit import Fit
@@ -13,28 +12,25 @@ from optimizers.base_optimizer import BaseOptimizer
 
 
 class BayesianOptimizer(BaseOptimizer):
-    def objective(
-        self,
-        algo_index_tuned,
-        preprocess_method,
-    ):
+    def objective(self, algo_index_tuned, preprocess_method):
         self.data = copy.deepcopy(self.raw_data)
         self.algo_index = round(algo_index_tuned)
-
+        rounded_preprocess_method = round(preprocess_method)
         pr = Preprocessor()
+        print(self.data.X_train.shape)
         self.data = pr.clean(
             data=self.data,
-            encoder_method=self.preprocess_list[round(preprocess_method)],
+            encoder_method=self.preprocess_list[rounded_preprocess_method],
             categorical_list=self.categorical_list,
             droplist_columns=self.droplist_columns,
         )
-
+        print(self.data.X_train.shape)
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
             verbose=False,
         )
-        opt.maximize(n_iter=50)
+        opt.maximize(n_iter=10)
         self.algo_list[self.algo_index].set_params(**opt.max["params"])
         return opt.max["target"]
 
@@ -73,7 +69,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
-        self.preprocess_list = ["LabelEncoder", "OneHotEncoder_pandas"]
+        self.preprocess_list = ["LabelEncoder", "OneHotEncoder"]
         self.categorical_list = categorical_list
         self.droplist_columns = droplist_columns
         print(data.X_train.columns)
