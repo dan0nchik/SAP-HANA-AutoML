@@ -22,6 +22,8 @@ class Pipeline:
         )
         algo_list, task = pr.set_task(data_copy.y_train)
         if optimizer == "BayesianOptimizer":
+            # print(algo_list,'\n',self.data,'\n',self.iter, '\n', categorical_features, '\n',columns_to_remove,
+            # '\n', task)
             opt = BayesianOptimizer(
                 algo_list=algo_list,
                 data=self.data,

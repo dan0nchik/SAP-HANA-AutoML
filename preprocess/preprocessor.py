@@ -147,7 +147,7 @@ class Preprocessor:
                 if "Logistic Regression" in algo_exceptions:
                     clslist.remove(LogRegression())
                     clsnames.remove("Logistic Regression")
-                return clslist, clsnames
+                return clslist, 'cls'
             else:
                 reglist = [RidgeRegression(), SVRRegression()]  # SVRRegression()
                 regnames = ["DecisionTree", "Logistic Regression"]
@@ -155,4 +155,4 @@ class Preprocessor:
                     reglist.remove(RidgeRegression())
                     print('reg')
                 print('regППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППП')
-                return reglist, regnames
+                return reglist, 'reg'

@@ -67,6 +67,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_list = algo_list
         self.iter = iterations
         self.problem = problem
+        print(problem)
         self.tuned_params = {}
         self.algo_index = 0
         self.preprocess_list = ["LabelEncoder", "OneHotEncoder"]
