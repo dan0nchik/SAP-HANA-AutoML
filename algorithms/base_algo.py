@@ -13,6 +13,9 @@ class BaseAlgorithm:
     def set_params(self, **params):
         self.model.set_params(**params)
 
+    def optunatune(self):
+        pass
+
     def fit(self, x_train, y_train):
         self.model.fit(x_train, y_train)
 

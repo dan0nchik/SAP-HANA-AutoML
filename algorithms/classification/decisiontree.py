@@ -8,13 +8,14 @@ class DecisionTree(BaseAlgorithm):
         self.title = "DecisionTreeClassifier"
         self.params_range = {
             "max_depth": (1, 20),
-            "max_leaf_nodes": (2, 100)
-            #     ...
+            "max_leaf_nodes": (2, 100),
+            "criterion": (0, 1)
         }
         self.model = DecisionTreeClassifier()
 
     def set_params(self, **params):
         params["max_leaf_nodes"] = round(params["max_leaf_nodes"])
+        params["criterion"] = ["gini", "entropy"][round(params["criterion"])]
         self.model.set_params(**params)
 
     def optunatune(self, trial):

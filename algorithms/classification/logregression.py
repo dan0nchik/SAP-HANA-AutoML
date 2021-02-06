@@ -8,8 +8,8 @@ class LogRegression(BaseAlgorithm):
         super(LogRegression, self).__init__()
         self.title = "Logistic Regression"
         self.params_range = {
-            "C": (1.0, 10)
-            #     ...
+            "C": (1.0, 10),
+            "tol": (1e-10, 1e10)
         }
         self.model = LogisticRegression()
 

@@ -24,7 +24,6 @@ class BayesianOptimizer(BaseOptimizer):
             categorical_list=self.categorical_list,
             droplist_columns=self.droplist_columns,
         )
-        print(self.data.X_train.columns)
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
@@ -36,7 +35,6 @@ class BayesianOptimizer(BaseOptimizer):
 
     def child_objective(self, **hyperparameters):
         model = self.algo_list[self.algo_index]
-        print("Child objective")
         model.set_params(**hyperparameters)
 
         Fit.fit(model, self.data.X_train, self.data.y_train)
@@ -67,13 +65,11 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_list = algo_list
         self.iter = iterations
         self.problem = problem
-        print(problem)
         self.tuned_params = {}
         self.algo_index = 0
         self.preprocess_list = ["LabelEncoder", "OneHotEncoder"]
         self.categorical_list = categorical_list
         self.droplist_columns = droplist_columns
-        print(data.X_train.columns)
 
         opt = BayesianOptimization(
             f=self.objective,
