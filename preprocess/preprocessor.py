@@ -10,6 +10,7 @@ from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 from pipeline.data import Data
 from algorithms.regression.svr import SVRRegression
+from algorithms.regression.lassoReg import LassoReg
 
 
 class Preprocessor:
@@ -147,12 +148,11 @@ class Preprocessor:
                 if "Logistic Regression" in algo_exceptions:
                     clslist.remove(LogRegression())
                     clsnames.remove("Logistic Regression")
-                return clslist, 'cls'
+                return clslist, 'cls', clsnames
             else:
-                reglist = [RidgeRegression(), SVRRegression()]  # SVRRegression()
+                reglist = [RidgeRegression(), LassoReg()]  # SVRRegression()
                 regnames = ["DecisionTree", "Logistic Regression"]
                 if "Ridge" in algo_exceptions:
                     reglist.remove(RidgeRegression())
                     print('reg')
-                print('regППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППППП')
-                return reglist, 'reg'
+                return reglist, 'reg', regnames

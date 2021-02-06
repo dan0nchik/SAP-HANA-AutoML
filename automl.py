@@ -12,7 +12,7 @@ class AutoML:
         y_train: ndarray = None,
         X_test=None,
         y_test=None,
-        steps=1,
+        steps=10,
         target: str = None,
         file_path=None,
         url=None,

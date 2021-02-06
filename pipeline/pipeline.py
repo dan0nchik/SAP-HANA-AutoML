@@ -20,10 +20,8 @@ class Pipeline:
             droplist_columns=columns_to_remove,
             categorical_list=categorical_features,
         )
-        algo_list, task = pr.set_task(data_copy.y_train)
+        algo_list, task, algo_names_list = pr.set_task(data_copy.y_train)
         if optimizer == "BayesianOptimizer":
-            # print(algo_list,'\n',self.data,'\n',self.iter, '\n', categorical_features, '\n',columns_to_remove,
-            # '\n', task)
             opt = BayesianOptimizer(
                 algo_list=algo_list,
                 data=self.data,
@@ -40,7 +38,7 @@ class Pipeline:
                 data=self.data,
                 problem=task,
                 iterations=10,
-                algo_names=task,
+                algo_names=algo_names_list,
                 categorical_features=categorical_features,
                 droplist_columns=columns_to_remove,
             )
