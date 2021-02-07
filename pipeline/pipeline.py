@@ -37,7 +37,7 @@ class Pipeline:
                 algo_list=algo_list,
                 data=self.data,
                 problem=task,
-                iterations=10,
+                iterations=self.iter,
                 algo_names=algo_names_list,
                 categorical_features=categorical_features,
                 droplist_columns=columns_to_remove,

@@ -9,4 +9,9 @@ class LassoReg(BaseAlgorithm):
         self.params_range = {"alpha": (0.1, 1)}
         self.model = Lasso()
 
-    # TODO: impelement optunatune
+    def optunatune(self, trial):
+        alpha = trial.suggest_float("alpha", 0.1, 1, log=True)
+        model = Lasso(
+            alpha=alpha
+        )
+        return model
