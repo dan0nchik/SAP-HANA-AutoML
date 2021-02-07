@@ -9,8 +9,8 @@ class SGD(BaseAlgorithm):
         self.params_range = {
             "alpha": (1e-5, 1e-3),
             "tol": (1e-3, 0.5),
-            "loss": (0, 4),
-            "penalty": (0, 2)
+            "loss": (0, 3),
+            "penalty": (0, 1)
         }
         self.model = SGDClassifier()
 
