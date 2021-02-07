@@ -8,7 +8,7 @@ class RandomForest(BaseAlgorithm):
         self.title = "RandomForest"
         self.params_range = {
             "n_estimators": (5, 200),
-            "max_features": (0, 2),
+            "max_features": (0, 1),
             "min_samples_split": (2, 10)
         }
         self.model = RandomForestClassifier()
