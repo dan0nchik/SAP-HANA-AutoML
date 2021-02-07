@@ -163,14 +163,14 @@ class Preprocessor:
                 return clslist, 'cls', clsdict
             else:
                 reglist = [RidgeRegression(), LassoReg(), SVRRegression()]
-                regdict = {"RidgeRegression": RidgeRegression(), "LassoReg": LassoReg(), "Logistic Regression": SVRRegression()}
+                regdict = {"RidgeRegression": RidgeRegression(), "LassoReg": LassoReg(), "SVRRegression": SVRRegression()}
                 if "RidgeRegression" in algo_exceptions:
                     reglist.remove(RidgeRegression())
                     regdict.pop("RidgeRegression")
                 if "LassoReg" in algo_exceptions:
                     reglist.remove(LassoReg())
                     regdict.pop("LassoReg")
-                if "Logistic Regression" in algo_exceptions:
+                if "SVRRegression" in algo_exceptions:
                     reglist.remove(SVRRegression())
                     regdict.pop("Logistic Regression")
                 return reglist, 'reg', regdict
