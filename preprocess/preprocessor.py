@@ -144,27 +144,33 @@ class Preprocessor:
         for column in y:
             if y[column].nunique() == 2 or y[column].nunique() < 10:
                 clslist = [DecisionTree(), LogRegression(), SGD(), KNeighbors(), RandomForest()]
-                clsnames = ["DecisionTree", "Logistic Regression", "SGD", "KNeighbors", "RandomForest"]
+                clsdict = {"DecisionTree": DecisionTree(), "Logistic Regression": LogRegression(), "SGD": SGD(), "KNeighbors": KNeighbors(), "RandomForest": RandomForest()}
                 if "DecisionTree" in algo_exceptions:
                     clslist.remove(DecisionTree())
-                    clsnames.remove("DecisionTree")
+                    clsdict.pop("DecisionTree")
                 if "Logistic Regression" in algo_exceptions:
                     clslist.remove(LogRegression())
-                    clsnames.remove("Logistic Regression")
+                    clsdict.pop("Logistic Regression")
                 if "SGD" in algo_exceptions:
                     clslist.remove(SGD())
-                    clsnames.remove("SGD")
+                    clsdict.pop("SGD")
                 if "KNeighbors" in algo_exceptions:
                     clslist.remove(KNeighbors())
-                    clsnames.remove("KNeighbors")
+                    clsdict.pop("KNeighbors")
                 if "RandomForest" in algo_exceptions:
                     clslist.remove(RandomForest())
-                    clsnames.remove("RandomForest")
-                return clslist, 'cls', clsnames
+                    clsdict.pop("RandomForest")
+                return clslist, 'cls', clsdict
             else:
-                reglist = [RidgeRegression(), LassoReg()]  # SVRRegression()
-                regnames = ["DecisionTree", "Logistic Regression"]
-                if "Ridge" in algo_exceptions:
+                reglist = [RidgeRegression(), LassoReg(), SVRRegression()]
+                regdict = {"RidgeRegression": RidgeRegression(), "LassoReg": LassoReg(), "Logistic Regression": SVRRegression()}
+                if "RidgeRegression" in algo_exceptions:
                     reglist.remove(RidgeRegression())
-                    print('reg')
-                return reglist, 'reg', regnames
+                    regdict.pop("RidgeRegression")
+                if "LassoReg" in algo_exceptions:
+                    reglist.remove(LassoReg())
+                    regdict.pop("LassoReg")
+                if "Logistic Regression" in algo_exceptions:
+                    reglist.remove(SVRRegression())
+                    regdict.pop("Logistic Regression")
+                return reglist, 'reg', regdict

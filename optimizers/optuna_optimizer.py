@@ -11,29 +11,29 @@ from sklearn.model_selection import cross_val_score
 
 class OptunaOptimizer(BaseOptimizer):
     def __init__(
-        self,
-        algo_list,
-        data,
-        problem,
-        iterations,
-        algo_names: list,
-        categorical_features=None,
-        droplist_columns=None,
+            self,
+            algo_list,
+            data,
+            problem,
+            iterations,
+            algo_dict,
+            categorical_features=None,
+            droplist_columns=None,
     ):
         self.algo_list = algo_list
         self.data = data
         self.iterations = iterations
         self.problem = problem
-        self.algo_names = algo_names
+        self.algo_dict = algo_dict
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
 
         opt = optuna.create_study(direction="maximize")
         opt.optimize(self.objective, n_trials=iterations)
-        self.tuned_params = opt.best_trial
+        self.tuned_params = opt.best_params
 
     def objective(self, trial):
-        algo = trial.suggest_categorical("algo", self.algo_list)
+        algo = self.algo_dict.get(trial.suggest_categorical("algo", self.algo_dict.keys()))
         encoder_method = "LabelEncoder"
         pr = Preprocessor()
         if self.categorical_features is not None:
@@ -60,21 +60,7 @@ class OptunaOptimizer(BaseOptimizer):
             stringimpset=ImputerSettings(basicvars="string", strategy=stringimputer),
             boolimpset=ImputerSettings(basicvars="bool", strategy=boolimputer),
         )
-        print(algo)
         model = algo.optunatune(trial)
-        ''' Warnings, hello!
-        if algo == "DecisionTree":
-            max_depth = trial.suggest_int("max_depth", 1, 20, log=True)
-            max_leaf_nodes = trial.suggest_int("max_leaf_nodes", 2, 100, log=True)
-            criterion = trial.suggest_categorical("criterion", ["gini", "entropy"])
-            model = DecisionTreeClassifier(
-                max_depth=max_depth, max_leaf_nodes=max_leaf_nodes, criterion=criterion
-            )
-        elif algo == "Logistic Regression":
-            tol = trial.suggest_float("tol", 1e-10, 1e10, log=True)
-            c = trial.suggest_float("C", 0.1, 10.0, log=True)
-            model = LogisticRegression(tol=tol, C=c)
-        '''
         score = cross_val_score(
             model, data2.X_train, data2.y_train.values.ravel(), n_jobs=-1, cv=3
         )
@@ -82,4 +68,9 @@ class OptunaOptimizer(BaseOptimizer):
         return accuracy
 
     def get_tuned_params(self):
-        return self.tuned_params
+        print(
+            "Title: ",
+            self.tuned_params.pop("algo"),
+            "\nInfo:",
+            self.tuned_params
+        )
