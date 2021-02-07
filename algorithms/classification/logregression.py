@@ -14,7 +14,7 @@ class LogRegression(BaseAlgorithm):
         self.model = LogisticRegression()
 
     def optunatune(self, trial):
-        tol = trial.suggest_float("tol", 1e-10, 1e10, log=True)
+        tol = trial.suggest_float("tol", 1e-10, 1e10)
         c = trial.suggest_float("C", 0.1, 10.0, log=True)
         model = LogisticRegression(tol=tol, C=c)
         return model

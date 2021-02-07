@@ -3,7 +3,10 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
 from algorithms.classification.decisiontree import DecisionTree
+from algorithms.classification.kneighbors import KNeighbors
 from algorithms.classification.logregression import LogRegression
+from algorithms.classification.randomforest import RandomForest
+from algorithms.classification.sgd import SGD
 from algorithms.regression.ridge import RidgeRegression
 from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
@@ -140,14 +143,23 @@ class Preprocessor:
             algo_exceptions = []
         for column in y:
             if y[column].nunique() == 2 or y[column].nunique() < 10:
-                clslist = [DecisionTree(), LogRegression()]
-                clsnames = ["DecisionTree", "Logistic Regression"]
+                clslist = [DecisionTree(), LogRegression(), SGD(), KNeighbors(), RandomForest()]
+                clsnames = ["DecisionTree", "Logistic Regression", "SGD", "KNeighbors", "RandomForest"]
                 if "DecisionTree" in algo_exceptions:
                     clslist.remove(DecisionTree())
                     clsnames.remove("DecisionTree")
                 if "Logistic Regression" in algo_exceptions:
                     clslist.remove(LogRegression())
                     clsnames.remove("Logistic Regression")
+                if "SGD" in algo_exceptions:
+                    clslist.remove(SGD())
+                    clsnames.remove("SGD")
+                if "KNeighbors" in algo_exceptions:
+                    clslist.remove(KNeighbors())
+                    clsnames.remove("KNeighbors")
+                if "RandomForest" in algo_exceptions:
+                    clslist.remove(RandomForest())
+                    clsnames.remove("RandomForest")
                 return clslist, 'cls', clsnames
             else:
                 reglist = [RidgeRegression(), LassoReg()]  # SVRRegression()
