@@ -2,9 +2,9 @@ from algorithms.base_algo import BaseAlgorithm
 from sklearn.tree import DecisionTreeClassifier
 
 
-class DecisionTree(BaseAlgorithm):
+class DecisionTreeCls(BaseAlgorithm):
     def __init__(self):
-        super(DecisionTree, self).__init__()
+        super(DecisionTreeCls, self).__init__()
         self.title = "DecisionTreeClassifier"
         self.params_range = {
             "max_depth": (1, 20),
@@ -15,6 +15,7 @@ class DecisionTree(BaseAlgorithm):
 
     def set_params(self, **params):
         params["max_leaf_nodes"] = round(params["max_leaf_nodes"])
+        params["max_depth"] = round(params["max_depth"])
         params["criterion"] = ["gini", "entropy"][round(params["criterion"])]
         self.model.set_params(**params)
 

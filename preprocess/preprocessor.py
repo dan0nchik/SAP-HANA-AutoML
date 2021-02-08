@@ -2,18 +2,21 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
-from algorithms.classification.decisiontree import DecisionTree
+from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
 from algorithms.classification.logregression import LogRegression
 from algorithms.classification.randomforest import RandomForest
-from algorithms.classification.sgd import SGD
+from algorithms.classification.sgdcls import SGD
+from algorithms.regression.decisiontreereg import DecisionTreeReg
+from algorithms.regression.kneighbors import KNeighborsReg
 from algorithms.regression.ridge import RidgeRegression
+from algorithms.regression.sgdreg import SGDRegression
 from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 from pipeline.data import Data
 from algorithms.regression.svr import SVRRegression
-from algorithms.regression.lassoReg import LassoReg
+from algorithms.regression.lassoreg import LassoReg
 
 
 class Preprocessor:
@@ -143,10 +146,10 @@ class Preprocessor:
             algo_exceptions = []
         for column in y:
             if y[column].nunique() == 2 or y[column].nunique() < 10:
-                clslist = [DecisionTree(), LogRegression(), SGD(), KNeighbors(), RandomForest()]
-                clsdict = {"DecisionTree": DecisionTree(), "Logistic Regression": LogRegression(), "SGD": SGD(), "KNeighbors": KNeighbors(), "RandomForest": RandomForest()}
+                clslist = [DecisionTreeCls(), LogRegression(), SGD(), KNeighbors(), RandomForest()]
+                clsdict = {"DecisionTree": DecisionTreeCls(), "Logistic Regression": LogRegression(), "SGD": SGD(), "KNeighbors": KNeighbors(), "RandomForest": RandomForest()}
                 if "DecisionTree" in algo_exceptions:
-                    clslist.remove(DecisionTree())
+                    clslist.remove(DecisionTreeCls())
                     clsdict.pop("DecisionTree")
                 if "Logistic Regression" in algo_exceptions:
                     clslist.remove(LogRegression())
@@ -162,8 +165,10 @@ class Preprocessor:
                     clsdict.pop("RandomForest")
                 return clslist, 'cls', clsdict
             else:
-                reglist = [RidgeRegression(), LassoReg(), SVRRegression()]
-                regdict = {"RidgeRegression": RidgeRegression(), "LassoReg": LassoReg(), "SVRRegression": SVRRegression()}
+                reglist = [RidgeRegression(), LassoReg(), SGDRegression(), KNeighborsReg()]
+                regdict = {"RidgeRegression": RidgeRegression(), "LassoReg": LassoReg(), "SVRRegression": SVRRegression(),
+                           "SGDRegressor": SGDRegression(), "KNeighborsRegressor": KNeighborsReg(),
+                           "DecisionTreeRegressor": DecisionTreeReg()}
                 if "RidgeRegression" in algo_exceptions:
                     reglist.remove(RidgeRegression())
                     regdict.pop("RidgeRegression")
@@ -173,4 +178,13 @@ class Preprocessor:
                 if "SVRRegression" in algo_exceptions:
                     reglist.remove(SVRRegression())
                     regdict.pop("Logistic Regression")
+                if "SGDRegressor" in algo_exceptions:
+                    reglist.remove(SGDRegression())
+                    regdict.pop("SGDRegressor")
+                if "KNeighborsRegressor" in algo_exceptions:
+                    reglist.remove(SGDRegression())
+                    regdict.pop("KNeighborsRegressor")
+                if "DecisionTreeRegressor" in algo_exceptions:
+                    reglist.remove(DecisionTreeReg())
+                    regdict.pop("DecisionTreeRegressor")
                 return reglist, 'reg', regdict

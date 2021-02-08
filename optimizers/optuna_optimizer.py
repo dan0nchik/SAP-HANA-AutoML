@@ -2,9 +2,6 @@ from preprocess.impsettings import ImputerSettings
 import copy
 from preprocess.preprocessor import Preprocessor
 from optimizers.base_optimizer import BaseOptimizer
-from algorithms.classification.decisiontree import DecisionTreeClassifier
-from algorithms.classification.logregression import LogisticRegression
-from algorithms.regression.ridge import RidgeRegression
 import optuna
 from sklearn.model_selection import cross_val_score
 
