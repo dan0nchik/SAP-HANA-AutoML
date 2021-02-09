@@ -71,12 +71,13 @@ class BayesianOptimizer(BaseOptimizer):
         self.categorical_list = categorical_list
         self.droplist_columns = droplist_columns
 
+    def tune(self):
         opt = BayesianOptimization(
             f=self.objective,
             pbounds={
-                "algo_index_tuned": (0, len(algo_list) - 1),
+                "algo_index_tuned": (0, len(self.algo_list) - 1),
                 "preprocess_method": (0, len(self.preprocess_list) - 1),
             },
         )
-        opt.maximize(n_iter=iterations)
+        opt.maximize(n_iter=self.iter)
         self.tuned_params = opt.max

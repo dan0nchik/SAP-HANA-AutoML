@@ -25,8 +25,9 @@ class OptunaOptimizer(BaseOptimizer):
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
 
+    def tune(self):
         opt = optuna.create_study(direction="maximize")
-        opt.optimize(self.objective, n_trials=iterations)
+        opt.optimize(self.objective, n_trials=self.iterations)
         self.tuned_params = opt.best_params
 
     def objective(self, trial):

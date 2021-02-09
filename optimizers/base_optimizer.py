@@ -27,3 +27,8 @@ class BaseOptimizer(ABC):
     def get_tuned_params():
         """Return hyperparameters that your optimizer has tuned"""
         pass
+
+    @abstractmethod
+    def tune():
+        """Tune hyperparameters here"""
+        pass

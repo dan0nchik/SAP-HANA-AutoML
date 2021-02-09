@@ -10,13 +10,14 @@ class Pipeline:
     def __init__(self, data: Data, steps, budget=None):
         self.data = data
         self.iter = steps
+        self.opt = None
 
     def train(self, columns_to_remove=None, categorical_features=None, optimizer=None):
         pr = Preprocessor()
         data_copy = copy.deepcopy(self.data)
         algo_list, task, algo_dict = pr.set_task(data_copy.y_train)
         if optimizer == "BayesianOptimizer":
-            opt = BayesianOptimizer(
+            self.opt = BayesianOptimizer(
                 algo_list=algo_list,
                 data=self.data,
                 iterations=self.iter,
@@ -25,7 +26,7 @@ class Pipeline:
                 problem=task,
             )
         elif optimizer == "OptunaSearch":
-            opt = OptunaOptimizer(
+            self.opt = OptunaOptimizer(
                 algo_list=algo_list,
                 data=self.data,
                 problem=task,
@@ -36,7 +37,7 @@ class Pipeline:
             )
         else:
             print("Optimizer not found. Bayesian optimizer will be used")
-            opt = BayesianOptimizer(
+            self.opt = BayesianOptimizer(
                 algo_list=algo_list,
                 data=self.data,
                 iterations=self.iter,
@@ -44,4 +45,5 @@ class Pipeline:
                 droplist_columns=columns_to_remove,
                 problem=task,
             )
-        opt.get_tuned_params()
+        self.opt.tune()
+        return self.opt

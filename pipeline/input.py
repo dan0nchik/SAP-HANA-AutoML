@@ -8,7 +8,7 @@ from utils.error import InputError
 
 class Input:
     def __init__(
-        self, data: Data = None, target=None, file_path=None, url=None, config=None
+        self, data: Data = Data(None, None, None, None), target=None, file_path=None, url=None, config=None
     ):
         self.config = config
         self.data = data
@@ -19,7 +19,7 @@ class Input:
 
     def handle_data(self):
         multi_target = []
-        if self.data.X_train or self.data.y_train is None:
+        if self.data.X_train is None or self.data.y_train is None:
             if self.url is not None:
                 self.df = self.load_from_url(self.url)
             if self.file_path is not None:
@@ -36,8 +36,6 @@ class Input:
                 self.data.y_train,
                 self.data.y_test,
             ) = self.split_data(X, y)
-
-    def return_data(self):
         return self.data
 
     def split_data(self, X, y, random_state=42, test_size=0.33):

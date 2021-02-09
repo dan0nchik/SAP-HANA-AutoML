@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import LabelEncoder
 
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
@@ -11,7 +11,6 @@ from algorithms.regression.decisiontreereg import DecisionTreeReg
 from algorithms.regression.kneighbors import KNeighborsReg
 from algorithms.regression.ridge import RidgeRegression
 from algorithms.regression.sgdreg import SGDRegression
-from algorithms.regression.svr import SVRRegression
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 from pipeline.data import Data
@@ -22,7 +21,7 @@ from algorithms.regression.lassoreg import LassoReg
 class Preprocessor:
     def clean(
         self,
-        data: Data,
+        data: Data = None,
         droplist_columns=None,
         categorical_list=None,
         predict_column_importance=True,
@@ -115,21 +114,19 @@ class Preprocessor:
                     encoder.fit(df[column])
                     df[column] = encoder.transform(df[column])
                 elif method == "OneHotEncoder":
-                    # encoder = OneHotEncoder()
-                    # encoder.fit(df[column])
-                    # df[column] = encoder.transform(df[column])
                     df = pd.get_dummies(df, prefix=[column], columns=[column])
                 else:
                     raise PreprocessError("Encoder type not found!")
         return df
 
-    def removecolumns(self, columns, df):
+    def removecolumns(self, columns, df: pd.DataFrame):
         if df is None:
             raise PreprocessError("Enter not null data!")
         if columns is not None:
-            for cl in df:
-                if cl in columns:
-                    df = df.drop([cl], axis=1)
+            if isinstance(columns, list):
+                df = df.drop(columns, axis=1)
+            else:
+                df = df.drop([columns], axis=1)
         return df
 
     def autoremovecolumns(self, df):
