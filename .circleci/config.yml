@@ -16,7 +16,9 @@ jobs:
       - run:
           name: Installing modules
           command: |
-            pip3 install requirements.txt
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
       - run:
           name: Testing 
           command: |
