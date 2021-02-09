@@ -3,9 +3,9 @@ workflows:
   build-circle-ci:
     jobs:
       - build
-    filters:
-      branches:
-        only: circle-ci
+      filters:
+        branches:
+          only: circle-ci
 
 version: 2
 jobs:
