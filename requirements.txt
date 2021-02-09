@@ -1,3 +1,4 @@
+cryptography
 Cython
 numpy
 bayesian-optimization
