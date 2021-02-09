@@ -1,0 +1,9 @@
+Cython
+numpy
+bayesian-optimization
+scipy==1.5.4
+scikit-learn==0.22.1
+requests
+pytest
+pandas
+optuna
