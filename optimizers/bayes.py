@@ -42,14 +42,11 @@ class BayesianOptimizer(BaseOptimizer):
         return Validate.val(model, self.data.X_test, self.data.y_test, self.problem)
 
     def get_tuned_params(self):
-        print(
-            "Title: ",
-            self.algo_list[self.algo_index].title,
-            "\nInfo:",
-            self.tuned_params,
-            "\nModel:",
-            self.algo_list[self.algo_index].model,
-        )
+        return {
+            "title": self.algo_list[self.algo_index].title,
+            "params": self.tuned_params,
+            "model": self.algo_list[self.algo_index].model,
+        }
 
     def __init__(
         self,

@@ -10,19 +10,19 @@ class AutoML:
         self.opt = None
 
     def fit(
-            self,
-            X_train: ndarray = None,
-            y_train: ndarray = None,
-            X_test=None,
-            y_test=None,
-            steps=10,
-            target: str = None,
-            file_path=None,
-            url=None,
-            columns_to_remove=None,
-            categorical_features=None,
-            optimizer="BayesianOptimizer",
-            config=None,
+        self,
+        X_train: ndarray = None,
+        y_train: ndarray = None,
+        X_test=None,
+        y_test=None,
+        steps=10,
+        target: str = None,
+        file_path=None,
+        url=None,
+        columns_to_remove=None,
+        categorical_features=None,
+        optimizer="BayesianOptimizer",
+        config=None,
     ):
         data = Data(X_train, X_test, y_train, y_test)
         inputted = Input(data, target, file_path, url, config)
@@ -38,5 +38,6 @@ class AutoML:
     def optimizer(self):
         return self.opt
 
+    @property
     def best_params(self):
         return self.opt.get_tuned_params()
