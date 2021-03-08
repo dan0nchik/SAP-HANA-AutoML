@@ -136,3 +136,10 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+#VS Code
+.vscode
+
+# Login info
+utils/credentials.py
+credentials.py

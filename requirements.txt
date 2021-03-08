@@ -1,0 +1,12 @@
+cryptography
+Cython
+numpy
+bayesian-optimization
+scipy==1.5.4
+requests
+pytest
+pandas
+optuna
+scikit-learn==0.22.1
+hana-ml
+black
