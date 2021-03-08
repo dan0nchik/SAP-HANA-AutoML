@@ -1,0 +1,142 @@
+Metadata-Version: 2.1
+Name: hana-ml
+Version: 2.6.21012600
+Summary: Python Machine Learning Client for SAP HANA
+Home-page: https://www.sap.com/
+Author: SAP SE
+License: SAP DEVELOPER LICENSE AGREEMENT
+Project-URL: Documentation, https://help.sap.com/doc/1d0ebfe5e8dd44d09606814d83308d4b/2.0.05/en-US/index.html
+Keywords: SAP HANA machine learning intelligent enterprise cloud PAL APL client
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Operating System :: Microsoft
+Classifier: Operating System :: Other OS
+Requires-Python: >=3.0
+Description-Content-Type: text/markdown
+Requires-Dist: hdbcli (>=2.4.194)
+Requires-Dist: pydot
+Requires-Dist: Deprecated
+Requires-Dist: htmlmin (>=0.1.12)
+Requires-Dist: tqdm (>=4.43.0)
+Requires-Dist: Shapely (>=1.7.1)
+Requires-Dist: numpy (<1.16.4) ; python_version < "3.4"
+Requires-Dist: pandas (<0.24.2) ; python_version < "3.4"
+Requires-Dist: matplotlib ; python_version >= "3"
+Requires-Dist: numpy (>=1.16.4) ; python_version >= "3.4"
+Requires-Dist: pandas (>=0.24.2) ; python_version >= "3.4"
+
+Introduction
+------------
+Welcome to the SAP HANA Python Client API for machine learning algorithms. This API enables Python data scientists to access SAP HANA data and build machine learning models using that data directly in SAP HANA.
+
+Overview
+--------
+The SAP HANA Python Client API for machine learning algorithms provides a set of client-side Python functions for accessing and querying SAP HANA data, and a set of functions for developing machine learning models.
+
+The Python Client API for Machine Learning consists of two main parts:
+
+ - A set of machine learning APIs for different algorithms.
+
+ - The SAP HANA DataFrame, which provides a set of methods for analyzing data in SAP HANA without bringing the data to the client.
+
+This set of APIs is composed of two packages:
+
+ - PAL package
+
+ - APL package
+
+The Predictive Analysis Library (PAL) package consists of a set of Python algorithms and functions which provide access to the machine learning capabilities in SAP HANA. The PAL Python functions cover a variety of different machine learning algorithms for training a model and then the trained model is used for scoring. For details on which specific algorithms are available in this release, please refer to the documentation.
+
+The Automated Predictive Library (APL) package exposes the data mining capabilities of the Automated Analytics engine in SAP HANA through a set of functions. These functions develop a predictive modeling process that analysts can use to answer simple questions on their customer datasets stored in SAP HANA.
+
+This Python library uses the SAP HANA Python driver (hdbcli) to connect to and access SAP HANA.
+
+Getting Started
+---------------
+
+Install via 
+
+    >>> pip install hana-ml
+
+Quick Start
+-----------
+
+ - For HANA tenant databases, use the port number 3**NN**13 (where **NN** is the SAP instance number - e.g. 30013).
+ - For HANA system databases in a multitenant system, the port number is 3**NN**13.
+ - For HANA single-tenant databases, the port number is 3**NN**15.
+
+    `` >>> from hana_ml import dataframe``<br/>
+    `` >>> conn = dataframe.ConnectionContext(
+            address="<hostname>",
+            port=3<NN>MM,
+            user="<username>",
+            password="<password>")``
+
+Return a DataFrame referenced to SAP HANA table.
+
+
+    >>> df = conn.table('MY_TABLE', schema='MY_SCHEMA').filter('COL3>5').select('COL1', 'COL2')
+
+Return a DataFrame from select statement.
+
+
+    >>> df = dataframe.DataFrame(conn, 'select * from MY_SCHEMA.MY_TABLE')
+
+Convert to pandas DataFrame.
+
+
+    >>> pandas_df = df.collect()
+
+Convert to HANA DataFrame from pandas DataFrame.
+
+
+    >>> df = dataframe.create_dataframe_from_pandas(conn, pandas_df, 'MY_TABLE', force=True)
+
+Call SAP HANA Machine Learning Algorithms.
+
+
+    >>> rfc = RandomForestClassifier(n_estimators=3,
+                                     max_features=3,
+                                     random_state=2,
+                                     split_threshold=0.00001,
+                                     calculate_oob=True,
+                                     min_samples_leaf=1,
+                                     thread_ratio=1.0)
+    >>> rfc.fit(data=df, features=['OUTLOOK', 'TEMP', 'HUMIDITY', 'WINDY'],
+             label='LABEL')
+    >>> rfc.feature_importances_.collect()
+      VARIABLE_NAME  IMPORTANCE
+    0       OUTLOOK    0.449550
+    1          TEMP    0.216216
+    2      HUMIDITY    0.208108
+    3         WINDY    0.126126
+    >>> result = rfc.predict(data=df2, key='ID', verbose=False)
+    >>> result.collect()
+       ID SCORE  CONFIDENCE
+    0   0  Play    0.666667
+    1   1  Play    0.666667
+
+Help
+----
+
+See the [SAP HANA ML API Reference] (https://help.sap.com/doc/1d0ebfe5e8dd44d09606814d83308d4b/2.0.05/en-US/index.html) for details about developing with the SAP HANA ML API.
+
+License
+-------
+
+The SAP HANA ML API is provided via the [SAP Developer License Agreement] (https://tools.hana.ondemand.com/developer-license-3_1.txt).
+
+By using this software, you agree that the following text is incorporated into the terms of the Developer Agreement:
+
+    If you are an existing SAP customer for On Premise software, your use of this current software is also covered by the
+    terms of your software license agreement with SAP, including the Use Rights, the current version of which can be found at:
+    `https://www.sap.com/about/agreements/product-use-and-support-terms.html?tag=agreements:product-use-support-terms/on-premise-software/software-use-rights <https://www.sap.com/about/agreements/product-use-and-support-terms.html?tag=agreements:product-use-support-terms/on-premise-software/software-use-rights>`_
+
+
+
+

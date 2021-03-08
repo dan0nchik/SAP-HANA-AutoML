@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en" style="margin-top:10px">
+<head>
+  <meta charset="utf-8">
+  <title>Dataset Report</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.0.5/dist/css/adminlte.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.0.5/dist/js/adminlte.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+</head>
+
+<body class="sidebar-mini layout-fixed layout-navbar-fixed">
+
+<div class="wrapper container-fluid">
+
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a class="nav-link">Dataset Name: {{ dataset_name }}</a>
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item d-none d-sm-inline-block">
+            <a class="nav-link">Created Time: {{ start_time }}</a>
+        </li>
+    </ul>
+  </nav>
+
+  <aside class="main-sidebar sidebar-light-primary elevation-4">
+    <div style="text-align: center;">
+      <a class="brand-link">
+          <span class="brand-text font-weight-bold">Dataset Report</span>
+      </a>
+    </div>
+    <div class="sidebar">
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+          <li class="nav-item" onclick="switchContent('overview_page')">
+            <a class="nav-link">
+              <i class="nav-icon fas fa-th-large"></i>
+              <p>Overview</p>
+            </a>
+          </li>
+          <li class="nav-item" onclick="switchContent('sample_page')">
+            <a class="nav-link">
+              <i class="nav-icon fas fa-table"></i>
+              <p>Sample</p>
+            </a>
+          </li>
+          <li class="nav-item" onclick="switchContent('variables_page')">
+            <a class="nav-link">
+              <i class="nav-icon fas fa-outdent"></i>
+              <p>Variables</p>
+            </a>
+          </li>
+          <li class="nav-item" onclick="switchContent('correlations_page')">
+            <a class="nav-link">
+              <i class="nav-icon fas fa-copy"></i>
+              <p>Data Correlations</p>
+            </a>
+          </li>
+          <li class="nav-item" onclick="switchContent('scatter_matrix_page')">
+            <a class="nav-link">
+              <i class="nav-icon fas fa-th"></i>
+              <p>Data Scatter Matrix</p>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="content-wrapper" id="overview_page">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Overview</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="container-fluid">
+        <div class="row">
+
+          <div class="col-sm-6 col-lg-6">
+            <div class="card card-outline card-info">
+              <div class="card-header">
+                <h3 class="card-title">Dataset Info</h3>
+              </div>
+              <div class="card-body">
+                {{ dataset_info }}
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-6">
+            <div class="card card-outline card-info">
+              <div class="card-header">
+                <h3 class="card-title">Variable Types</h3>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-8 col-lg-8">
+                    <ul class="nav nav-tabs" role="tablist">
+                      <li class="nav-item">
+                        <a class="nav-link active" data-toggle="pill" href="#overview_page_chart_1_tab_content" role="tab">Profile</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" data-toggle="pill" href="#overview_page_chart_2_tab_content" role="tab">Detail</a>
+                      </li>
+                    </ul>
+                    <div class="tab-content">
+                      <div class="tab-pane fade show active" id="overview_page_chart_1_tab_content" role="tabpanel">
+                        <div class="chart-responsive">
+                          <canvas id="overview_page_chart_1" height="170"></canvas>
+                        </div>
+                      </div>
+                      <div class="tab-pane fade" id="overview_page_chart_2_tab_content" role="tabpanel">
+                        <div class="chart-responsive">
+                          <canvas id="overview_page_chart_2" height="170"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4 col-lg-4">
+                    <ul class="chart-legend clearfix">
+                      <li><i class="far fa-circle text-danger"></i> Numeric</li>
+                      <li><i class="far fa-circle text-success"></i> Categorical</li>
+                      <li><i class="far fa-circle text-warning"></i> Date</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+
+          <div class="col-sm-6 col-lg-6">
+            <div class="card card-outline card-info">
+              <div class="card-header">
+                <h3 class="card-title">High Cardinality(%)</h3>
+              </div>
+              <div class="card-body">
+                  <div class="chart-responsive">
+                    <canvas id="overview_page_chart_3"></canvas>
+                  </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-6 col-lg-6">
+            <div class="card card-outline card-info">
+              <div class="card-header">
+                <h3 class="card-title">Highly Skewed Variables</h3>
+              </div>
+              <div class="card-body">
+                  <div class="chart-responsive">
+                    <canvas id="overview_page_chart_4"></canvas>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="sample_page">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Sample</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12 col-lg-12">
+            <div class="card card-info card-outline">
+              <div class="card-header">
+                <h3 class="card-title">
+                  First Rows(10)
+                </h3>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  {{ sample }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="variables_page">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Variables</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12 col-lg-12">
+            <div class="card card-info card-outline">
+              <div class="card-header">
+                <h3 class="card-title">
+                  Distribution & Statistics
+                </h3>
+                <div class="card-tools">
+                  <div class="btn-group show">
+                    <button type="button" class="btn btn-tool" data-toggle="dropdown" aria-expanded="true">
+                      <i class="far fa-calendar-alt"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" role="menu">
+                      {{ variables_page_card_tools }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                {{ variables_page_card_body }}
+              </div>
+              <div class="card-footer bg-white p-0">
+                {{ variables_page_card_footer }}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="correlations_page">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-12">
+            <h1 class="m-0 text-dark">Data Correlations
+              <div style="float:right">
+                <button type="button" class="btn btn-info btn-xs" onclick="openPdf('correlation')">
+                   Click for details
+                </button>
+              </div>
+            </h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12 col-lg-12">
+            <div class="card card-outline card-info">
+              <div class="card-body">
+                <div class="table-responsive">
+                </div>
+              </div>
+              <div class="card-footer bg-white p-0">
+                {{ correlation_page_card_footer }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-wrapper" id="scatter_matrix_page">
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-12">
+            <h1 class="m-0 text-dark">Data Scatter Matrix
+              <div style="float:right">
+                <button type="button" class="btn btn-info btn-xs" onclick="openPdf('scatter_matrix')">
+                   Click for details
+                </button>
+              </div>
+            </h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-12 col-lg-12">
+            <div class="card card-outline card-info">
+              <div class="card-body">
+                <div class="table-responsive">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+  </footer>
+</div>
+<script type="text/javascript">
+  function plot_chart_of_chartjs(elementId,x_data,y_data,chart_type,chart_title) {
+    var chartCanvas = $('#'+elementId).get(0).getContext('2d');
+    var data = {
+      labels: x_data,
+      datasets: [
+        {
+          data: y_data,
+          backgroundColor: ['#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de',
+            '#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de',
+            '#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de',
+            '#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de',
+            '#f56954', '#00a65a', '#f39c12', '#00c0ef', '#3c8dbc', '#d2d6de'
+          ],
+        }
+      ]
+    };
+	canDisplay = false;
+	if(chart_title.indexOf('Distribution of')==0 && chart_type=='doughnut'){
+		canDisplay = true;
+	}
+    var options = {
+      title: {
+        display: (chart_title === '')?false:true,
+        text: chart_title
+      },
+      legend: {
+        display: canDisplay
+      }
+    };
+    var chart = new Chart(chartCanvas, {
+      type: chart_type,
+      data: data,
+      options: options
+    });
+  };
+
+  function switchContent(willOpenContentId) {
+    pageList.forEach(function (value, index, array) {
+      if (value != willOpenContentId) {
+        $('#'+value).hide();
+      }
+    });
+
+    if(willOpenContentId === 'scatter_matrix_page') {
+      if(display_scatter_matrix_count == 0) {
+        parent = $('#scatter_matrix_page div.table-responsive');
+        pdf_html = '<object data="' + scatter_matrix_content + '" type="application/pdf" width="100%" height="800px" name="scatter_matrix"></div>'
+        parent.html(pdf_html);
+        ++display_scatter_matrix_count;
+      }
+    }else if (willOpenContentId === 'correlations_page'){
+      if(display_correlation_count == 0) {
+        parent = $('#correlations_page div.table-responsive');
+        pdf_html = '<object data="' + correlation_content + '" type="application/pdf" width="100%" height="800px" name="correlation">></div>'
+        parent.html(pdf_html);
+        ++display_correlation_count;
+      }
+    }
+
+    $('#'+willOpenContentId).show();
+  };
+
+  function switchVariableContent(willOpenContentId) {
+    dataset_report_result_json['variables_page']['child_page_ids'].forEach(function (value, index, array) {
+      if (value != willOpenContentId) {
+        $('#'+value).hide();
+        $('#'+value+'_footer').hide();
+      }
+    });
+    $('#'+willOpenContentId).show();
+    $('#'+willOpenContentId+'_footer').show();
+  };
+</script>
+
+<script type="text/javascript">
+  function openPdf(pdfId) {
+    if(pdfId === 'scatter_matrix') {
+      window.open(scatter_matrix_content);
+    }else if (pdfId === 'correlation'){
+      window.open(correlation_content);
+    }
+  };
+</script>
+
+<script type="text/javascript">
+  const dataset_report_result_json = {{ dataset_report_json }}
+</script>
+
+<script type="text/javascript">
+  var display_scatter_matrix_count = 0;
+  const scatter_matrix_content = '{{ scatter_matrix_content }}'
+</script>
+
+<script type="text/javascript">
+  var display_correlation_count = 0;
+  const correlation_content = '{{ correlation_page_card_body }}'
+</script>
+
+<script type="text/javascript">
+  dataset_report_result_json['overview_page']['charts'].forEach(function (chart) {
+    plot_chart_of_chartjs(chart['element_id'],chart['x_data'],chart['y_data'],chart['type'],chart['title']);
+  });
+
+  dataset_report_result_json['variables_page']['variables'].forEach(function (variable_name) {
+    const variable = dataset_report_result_json['variables_page'][variable_name];
+    plot_chart_of_chartjs(variable['element_id'],variable['x_data'],variable['y_data'],variable['type'],variable['title'])
+  });
+
+  let pageList = ['overview_page','sample_page','variables_page','correlations_page','scatter_matrix_page'];
+  switchContent('overview_page')
+  switchVariableContent('variables_page_1');
+</script>
+
+</body>
+</html>

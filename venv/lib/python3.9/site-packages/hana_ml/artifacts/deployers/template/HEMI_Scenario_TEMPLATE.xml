@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<entry xml:base="https://ldai3er9.wdf.sap.corp:44300/sap/opu/odata/SAP/Z_PAL_PY_DEPLOY_TEST_SRV/" xmlns="http://www.w3.org/2005/Atom" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices">
+    <content type="application/xml">
+        <m:properties>
+            <d:SourceCode></d:SourceCode>
+            <d:ClassName></d:ClassName>
+            <d:ScenarioName></d:ScenarioName>
+            <d:ScenarioType></d:ScenarioType>
+            <d:ScenarioDescription></d:ScenarioDescription>
+            <d:Catalogid></d:Catalogid>
+            <d:ModelDescription></d:ModelDescription>
+            <d:ClassDescription></d:ClassDescription>
+            <d:ModelName></d:ModelName>
+        </m:properties>
+    </content>
+</entry>
