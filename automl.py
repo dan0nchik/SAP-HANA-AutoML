@@ -1,5 +1,6 @@
 from hana_ml.dataframe import ConnectionContext
 from numpy import ndarray
+from preprocess.preprocessor import Preprocessor
 from utils.connection import connection_context
 from pipeline.data import Data
 from pipeline.input import Input
@@ -7,6 +8,7 @@ from pipeline.pipeline import Pipeline
 from hana_ml import DataFrame, dataframe
 import hana_ml
 import pandas as pd
+from hana_ml.algorithms.apl.classification import AutoClassifier
 
 
 class AutoML:
@@ -25,13 +27,14 @@ class AutoML:
         optimizer: str = "BayesianOptimizer",
         config=None,
     ):
-        inputted = Input(df, target, file_path, url, config)
-        df_after_input = inputted.handle_data()
-        hana_df = dataframe.create_dataframe_from_pandas(
+        inputted = Input(df, target, file_path, url).handle_data()
+        hana_df = hana_ml.dataframe.create_dataframe_from_pandas(
             connection_context=connection_context,
-            pandas_df=df_after_input,
-            table_name="test1",
+            pandas_df=inputted,
+            table_name="FROMURL",
+            force=True,
             replace=True,
+            drop_exist_tab=True,
         )
         print(hana_df.columns)
 

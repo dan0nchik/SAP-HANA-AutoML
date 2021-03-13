@@ -10,3 +10,5 @@ optuna
 scikit-learn==0.22.1
 hana-ml
 black
+hydra-core
+omegaconf
