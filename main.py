@@ -3,12 +3,9 @@ import hydra
 from omegaconf import DictConfig, OmegaConf
 
 
-@hydra.main(config_path="config", config_name="run")
-def main(cfg: DictConfig):
-    print(cfg)
-    config = OmegaConf.create(cfg)
+def main():
     m = AutoML()
-    m.fit(url=config.internet.url)
+    m.fit(file_path="data/cleaned_train.csv")
 
 
 if __name__ == "__main__":

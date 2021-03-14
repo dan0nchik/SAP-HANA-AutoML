@@ -43,7 +43,7 @@ class Input:
 
 
 def file_type(file: str) -> str:
-    return os.path.splitext(file)[0]
+    return os.path.splitext(file)[1]
 
 
 def get_url_file_type(url: str) -> str:

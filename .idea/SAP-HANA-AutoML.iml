@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-22-34" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-23-25" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-24-06" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-24-36" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-25-17" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-25-42" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-25-57" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-26-13" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-27-39" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-29-38" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-30-19" />
+      <excludeFolder url="file://$MODULE_DIR$/outputs/2021-03-13/22-31-38" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="PLAIN" />
+    <option name="myDocStringFormat" value="Plain" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="pytest" />
+  </component>
+</module>

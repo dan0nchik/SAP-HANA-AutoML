@@ -1,5 +1,5 @@
 from hana_ml.dataframe import ConnectionContext
-from numpy import ndarray
+from numpy import mod, ndarray
 from preprocess.preprocessor import Preprocessor
 from utils.connection import connection_context
 from pipeline.data import Data
@@ -28,6 +28,7 @@ class AutoML:
         config=None,
     ):
         inputted = Input(df, target, file_path, url).handle_data()
+        print(inputted)
         hana_df = hana_ml.dataframe.create_dataframe_from_pandas(
             connection_context=connection_context,
             pandas_df=inputted,
@@ -36,6 +37,12 @@ class AutoML:
             replace=True,
             drop_exist_tab=True,
         )
+        # model = AutoClassifier(conn_context=connection_context, variable_auto_selection=True)
+        # model.fit(
+        #     hana_df,
+        #     label="Survived",
+        #     key='Unnamed: 0'
+        # )
         print(hana_df.columns)
 
     def optimizer(self):
