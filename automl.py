@@ -1,3 +1,4 @@
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 from hana_ml.dataframe import ConnectionContext
 from numpy import mod, ndarray
 from preprocess.preprocessor import Preprocessor
@@ -8,7 +9,9 @@ from pipeline.pipeline import Pipeline
 from hana_ml import DataFrame, dataframe
 import hana_ml
 import pandas as pd
+from hana_ml.algorithms.pal.linear_model import  LogisticRegression
 from hana_ml.algorithms.apl.classification import AutoClassifier
+from hana_ml.algorithms.pal.neighbors import KNNClassifier
 
 
 class AutoML:
@@ -16,16 +19,16 @@ class AutoML:
         self.opt = None
 
     def fit(
-        self,
-        df: pd.DataFrame = None,
-        steps: int = 10,
-        target: str = None,
-        file_path: str = None,
-        url: str = None,
-        columns_to_remove: list = None,
-        categorical_features: list = None,
-        optimizer: str = "BayesianOptimizer",
-        config=None,
+            self,
+            df: pd.DataFrame = None,
+            steps: int = 10,
+            target: str = None,
+            file_path: str = None,
+            url: str = None,
+            columns_to_remove: list = None,
+            categorical_features: list = None,
+            optimizer: str = "BayesianOptimizer",
+            config=None,
     ):
         inputted = Input(df, target, file_path, url).handle_data()
         print(inputted)
@@ -37,13 +40,16 @@ class AutoML:
             replace=True,
             drop_exist_tab=True,
         )
-        # model = AutoClassifier(conn_context=connection_context, variable_auto_selection=True)
-        # model.fit(
-        #     hana_df,
-        #     label="Survived",
-        #     key='Unnamed: 0'
-        # )
         print(hana_df.columns)
+        lr = LogisticRegression(solver='newton',
+
+                                                                    thread_ratio=0.1, max_iter=1000,
+
+                                                                    pmml_export='single-row',
+
+                                                                    stat_inf=True, tol=0.000001)
+        lr.fit(hana_df,label='Survived')
+        print('fitted')
 
     def optimizer(self):
         return self.opt
