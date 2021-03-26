@@ -5,7 +5,7 @@ from omegaconf import DictConfig, OmegaConf
 
 def main():
     m = AutoML()
-    m.fit(file_path="data/cleaned_train.csv")
+    m.fit(file_path="data/train.csv")
 
 
 if __name__ == "__main__":

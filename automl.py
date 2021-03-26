@@ -9,7 +9,7 @@ from pipeline.pipeline import Pipeline
 from hana_ml import DataFrame, dataframe
 import hana_ml
 import pandas as pd
-from hana_ml.algorithms.pal.linear_model import  LogisticRegression
+from hana_ml.algorithms.pal.linear_model import LogisticRegression
 from hana_ml.algorithms.apl.classification import AutoClassifier
 from hana_ml.algorithms.pal.neighbors import KNNClassifier
 
@@ -30,26 +30,9 @@ class AutoML:
             optimizer: str = "BayesianOptimizer",
             config=None,
     ):
-        inputted = Input(df, target, file_path, url).handle_data()
-        print(inputted)
-        hana_df = hana_ml.dataframe.create_dataframe_from_pandas(
-            connection_context=connection_context,
-            pandas_df=inputted,
-            table_name="FROMURL",
-            force=True,
-            replace=True,
-            drop_exist_tab=True,
-        )
-        print(hana_df.columns)
-        lr = LogisticRegression(solver='newton',
-
-                                                                    thread_ratio=0.1, max_iter=1000,
-
-                                                                    pmml_export='single-row',
-
-                                                                    stat_inf=True, tol=0.000001)
-        lr.fit(hana_df,label='Survived')
-        print('fitted')
+        inputted = Input(df, target, file_path, url)
+        inputted.load_data()
+        data = inputted.split_data()
 
     def optimizer(self):
         return self.opt

@@ -9,6 +9,5 @@ pandas
 optuna
 scikit-learn
 hana-ml
-black
 hydra-core
 omegaconf
