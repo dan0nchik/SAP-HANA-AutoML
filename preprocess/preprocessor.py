@@ -5,8 +5,6 @@ from sklearn.preprocessing import LabelEncoder
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
 from algorithms.classification.logregression import LogRegression
-from algorithms.classification.randomforest import RandomForest
-from algorithms.classification.sgdcls import SGD
 from algorithms.regression.decisiontreereg import DecisionTreeReg
 from algorithms.regression.kneighbors import KNeighborsReg
 from algorithms.regression.ridge import RidgeRegression

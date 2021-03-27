@@ -1,5 +1,6 @@
+from hana_ml.algorithms.pal.neighbors import KNNClassifier
+
 from algorithms.base_algo import BaseAlgorithm
-from sklearn.neighbors import KNeighborsClassifier
 
 
 class KNeighbors(BaseAlgorithm):
@@ -7,26 +8,26 @@ class KNeighbors(BaseAlgorithm):
         super(KNeighbors, self).__init__()
         self.title = "KNeighborsClassifier"
         self.params_range = {
-            "n_neighbors": (5, 200),
-            "weights": (0, 1),
-            "algorithm": (0, 2),
-            "leaf_size": (30, 400),
+            "algorithm": (0, 1),
+            "n_neighbors": (5, 100),
+            "voting_type": (0, 1),
+            "metric": (0, 4),
         }
-        self.model = KNeighborsClassifier()
+        self.model = KNNClassifier()
 
     def set_params(self, **params):
-        params["weights"] = ["uniform", "distance"][round(params["weights"])]
-        params["algorithm"] = ["ball_tree", "kd_tree", "brute"][round(params["algorithm"])]
+        params["voting_type"] = ['majority', 'distance-weighted'][round(params["voting_type"])]
+        params["metric"] = ['manhattan', 'euclidean', 'minkowski', 'chebyshev', 'cosine'][round(params["metric"])]
         params["n_neighbors"] = round(params["n_neighbors"])
-        params["leaf_size"] = round(params["leaf_size"])
+        params["algorithm"] = ['brute-force', 'kd-tree'][round(params["algorithm"])]
         self.model.set_params(**params)
 
     def optunatune(self, trial):
-        n_neighbors = trial.suggest_int("KNeighbors_n_neighbors", 5, 200, log=True)
-        leaf_size = trial.suggest_int("KNeighbors_leaf_size", 30, 400, log=True)
-        weights = trial.suggest_categorical("KNeighbors_weights", ["uniform", "distance"])
-        algorithm = trial.suggest_categorical("KNeighbors_algorithm", ["ball_tree", "kd_tree", "brute"])
-        model = KNeighborsClassifier(
-            n_neighbors=n_neighbors, leaf_size=leaf_size, weights=weights, algorithm=algorithm
+        n_neighbors = trial.suggest_int("CLS_KNeighbors_n_neighbors", 5, 100, log=True)
+        algorithm = trial.suggest_int("CLS_KNeighbors_algorithm", ['majority', 'distance-weighted'])
+        voting_type = trial.suggest_categorical("CLS_KNeighbors_voting_type", ['majority', 'distance-weighted'])
+        metric = trial.suggest_categorical("CLS_KNeighbors_metric", ['manhattan', 'euclidean', 'minkowski', 'chebyshev','cosine'])
+        model = KNNClassifier(
+            n_neighbors=n_neighbors, algorithm=algorithm, voting_type=voting_type, metric=metric
         )
         return model
