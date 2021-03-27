@@ -1,5 +1,6 @@
+from hana_ml.algorithms.pal.trees import DecisionTreeRegressor
+
 from algorithms.base_algo import BaseAlgorithm
-from sklearn.tree import DecisionTreeRegressor
 
 
 class DecisionTreeReg(BaseAlgorithm):
@@ -7,31 +8,26 @@ class DecisionTreeReg(BaseAlgorithm):
         super(DecisionTreeReg, self).__init__()
         self.title = "DecisionTreeRegressor"
         self.params_range = {
-            "max_depth": (1, 20),
-            "max_leaf_nodes": (2, 100),
-            "criterion": (0, 3),
-            "splitter": (0, 1),
-            "max_features": (0, 2)
-
+            "max_depth": (2, 100),
+            "min_records_of_leaf": (1, 100),
+            "min_records_of_parent": (2, 100)
         }
         self.model = DecisionTreeRegressor()
 
     def set_params(self, **params):
-        params["max_leaf_nodes"] = round(params["max_leaf_nodes"])
+        params["algorithm"] = 'cart'
+        params["min_records_of_leaf"] = round(params["min_records_of_leaf"])
+        params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
-        params["criterion"] = ["mse", "friedman_mse", "mae", "poisson"][round(params["criterion"])]
-        params["splitter"] = ["best", "random"][round(params["splitter"])]
-        params["max_features"] = ["auto", "sqrt", "log2"][round(params["max_features"])]
         self.model.set_params(**params)
 
     def optunatune(self, trial):
-        max_depth = trial.suggest_int("DTReg_max_depth", 1, 20, log=True)
-        max_leaf_nodes = trial.suggest_int("DTReg_max_leaf_nodes", 2, 100, log=True)
-        criterion = trial.suggest_categorical("DTReg_criterion", ["mse", "friedman_mse", "mae", "poisson"])
-        splitter = trial.suggest_categorical("DTReg_splitter", ["best", "random"])
-        max_features = trial.suggest_categorical("DTReg_max_features", ["auto", "sqrt", "log2"])
-        model = DecisionTreeRegressor(
-            max_depth=max_depth, max_leaf_nodes=max_leaf_nodes, criterion=criterion,
-            splitter=splitter, max_features=max_features
-        )
+        algorithm = 'cart'
+        max_depth = trial.suggest_int("DTR_max_depth", 2, 100, log=True)
+        min_records_of_leaf = trial.suggest_int("DTR_min_records_of_leaf", 2, 100, log=True)
+        min_records_of_parent = trial.suggest_int("DTR_min_records_of_parent", 2, 100, log=True)
+        model = DecisionTreeRegressor(algorithm=algorithm, max_depth=max_depth,
+                                      min_records_of_leaf=min_records_of_leaf,
+                                      min_records_of_parent=min_records_of_parent
+                                      )
         return model

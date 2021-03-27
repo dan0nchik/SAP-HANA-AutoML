@@ -6,14 +6,11 @@ from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
 from algorithms.classification.logregression import LogRegression
 from algorithms.regression.decisiontreereg import DecisionTreeReg
-from algorithms.regression.kneighbors import KNeighborsReg
-from algorithms.regression.ridge import RidgeRegression
-from algorithms.regression.sgdreg import SGDRegression
+from algorithms.regression.kneighborsreg import KNeighborsReg
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 from pipeline.data import Data
-from algorithms.regression.svr import SVRRegression
-from algorithms.regression.lassoreg import LassoReg
+
 
 
 class Preprocessor:

@@ -21,7 +21,7 @@ class LogRegression(BaseAlgorithm):
         self.model.set_params(**params)
 
     def optunatune(self, trial):
-        solver = trial.suggest_float("solver", ['auto', 'lbfgs', 'cyclical'])
+        solver = trial.suggest_categorical("solver", ['auto', 'lbfgs', 'cyclical'])
         max_iter = trial.suggest_int("LGReg_max_iter", 100, 1000, log=True)
         model = LogisticRegression(solver=solver, max_iter=max_iter, multi_class=True)
         return model

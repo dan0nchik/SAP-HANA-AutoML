@@ -24,7 +24,7 @@ class KNeighbors(BaseAlgorithm):
 
     def optunatune(self, trial):
         n_neighbors = trial.suggest_int("CLS_KNeighbors_n_neighbors", 5, 100, log=True)
-        algorithm = trial.suggest_int("CLS_KNeighbors_algorithm", ['majority', 'distance-weighted'])
+        algorithm = trial.suggest_categorical("CLS_KNeighbors_algorithm", ['brute-force', 'kd-tree'])
         voting_type = trial.suggest_categorical("CLS_KNeighbors_voting_type", ['majority', 'distance-weighted'])
         metric = trial.suggest_categorical("CLS_KNeighbors_metric", ['manhattan', 'euclidean', 'minkowski', 'chebyshev','cosine'])
         model = KNNClassifier(
