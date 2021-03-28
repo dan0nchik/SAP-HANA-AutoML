@@ -1,0 +1,7 @@
+{
+    "git.ignoreLimitWarning": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "python.pythonPath": "/home/danonchik/dev/SAP-HANA-AutoML/venv/bin/python3.9"
+}
