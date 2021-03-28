@@ -45,8 +45,8 @@ class OptunaOptimizer(BaseOptimizer):
         model = algo.optunatune(trial)
         model.fit(self.data.train, features=ftr, label=self.problem, categorical_variable=self.categorical_features)
         val = self.data.test.distinct(self.problem)
-        self.data.test.drop(self.problem)
-        res, stats = model.predict(self.data.test, categorical_variable=self.categorical_features)
+        train = self.data.test.drop(self.problem)
+        res, stats = model.predict(train, categorical_variable=self.categorical_features)
         val.union(res)
         return accuracy_score(val, label_pred='Target', label_true=self.problem)
 

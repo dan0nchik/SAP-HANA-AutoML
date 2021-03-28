@@ -35,8 +35,12 @@ class AutoML:
         inputted = Input(df, target, file_path, url, table_name)
         inputted.load_data()
         data = inputted.split_data()
-        print(data.train.columns)
-        print(data.train.count())
+        data.drop(droplist_columns=columns_to_remove)
+        pipe = Pipeline(data, steps)
+        self.opt = pipe.train(
+            categorical_features=categorical_features,
+            optimizer=optimizer,
+        )
 
     def optimizer(self):
         return self.opt

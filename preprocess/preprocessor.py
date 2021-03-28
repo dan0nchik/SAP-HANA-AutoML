@@ -10,14 +10,13 @@ from algorithms.regression.glmreg import GLMRegression
 from algorithms.regression.kneighborsreg import KNeighborsReg
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
-from pipeline.data import Data
 
 
 
 class Preprocessor:
     def clean(
         self,
-        data: Data = None,
+        data = None,
         droplist_columns=None,
         categorical_list=None,
         predict_column_importance=True,
@@ -115,14 +114,11 @@ class Preprocessor:
                     raise PreprocessError("Encoder type not found!")
         return df
 
-    def removecolumns(self, columns, df: pd.DataFrame):
+    def removecolumns(self, columns: list, df):
         if df is None:
             raise PreprocessError("Enter not null data!")
         if columns is not None:
-            if isinstance(columns, list):
-                df = df.drop(columns, axis=1)
-            else:
-                df = df.drop([columns], axis=1)
+            df = df.drop(columns)
         return df
 
     def autoremovecolumns(self, df):
@@ -134,33 +130,34 @@ class Preprocessor:
                 df = df.drop([cl], axis=1)
         return df
 
-    def set_task(self, y, algo_exceptions=None):
+    def set_task(self, data, target, algo_exceptions=None):
         if algo_exceptions is None:
             algo_exceptions = []
-        for column in y:
-            if y[column].nunique() == 2 or y[column].nunique() < 10:
-                clslist = [DecisionTreeCls(), LogRegression(), SGD(), KNeighbors(), RandomForest()]
-                clsdict = {"DecisionTree": DecisionTreeCls(), "Logistic Regression": LogRegression(), "SGD": SGD(), "KNeighbors": KNeighbors(), "RandomForest": RandomForest()}
-                if "DecisionTree" in algo_exceptions:
-                    clslist.remove(DecisionTreeCls())
-                    clsdict.pop("DecisionTree")
-                if "Logistic Regression" in algo_exceptions:
-                    clslist.remove(LogRegression())
-                    clsdict.pop("Logistic Regression")
-                if "KNeighbors" in algo_exceptions:
-                    clslist.remove(KNeighbors())
-                    clsdict.pop("KNeighbors")
-                return clslist, 'cls', clsdict
-            else:
-                reglist = [DecisionTreeReg(), GLMRegression(), KNeighborsReg()]
-                regdict = {"DecisionTreeReg": DecisionTreeReg(), "GLMRegression": GLMRegression(), "KNRegressor": KNeighborsReg()}
-                if "DecisionTreeReg" in algo_exceptions:
-                    reglist.remove(DecisionTreeReg())
-                    regdict.pop("DecisionTreeReg")
-                if "GLMRegression" in algo_exceptions:
-                    reglist.remove(GLMRegression())
-                    regdict.pop("GLMRegression")
-                if "KNNRegressor" in algo_exceptions:
-                    reglist.remove(KNeighborsReg())
-                    regdict.pop("KNRegressor")
-                return reglist, 'reg', regdict
+        if data.train.distinct(target).count() < 10:
+            clslist = [DecisionTreeCls(), LogRegression(), KNeighbors()]
+            clsdict = {"DecisionTree": DecisionTreeCls(), "Logistic Regression": LogRegression(),
+                       "KNeighbors": KNeighbors()}
+            if "DecisionTree" in algo_exceptions:
+                clslist.remove(DecisionTreeCls())
+                clsdict.pop("DecisionTree")
+            if "Logistic Regression" in algo_exceptions:
+                clslist.remove(LogRegression())
+                clsdict.pop("Logistic Regression")
+            if "KNeighbors" in algo_exceptions:
+                clslist.remove(KNeighbors())
+                clsdict.pop("KNeighbors")
+            return clslist, 'cls', clsdict
+        else:
+            reglist = [DecisionTreeReg(), GLMRegression(), KNeighborsReg()]
+            regdict = {"DecisionTreeReg": DecisionTreeReg(), "GLMRegression": GLMRegression(),
+                       "KNRegressor": KNeighborsReg()}
+            if "DecisionTreeReg" in algo_exceptions:
+                reglist.remove(DecisionTreeReg())
+                regdict.pop("DecisionTreeReg")
+            if "GLMRegression" in algo_exceptions:
+                reglist.remove(GLMRegression())
+                regdict.pop("GLMRegression")
+            if "KNNRegressor" in algo_exceptions:
+                reglist.remove(KNeighborsReg())
+                regdict.pop("KNRegressor")
+            return reglist, 'reg', regdict

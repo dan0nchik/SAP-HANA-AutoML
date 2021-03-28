@@ -45,7 +45,7 @@ class Input:
 
     def split_data(self) -> Data:
         train, test, valid = train_test_val_split(data=self.hana_df)
-        return Data(train, test, valid)
+        return Data(train, test, valid, self.target)
 
     def load_from_url(self, url):
         if url == "":
