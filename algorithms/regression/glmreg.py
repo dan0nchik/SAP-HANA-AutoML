@@ -8,19 +8,19 @@ class GLMRegression(BaseAlgorithm):
         super(GLMRegression, self).__init__()
         self.title = "GLMRegression"
         self.params_range = {
-            "family": (0, 7)
+            "family": (0, 2)
         }
         self.model = GLM()
 
     def set_params(self, **params):
-        params["family"] = \
-        ['gaussian', 'normal', 'poisson', 'binomial', 'gamma', 'inversegaussian', 'negativebinomial', 'ordinal'][
+        params["family"] = ['gaussian', 'normal', 'poisson'][
             round(params["family"])]
-        self.model = GLM(**params)
+        self.model.set_params(**params)
 
     def optunatune(self, trial):
+        #TODO: additional hp
         family = trial.suggest_categorical("family",
-                                           ['gaussian', 'normal', 'poisson', 'binomial', 'gamma', 'inversegaussian',
-                                            'negativebinomial', 'ordinal'])
+                                           ['gaussian', 'normal', 'poisson'])
+        print(family)
         model = GLM(family=family)
         return model

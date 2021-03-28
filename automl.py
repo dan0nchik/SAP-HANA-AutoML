@@ -36,7 +36,8 @@ class AutoML:
         inputted = Input(df=df, target=target, file_path=file_path, url=url, table_name=table_name, id_col=id_column)
         inputted.load_data()
         data = inputted.split_data()
-        data.drop(droplist_columns=columns_to_remove)
+        if columns_to_remove is not None:
+            data.drop(droplist_columns=columns_to_remove)
         pipe = Pipeline(data, steps)
         self.opt = pipe.train(
             categorical_features=categorical_features,

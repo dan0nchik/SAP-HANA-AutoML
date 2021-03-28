@@ -80,9 +80,8 @@ class Preprocessor:
                 clsdict.pop("KNeighbors")
             return clslist, 'cls', clsdict
         else:
-            reglist = [DecisionTreeReg(), GLMRegression(), KNeighborsReg()]
-            regdict = {"DecisionTreeReg": DecisionTreeReg(), "GLMRegression": GLMRegression(),
-                       "KNRegressor": KNeighborsReg()}
+            reglist = [ GLMRegression()]
+            regdict = {"GLMRegression": GLMRegression()}
             if "DecisionTreeReg" in algo_exceptions:
                 reglist.remove(DecisionTreeReg())
                 regdict.pop("DecisionTreeReg")
