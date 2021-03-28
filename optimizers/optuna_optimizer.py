@@ -1,3 +1,5 @@
+from hana_ml.algorithms.pal.metrics import accuracy_score
+
 from preprocess.impsettings import ImputerSettings
 import copy
 from preprocess.preprocessor import Preprocessor
@@ -32,38 +34,21 @@ class OptunaOptimizer(BaseOptimizer):
 
     def objective(self, trial):
         algo = self.algo_dict.get(trial.suggest_categorical("algo", self.algo_dict.keys()))
-        encoder_method = "LabelEncoder"
         pr = Preprocessor()
-        if self.categorical_features is not None:
-            catencoder = trial.suggest_categorical(
-                "catencoder", ["LabelEncoder", "OneHotEncoder"]
-            )
-            if catencoder == "LabelEncoder":
-                encoder_method = "LabelEncoder"
-            elif catencoder == "OneHotEncoder":
-                encoder_method = "OneHotEncoder"
-        numimputer = trial.suggest_categorical(
-            "numimputer", ["mean", "most_frequent", "median"]
-        )
-        stringimputer = trial.suggest_categorical(
-            "stringimputer", ["most_frequent", "constant"]
-        )
-        boolimputer = trial.suggest_categorical("boolimputer", ["most_frequent"])
         data2 = pr.clean(
             data=copy.deepcopy(self.data),
             categorical_list=self.categorical_features,
-            encoder_method=encoder_method,
-            droplist_columns=self.droplist_columns,
-            numimpset=ImputerSettings(strategy=numimputer),
-            stringimpset=ImputerSettings(basicvars="string", strategy=stringimputer),
-            boolimpset=ImputerSettings(basicvars="bool", strategy=boolimputer),
+            droplist_columns=self.droplist_columns
         )
+        ftr: list = self.data.train.columns
+        ftr.remove(self.problem)
         model = algo.optunatune(trial)
-        score = cross_val_score(
-            model, data2.X_train, data2.y_train.values.ravel(), n_jobs=-1, cv=3
-        )
-        accuracy = score.mean()
-        return accuracy
+        model.fit(self.data.train, features=ftr, label=self.problem, categorical_variable=self.categorical_features)
+        val = self.data.test.distinct(self.problem)
+        self.data.test.drop(self.problem)
+        res, stats = model.predict(self.data.test, categorical_variable=self.categorical_features)
+        val.union(res)
+        return accuracy_score(val, label_pred='Target', label_true=self.problem)
 
     def get_tuned_params(self):
         print(

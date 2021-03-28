@@ -1,5 +1,5 @@
 from hana_ml import ConnectionContext
-from .credentials import port, host, user, password
+from utils.credentials import port, host, user, password
 
 params = {'DATABASENAME': "HXE"}
 

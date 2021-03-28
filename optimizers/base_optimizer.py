@@ -1,18 +1,3 @@
-from bayes_opt.bayesian_optimization import BayesianOptimization
-import copy
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeClassifier
-
-from pipeline.validator import Validate
-from pipeline.fit import Fit
-from preprocess.preprocessor import Preprocessor
-from algorithms import base_algo
-from pipeline.data import Data
-import pandas as pd
-import numpy as np
-import copy
 from abc import ABC, abstractmethod
 
 

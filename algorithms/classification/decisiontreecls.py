@@ -20,7 +20,7 @@ class DecisionTreeCls(BaseAlgorithm):
         params["min_records_of_leaf"] = round(params["min_records_of_leaf"])
         params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
-        self.model.set_params(**params)
+        self.model = DecisionTreeClassifier(**params)
 
     def optunatune(self, trial):
         algorithm = trial.suggest_categorical("DTC_algorithm", ['c45', 'chaid', 'cart'])

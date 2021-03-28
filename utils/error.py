@@ -8,3 +8,7 @@ class PreprocessError(Exception):
 
 class OptimizerError(Exception):
     pass
+
+
+class PipelineError(Exception):
+    pass

@@ -20,7 +20,7 @@ class KNeighbors(BaseAlgorithm):
         params["metric"] = ['manhattan', 'euclidean', 'minkowski', 'chebyshev', 'cosine'][round(params["metric"])]
         params["n_neighbors"] = round(params["n_neighbors"])
         params["algorithm"] = ['brute-force', 'kd-tree'][round(params["algorithm"])]
-        self.model.set_params(**params)
+        self.model = KNNClassifier(**params)
 
     def optunatune(self, trial):
         n_neighbors = trial.suggest_int("CLS_KNeighbors_n_neighbors", 5, 100, log=True)

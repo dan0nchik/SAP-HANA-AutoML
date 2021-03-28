@@ -1,14 +1,11 @@
-from bayes_opt.bayesian_optimization import BayesianOptimization
-from pipeline.validator import Validate
-from pipeline.fit import Fit
-from preprocess.preprocessor import Preprocessor
-from algorithms import base_algo
-from pipeline.data import Data
-import pandas as pd
-import numpy as np
 import copy
 
+from bayes_opt.bayesian_optimization import BayesianOptimization
+
 from optimizers.base_optimizer import BaseOptimizer
+from pipeline.fit import Fit
+from pipeline.validator import Validate
+from preprocess.preprocessor import Preprocessor
 
 
 class BayesianOptimizer(BaseOptimizer):

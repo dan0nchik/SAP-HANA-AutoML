@@ -1,17 +1,7 @@
-from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
-from hana_ml.dataframe import ConnectionContext
-from numpy import mod, ndarray
-from preprocess.preprocessor import Preprocessor
-from utils.connection import connection_context
-from pipeline.data import Data
+import pandas as pd
+
 from pipeline.input import Input
 from pipeline.pipeline import Pipeline
-from hana_ml import DataFrame, dataframe
-import hana_ml
-import pandas as pd
-from hana_ml.algorithms.pal.linear_model import LogisticRegression
-from hana_ml.algorithms.apl.classification import AutoClassifier
-from hana_ml.algorithms.pal.neighbors import KNNClassifier
 
 
 class AutoML:
@@ -30,9 +20,16 @@ class AutoML:
             optimizer: str = "BayesianOptimizer",
             config=None,
     ):
+
         inputted = Input(df, target, file_path, url)
         inputted.load_data()
         data = inputted.split_data()
+        pipe = Pipeline(data, steps)
+        self.opt = pipe.train(
+            columns_to_remove=columns_to_remove,
+            categorical_features=categorical_features,
+            optimizer=optimizer,
+        )
 
     def optimizer(self):
         return self.opt

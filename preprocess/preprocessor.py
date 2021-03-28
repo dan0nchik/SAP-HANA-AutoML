@@ -6,6 +6,7 @@ from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
 from algorithms.classification.logregression import LogRegression
 from algorithms.regression.decisiontreereg import DecisionTreeReg
+from algorithms.regression.glmreg import GLMRegression
 from algorithms.regression.kneighborsreg import KNeighborsReg
 from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
@@ -146,37 +147,20 @@ class Preprocessor:
                 if "Logistic Regression" in algo_exceptions:
                     clslist.remove(LogRegression())
                     clsdict.pop("Logistic Regression")
-                if "SGD" in algo_exceptions:
-                    clslist.remove(SGD())
-                    clsdict.pop("SGD")
                 if "KNeighbors" in algo_exceptions:
                     clslist.remove(KNeighbors())
                     clsdict.pop("KNeighbors")
-                if "RandomForest" in algo_exceptions:
-                    clslist.remove(RandomForest())
-                    clsdict.pop("RandomForest")
                 return clslist, 'cls', clsdict
             else:
-                reglist = [RidgeRegression(), LassoReg(), SGDRegression(), KNeighborsReg()]
-                regdict = {"RidgeRegression": RidgeRegression(), "LassoReg": LassoReg(), "SVRRegression": SVRRegression(),
-                           "SGDRegressor": SGDRegression(), "KNeighborsRegressor": KNeighborsReg(),
-                           "DecisionTreeRegressor": DecisionTreeReg()}
-                if "RidgeRegression" in algo_exceptions:
-                    reglist.remove(RidgeRegression())
-                    regdict.pop("RidgeRegression")
-                if "LassoReg" in algo_exceptions:
-                    reglist.remove(LassoReg())
-                    regdict.pop("LassoReg")
-                if "SVRRegression" in algo_exceptions:
-                    reglist.remove(SVRRegression())
-                    regdict.pop("Logistic Regression")
-                if "SGDRegressor" in algo_exceptions:
-                    reglist.remove(SGDRegression())
-                    regdict.pop("SGDRegressor")
-                if "KNeighborsRegressor" in algo_exceptions:
-                    reglist.remove(SGDRegression())
-                    regdict.pop("KNeighborsRegressor")
-                if "DecisionTreeRegressor" in algo_exceptions:
+                reglist = [DecisionTreeReg(), GLMRegression(), KNeighborsReg()]
+                regdict = {"DecisionTreeReg": DecisionTreeReg(), "GLMRegression": GLMRegression(), "KNRegressor": KNeighborsReg()}
+                if "DecisionTreeReg" in algo_exceptions:
                     reglist.remove(DecisionTreeReg())
-                    regdict.pop("DecisionTreeRegressor")
+                    regdict.pop("DecisionTreeReg")
+                if "GLMRegression" in algo_exceptions:
+                    reglist.remove(GLMRegression())
+                    regdict.pop("GLMRegression")
+                if "KNNRegressor" in algo_exceptions:
+                    reglist.remove(KNeighborsReg())
+                    regdict.pop("KNRegressor")
                 return reglist, 'reg', regdict

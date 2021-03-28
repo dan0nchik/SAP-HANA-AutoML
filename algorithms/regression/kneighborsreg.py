@@ -20,7 +20,7 @@ class KNeighborsReg(BaseAlgorithm):
         params["metric"] = ['manhattan', 'euclidean', 'minkowski', 'chebyshev'][round(params["metric"])]
         params["n_neighbors"] = round(params["n_neighbors"])
         params["algorithm"] = ['brute-force', 'kd-tree'][round(params["algorithm"])]
-        self.model.set_params(**params)
+        self.model = KNNRegressor(**params)
 
     def optunatune(self, trial):
         aggregate_type = trial.suggest_categorical("REG_KNeighbors_aggregate_type", ['average', 'distance-weighted'])
