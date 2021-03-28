@@ -8,7 +8,7 @@ class DecisionTreeReg(BaseAlgorithm):
         super(DecisionTreeReg, self).__init__()
         self.title = "DecisionTreeRegressor"
         self.params_range = {
-            "max_depth": (2, 100),
+            "max_depth": (2, 50),
             "min_records_of_leaf": (1, 100),
             "min_records_of_parent": (2, 100)
         }

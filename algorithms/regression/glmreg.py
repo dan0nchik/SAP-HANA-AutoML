@@ -15,7 +15,7 @@ class GLMRegression(BaseAlgorithm):
     def set_params(self, **params):
         params["family"] = ['gaussian', 'normal', 'poisson'][
             round(params["family"])]
-        self.model.set_params(**params)
+        self.model = GLM(**params)
 
     def optunatune(self, trial):
         #TODO: additional hp

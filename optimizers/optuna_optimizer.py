@@ -37,22 +37,15 @@ class OptunaOptimizer(BaseOptimizer):
         imputer = trial.suggest_categorical(
             "imputer", ['mean', 'median', 'zero']
         )
-        print(self.data.train.hasna())
-        if not self.data.train.hasna() or not self.data.test.hasna() or not self.data.train.hasna():
-            data = self.data.clear(num_strategy=imputer, cat_strategy=None, dropempty=False,
-                                   categorical_list=None
-                                   )
-        else:
-            data = copy.deepcopy(self.data)
+        data = self.data.clear(num_strategy=imputer, cat_strategy=None, dropempty=False,
+                               categorical_list=None
+                               )
+        model = algo.optunatune(trial)
         ftr: list = data.train.columns
         ftr.remove(data.target)
         ftr.remove(data.id_colm)
-        model = algo.optunatune(trial)
         model.fit(data.train, key=data.id_colm, features=ftr, label=data.target,
                   categorical_variable=self.categorical_features)
-        val = data.test.select(data.target)
-        train = data.test.drop(data.target)
-        res = model.predict(train, key=data.id_colm)
         return model.score(data.valid, key=data.id_colm, label=data.target)
 
     def get_tuned_params(self):
