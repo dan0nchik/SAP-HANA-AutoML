@@ -1,6 +1,5 @@
 import io
 import os
-from sklearn.model_selection import train_test_split
 import pandas as pd
 import requests
 import hana_ml

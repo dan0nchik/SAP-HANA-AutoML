@@ -2,7 +2,6 @@ import pytest
 from pipeline.input import Input
 import pandas as pd
 from pipeline.data import Data
-from sklearn.model_selection import train_test_split
 
 
 def test_url():

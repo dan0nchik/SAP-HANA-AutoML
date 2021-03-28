@@ -5,7 +5,6 @@ import copy
 from preprocess.preprocessor import Preprocessor
 from optimizers.base_optimizer import BaseOptimizer
 import optuna
-from sklearn.model_selection import cross_val_score
 
 
 class OptunaOptimizer(BaseOptimizer):

@@ -7,7 +7,6 @@ requests
 pytest
 pandas
 optuna
-scikit-learn
 hana-ml
 hydra-core
 omegaconf

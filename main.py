@@ -12,7 +12,7 @@ def main():
         id_column="PassengerId",
         columns_to_remove=["Name", "Cabin"],
         categorical_features=["Survived"],
-        optimizer="OptunaSearch"
+
     )
     '''
     m.fit(

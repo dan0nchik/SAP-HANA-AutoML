@@ -1,7 +1,6 @@
 from pipeline.fit import Fit
 from pipeline.validator import Validate
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
 from preprocess.preprocessor import Preprocessor
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from pipeline.input import Input

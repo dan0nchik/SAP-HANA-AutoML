@@ -1,7 +1,5 @@
 import pandas as pd
 from hana_ml.algorithms.pal.preprocessing import Imputer
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
 
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
