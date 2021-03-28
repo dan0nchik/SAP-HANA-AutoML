@@ -19,9 +19,11 @@ class Input:
             target=None,
             file_path=None,
             url=None,
+            id_col=None,
             table_name=None
     ):
         self.df = df
+        self.id_col = id_col
         self.url = url
         self.target = target
         self.file_path = file_path
@@ -45,7 +47,7 @@ class Input:
 
     def split_data(self) -> Data:
         train, test, valid = train_test_val_split(data=self.hana_df)
-        return Data(train, test, valid, self.target)
+        return Data(train, test, valid, self.target, id_col=self.id_col)
 
     def load_from_url(self, url):
         if url == "":

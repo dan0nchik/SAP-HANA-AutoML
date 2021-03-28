@@ -19,12 +19,12 @@ class KNeighbors(BaseAlgorithm):
         params["voting_type"] = ['majority', 'distance-weighted'][round(params["voting_type"])]
         params["metric"] = ['manhattan', 'euclidean', 'minkowski', 'chebyshev', 'cosine'][round(params["metric"])]
         params["n_neighbors"] = round(params["n_neighbors"])
-        params["algorithm"] = ['brute-force', 'kd-tree'][round(params["algorithm"])]
+        params["algorithm"] = ['brure-force', 'kd-tree'][round(params["algorithm"])]
         self.model = KNNClassifier(**params)
 
     def optunatune(self, trial):
         n_neighbors = trial.suggest_int("CLS_KNeighbors_n_neighbors", 5, 100, log=True)
-        algorithm = trial.suggest_categorical("CLS_KNeighbors_algorithm", ['brute-force', 'kd-tree'])
+        algorithm = trial.suggest_categorical("CLS_KNeighbors_algorithm", ['brure-force', 'kd-tree'])
         voting_type = trial.suggest_categorical("CLS_KNeighbors_voting_type", ['majority', 'distance-weighted'])
         metric = trial.suggest_categorical("CLS_KNeighbors_metric", ['manhattan', 'euclidean', 'minkowski', 'chebyshev','cosine'])
         model = KNNClassifier(

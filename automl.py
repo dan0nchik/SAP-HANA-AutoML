@@ -28,11 +28,12 @@ class AutoML:
             table_name: str = None,
             columns_to_remove: list = None,
             categorical_features: list = None,
+            id_column=None,
             optimizer: str = "BayesianOptimizer",
             config=None,
 
     ):
-        inputted = Input(df, target, file_path, url, table_name)
+        inputted = Input(df=df, target=target, file_path=file_path, url=url, table_name=table_name, id_col=id_column)
         inputted.load_data()
         data = inputted.split_data()
         data.drop(droplist_columns=columns_to_remove)

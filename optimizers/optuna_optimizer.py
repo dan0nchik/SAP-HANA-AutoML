@@ -34,21 +34,21 @@ class OptunaOptimizer(BaseOptimizer):
 
     def objective(self, trial):
         algo = self.algo_dict.get(trial.suggest_categorical("algo", self.algo_dict.keys()))
-        pr = Preprocessor()
-        data2 = pr.clean(
-            data=copy.deepcopy(self.data),
-            categorical_list=self.categorical_features,
-            droplist_columns=self.droplist_columns
+        imputer = trial.suggest_categorical(
+            "imputer", ['mean', 'median', 'zero']
         )
-        ftr: list = self.data.train.columns
-        ftr.remove(self.problem)
+        data = self.data.clear(num_strategy=imputer, cat_strategy=None, dropempty=False,
+                               categorical_list=None
+                               )
+        ftr: list = data.train.columns
+        ftr.remove(data.target)
+        ftr.remove(data.id_colm)
         model = algo.optunatune(trial)
-        model.fit(self.data.train, features=ftr, label=self.problem, categorical_variable=self.categorical_features)
-        val = self.data.test.distinct(self.problem)
-        train = self.data.test.drop(self.problem)
-        res, stats = model.predict(train, categorical_variable=self.categorical_features)
-        val.union(res)
-        return accuracy_score(val, label_pred='Target', label_true=self.problem)
+        model.fit(data.train, key=data.id_colm, features=ftr, label=data.target, categorical_variable=self.categorical_features)
+        val = data.test.select(data.target)
+        train = data.test.drop(data.target)
+        res = model.predict(train, key=data.id_colm)
+        return model.score(data.valid, key=data.id_colm, label=data.target)
 
     def get_tuned_params(self):
         print(
