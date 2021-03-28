@@ -19,11 +19,13 @@ class Input:
             target=None,
             file_path=None,
             url=None,
+            table_name=None
     ):
         self.df = df
         self.url = url
         self.target = target
         self.file_path = file_path
+        self.table_name = table_name
 
     def load_data(self):
         if self.df is None:
@@ -31,8 +33,15 @@ class Input:
                 self.df = self.load_from_url(self.url)
             if self.file_path is not None:
                 self.df = self.read_from_file(self.file_path)
-        self.hana_df = create_dataframe_from_pandas(connection_context, self.df, f'data', replace=True,
-                                                    drop_exist_tab=True, force=True)
+        if self.table_name is None:
+            name = f'AUTOML{str(uuid.uuid4())}'
+            print(f"Creating table with name: {name}")
+            self.hana_df = create_dataframe_from_pandas(connection_context, self.df, name, force=True)
+            print(f"Done")
+        else:
+            print(f"Connecting to existing table {self.table_name}")
+            self.hana_df = connection_context.table(self.table_name)
+            print("Connected")
 
     def split_data(self) -> Data:
         train, test, valid = train_test_val_split(data=self.hana_df)

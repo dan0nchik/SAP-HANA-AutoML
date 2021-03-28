@@ -25,14 +25,18 @@ class AutoML:
             target: str = None,
             file_path: str = None,
             url: str = None,
+            table_name: str = None,
             columns_to_remove: list = None,
             categorical_features: list = None,
             optimizer: str = "BayesianOptimizer",
             config=None,
+
     ):
-        inputted = Input(df, target, file_path, url)
+        inputted = Input(df, target, file_path, url, table_name)
         inputted.load_data()
         data = inputted.split_data()
+        print(data.train.columns)
+        print(data.train.count())
 
     def optimizer(self):
         return self.opt
