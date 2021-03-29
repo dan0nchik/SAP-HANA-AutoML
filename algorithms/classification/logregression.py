@@ -3,14 +3,12 @@ from hana_ml.algorithms.pal.linear_model import LogisticRegression
 from algorithms.base_algo import BaseAlgorithm
 
 
-
 class LogRegression(BaseAlgorithm):
     def __init__(self):
         super(LogRegression, self).__init__()
         self.title = "Logistic Regression"
         self.params_range = {
             "max_iter": (100, 1000),
-
         }
         self.model = LogisticRegression()
 

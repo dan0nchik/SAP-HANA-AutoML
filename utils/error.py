@@ -12,3 +12,7 @@ class OptimizerError(Exception):
 
 class PipelineError(Exception):
     pass
+
+
+class AutoMLError(Exception):
+    pass

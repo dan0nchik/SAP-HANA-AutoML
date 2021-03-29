@@ -7,10 +7,12 @@ class BayesianOptimizer(BaseOptimizer):
     def objective(self, algo_index_tuned, preprocess_method):
         self.algo_index = round(algo_index_tuned)
         rounded_preprocess_method = round(preprocess_method)
-        self.inner_data = self.data.clear(num_strategy=self.imputerstrategy_list[rounded_preprocess_method], cat_strategy=None,
-                                    dropempty=False,
-                                    categorical_list=None
-                                    )
+        self.inner_data = self.data.clear(
+            num_strategy=self.imputerstrategy_list[rounded_preprocess_method],
+            cat_strategy=None,
+            dropempty=False,
+            categorical_list=None,
+        )
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
@@ -26,25 +28,29 @@ class BayesianOptimizer(BaseOptimizer):
         ftr: list = self.inner_data.train.columns
         ftr.remove(self.inner_data.target)
         ftr.remove(self.inner_data.id_colm)
-        model.model.fit(self.inner_data.train, key=self.inner_data.id_colm, features=ftr, label=self.inner_data.target,
-                  categorical_variable=self.categorical_list)
-        acc = model.model.score(self.inner_data.valid, key=self.inner_data.id_colm, label=self.inner_data.target)
-        print('Itteration accuracy: '+str(acc))
+        model.model.fit(
+            self.inner_data.train,
+            key=self.inner_data.id_colm,
+            features=ftr,
+            label=self.inner_data.target,
+            categorical_variable=self.categorical_list,
+        )
+        acc = model.model.score(
+            self.inner_data.valid,
+            key=self.inner_data.id_colm,
+            label=self.inner_data.target,
+        )
+        print("Itteration accuracy: " + str(acc))
         return acc
 
     def get_tuned_params(self):
         return {
             "title": self.algo_list[self.algo_index].title,
-            "params": self.tuned_params
+            "params": self.tuned_params,
         }
 
     def __init__(
-            self,
-            algo_list: list,
-            data,
-            iterations,
-            problem,
-            categorical_list=None
+        self, algo_list: list, data, iterations, problem, categorical_list=None
     ):
         self.data = data
         self.inner_data = data
@@ -53,7 +59,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
-        self.imputerstrategy_list = ['mean', 'median', 'zero']
+        self.imputerstrategy_list = ["mean", "median", "zero"]
         self.categorical_list = categorical_list
 
     def tune(self):

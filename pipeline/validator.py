@@ -1,4 +1,2 @@
-
-
 class Validate:
     """Implement"""

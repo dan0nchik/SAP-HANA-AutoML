@@ -7,14 +7,12 @@ def main():
     m = AutoML()
     m.fit(
         file_path="data/train.csv",
-        table_name="AUTOML0ee8453b-03f5-4fe0-a1c6-3c63226899dd",
         target="Survived",
         id_column="PassengerId",
         columns_to_remove=["Name", "Cabin"],
         categorical_features=["Survived"],
-
     )
-    '''
+    """
     m.fit(
         table_name="AUTOML99131b50-a220-427f-afbe-c936deafbfbc",
         file_path="data/reg.csv",
@@ -23,7 +21,7 @@ def main():
         categorical_features=['Канал_ПЕРВЫЙ КАНАЛ', 'Канал_РЕН ТВ', 'Канал_РОССИЯ 1', 'Канал_СТС', 'Канал_ТНТ', 'day',
                               'year', 'month', 'hour', 'holidays']
     )
-     '''
+     """
     print(m.best_params)
 
 
