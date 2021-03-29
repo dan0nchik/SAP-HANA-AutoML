@@ -12,7 +12,6 @@ import pandas as pd
 from hana_ml.algorithms.pal.linear_model import LogisticRegression
 from hana_ml.algorithms.apl.classification import AutoClassifier
 from hana_ml.algorithms.pal.neighbors import KNNClassifier
-
 from utils.error import AutoMLError
 
 

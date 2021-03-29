@@ -28,7 +28,7 @@ class Input:
             pass
         elif self.file_path is not None:
             self.df = self.download_data(self.file_path)
-        elif self.table_name is not None:
+        elif self.table_name is not None or self.table_name != "":
             print(f"Connecting to existing table {self.table_name}")
             self.hana_df = connection_context.table(self.table_name)
             print("Connected")
@@ -47,8 +47,8 @@ class Input:
     def split_data(self) -> Data:
         train, test, valid = train_test_val_split(data=self.hana_df)
         return Data(train, test, valid, self.target, id_col=self.id_col)
-
-    def download_data(self, path):
+    @staticmethod
+    def download_data(path):
         if path == "":
             raise InputError("Please provide valid file path or url")
         if file_type(path) == ".csv":
