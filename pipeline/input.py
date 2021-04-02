@@ -22,31 +22,47 @@ class Input:
         self.file_path = path
         self.target = target
         self.table_name = table_name
+        self.hana_df = None
 
     def load_data(self):
-        if self.df is not None:
-            pass
-        elif self.file_path is not None:
-            self.df = self.download_data(self.file_path)
-        elif self.table_name is not None or self.table_name != "":
+        name = f"AUTOML{str(uuid.uuid4())}"
+        with open("utils/tables.txt", "a+") as file:
+            file.write(name + "\n")
+            file.close()
+
+        if (
+            self.df is not None or self.file_path is not None
+        ) and self.table_name is None:
+            if self.file_path is not None:
+                self.df = self.download_data(self.file_path)
+            print(f"Creating table with name: {name}")
+            self.hana_df = create_dataframe_from_pandas(
+                connection_context, self.df, name
+            )
+        elif (
+            self.table_name is not None or self.table_name != ""
+        ) and self.file_path is None:
             print(f"Connecting to existing table {self.table_name}")
             self.hana_df = connection_context.table(self.table_name)
-            print("Connected")
-            return
+        elif self.table_name is not None and self.file_path is not None:
+            print(f"Recreating table {self.table_name} with data from file")
+            self.hana_df = create_dataframe_from_pandas(
+                connection_context, self.download_data(self.file_path), name, force=True
+            )
+        elif self.table_name is not None and self.df is not None:
+            print(f"Recreating table with data from dataframe")
+            self.hana_df = create_dataframe_from_pandas(
+                connection_context, self.df, name, force=True
+            )
         else:
             raise InputError("No data provided")
-
-        name = f"AUTOML{str(uuid.uuid4())}"
-        print(f"Creating table with name: {name}")
-        self.hana_df = create_dataframe_from_pandas(
-            connection_context, self.df, name, force=True
-        )
-        print(f"Done")
+        print("Done")
         return
 
     def split_data(self) -> Data:
         train, test, valid = train_test_val_split(data=self.hana_df)
         return Data(train, test, valid, self.target, id_col=self.id_col)
+
     @staticmethod
     def download_data(path):
         if path == "":

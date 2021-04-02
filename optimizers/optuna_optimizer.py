@@ -25,6 +25,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.algo_dict = algo_dict
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
+        self.model = None
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
@@ -53,7 +54,11 @@ class OptunaOptimizer(BaseOptimizer):
             label=data.target,
             categorical_variable=self.categorical_features,
         )
+        self.model = model
         return model.score(data.valid, key=data.id_colm, label=data.target)
 
     def get_tuned_params(self):
         print("Title: ", self.tuned_params.pop("algo"), "\nInfo:", self.tuned_params)
+
+    def get_model(self):
+        return self.model

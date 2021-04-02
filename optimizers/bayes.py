@@ -18,7 +18,7 @@ class BayesianOptimizer(BaseOptimizer):
             pbounds={**self.algo_list[self.algo_index].get_params()},
             verbose=False,
         )
-        opt.maximize(n_iter=10)
+        opt.maximize(n_iter=3)
         self.algo_list[self.algo_index].set_params(**opt.max["params"])
         return opt.max["target"]
 
@@ -40,7 +40,8 @@ class BayesianOptimizer(BaseOptimizer):
             key=self.inner_data.id_colm,
             label=self.inner_data.target,
         )
-        print("Itteration accuracy: " + str(acc))
+        print("Iteration accuracy: " + str(acc))
+        self.model = model
         return acc
 
     def get_tuned_params(self):
@@ -48,6 +49,9 @@ class BayesianOptimizer(BaseOptimizer):
             "title": self.algo_list[self.algo_index].title,
             "params": self.tuned_params,
         }
+
+    def get_model(self):
+        return self.model
 
     def __init__(
         self, algo_list: list, data, iterations, problem, categorical_list=None
@@ -61,6 +65,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = 0
         self.imputerstrategy_list = ["mean", "median", "zero"]
         self.categorical_list = categorical_list
+        self.model = None
 
     def tune(self):
         opt = BayesianOptimization(

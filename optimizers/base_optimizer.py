@@ -17,3 +17,7 @@ class BaseOptimizer(ABC):
     def tune():
         """Tune hyperparameters here"""
         pass
+
+    @abstractmethod
+    def get_model():
+        """Return tuned HANA PAL model"""
