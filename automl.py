@@ -68,7 +68,7 @@ class AutoML:
         )
         data.load_data()
         self.predicted = self.model.predict(data.hana_df, id_column)
-        print(self.predicted.head().collect())
+        print(self.predicted.head(20).collect())
 
     def save_results(self, file_path: str):
         self.predicted.collect().to_csv(file_path)

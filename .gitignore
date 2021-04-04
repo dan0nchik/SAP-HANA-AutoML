@@ -146,3 +146,4 @@ credentials.py
 
 #Hydra
 outputs/
+utils/tables.txt
