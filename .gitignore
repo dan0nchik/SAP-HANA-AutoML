@@ -138,11 +138,12 @@ dmypy.json
 cython_debug/
 
 #VS Code
-.vscode
+.vscode/
 
 # Login info
 utils/credentials.py
 credentials.py
 
 #Hydra
-outputs/*
+outputs/
+utils/tables.txt

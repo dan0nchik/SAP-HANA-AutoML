@@ -16,19 +16,32 @@ class KNeighborsReg(BaseAlgorithm):
         self.model = KNNRegressor()
 
     def set_params(self, **params):
-        params["aggregate_type"] = ['average', 'distance-weighted'][round(params["aggregate_type"])]
-        params["metric"] = ['manhattan', 'euclidean', 'minkowski', 'chebyshev'][round(params["metric"])]
+        params["aggregate_type"] = ["average", "distance-weighted"][
+            round(params["aggregate_type"])
+        ]
+        params["metric"] = ["manhattan", "euclidean", "minkowski", "chebyshev"][
+            round(params["metric"])
+        ]
         params["n_neighbors"] = round(params["n_neighbors"])
-        params["algorithm"] = ['brute-force', 'kd-tree'][round(params["algorithm"])]
+        params["algorithm"] = ["brute-force", "kd-tree"][round(params["algorithm"])]
         self.model = KNNRegressor(**params)
 
     def optunatune(self, trial):
-        aggregate_type = trial.suggest_categorical("REG_KNeighbors_aggregate_type", ['average', 'distance-weighted'])
+        aggregate_type = trial.suggest_categorical(
+            "REG_KNeighbors_aggregate_type", ["average", "distance-weighted"]
+        )
         n_neighbors = trial.suggest_int("REG_KNeighbors_n_neighbors", 5, 100, log=True)
-        algorithm = trial.suggest_categorical("REG_KNeighbors_algorithm", ['brute-force', 'kd-tree'])
-        metric = trial.suggest_categorical("REG_KNeighbors_metric",
-                                           ['manhattan', 'euclidean', 'minkowski', 'chebyshev'])
+        algorithm = trial.suggest_categorical(
+            "REG_KNeighbors_algorithm", ["brute-force", "kd-tree"]
+        )
+        metric = trial.suggest_categorical(
+            "REG_KNeighbors_metric",
+            ["manhattan", "euclidean", "minkowski", "chebyshev"],
+        )
         model = KNNRegressor(
-            n_neighbors=n_neighbors, algorithm=algorithm, aggregate_type=aggregate_type, metric=metric
+            n_neighbors=n_neighbors,
+            algorithm=algorithm,
+            aggregate_type=aggregate_type,
+            metric=metric,
         )
         return model

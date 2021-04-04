@@ -1,7 +1,5 @@
 import pandas as pd
 from hana_ml.algorithms.pal.preprocessing import Imputer
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import LabelEncoder
 
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.kneighbors import KNeighbors
@@ -15,32 +13,42 @@ from utils.error import PreprocessError
 
 class Preprocessor:
     def clean(
-            self,
-            data=None,
-            droplist_columns=None,
-            categorical_list=None,
-            predict_column_importance=False,
-            dropempty=False,
-            num_strategy="mean",
-            cat_strategy=[]
+        self,
+        data=None,
+        droplist_columns=None,
+        categorical_list=None,
+        predict_column_importance=False,
+        dropempty=False,
+        num_strategy="mean",
+        cat_strategy=[],
     ):
         if data is None:
             raise PreprocessError("Enter not null data!")
         if predict_column_importance:
             None
             # TODO: AutoRemove
-        self.autoimput(data, num_strategy=num_strategy, cat_strategy=cat_strategy, dropempty=dropempty)
+        self.autoimput(
+            data,
+            num_strategy=num_strategy,
+            cat_strategy=cat_strategy,
+            dropempty=dropempty,
+        )
 
         return data
 
-    def autoimput(self, df, num_strategy, cat_strategy, dropempty=False, categorical_list=None):
+    def autoimput(
+        self, df, num_strategy, cat_strategy, dropempty=False, categorical_list=None
+    ):
         if df is None:
             raise PreprocessError("Enter not null data!")
         if not dropempty:
             impute = Imputer(strategy=num_strategy)
             if categorical_list is not None:
-                result = impute.fit_transform(df, categorical_variable=categorical_list,
-                                              strategy_by_col=cat_strategy)
+                result = impute.fit_transform(
+                    df,
+                    categorical_variable=categorical_list,
+                    strategy_by_col=cat_strategy,
+                )
             else:
                 result = impute.fit_transform(df)
             return result
@@ -57,8 +65,8 @@ class Preprocessor:
     def autoremovecolumns(self, df):
         for cl in df:
             if (
-                    "object" == str(df[cl].dtype)
-                    and df[cl].nunique() > df[cl].shape[0] / 100 * 7
+                "object" == str(df[cl].dtype)
+                and df[cl].nunique() > df[cl].shape[0] / 100 * 7
             ) or (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
                 df = df.drop([cl], axis=1)
         return df
@@ -68,7 +76,10 @@ class Preprocessor:
             algo_exceptions = []
         if data.train.distinct(target).count() < 10:
             clslist = [DecisionTreeCls(), LogRegression()]
-            clsdict = {"DecisionTree": DecisionTreeCls(), "Logistic Regression": LogRegression()}
+            clsdict = {
+                "DecisionTree": DecisionTreeCls(),
+                "Logistic Regression": LogRegression(),
+            }
             if "DecisionTree" in algo_exceptions:
                 clslist.remove(DecisionTreeCls())
                 clsdict.pop("DecisionTree")
@@ -78,10 +89,13 @@ class Preprocessor:
             if "KNeighbors" in algo_exceptions:
                 clslist.remove(KNeighbors())
                 clsdict.pop("KNeighbors")
-            return clslist, 'cls', clsdict
+            return clslist, "cls", clsdict
         else:
             reglist = [DecisionTreeReg(), GLMRegression()]
-            regdict = {"DecisionTreeReg": DecisionTreeReg(), "GLMRegression": GLMRegression()}
+            regdict = {
+                "DecisionTreeReg": DecisionTreeReg(),
+                "GLMRegression": GLMRegression(),
+            }
             if "DecisionTreeReg" in algo_exceptions:
                 reglist.remove(DecisionTreeReg())
                 regdict.pop("DecisionTreeReg")
@@ -91,4 +105,4 @@ class Preprocessor:
             if "KNNRegressor" in algo_exceptions:
                 reglist.remove(KNeighborsReg())
                 regdict.pop("KNRegressor")
-            return reglist, 'reg', regdict
+            return reglist, "reg", regdict

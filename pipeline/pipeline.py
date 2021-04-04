@@ -17,7 +17,7 @@ class Pipeline:
     def train(self, categorical_features=None, optimizer=None):
         pr = Preprocessor()
         algo_list, task, algo_dict = pr.set_task(self.data, target=self.data.target)
-        print(task)
+        print("Task:", task)
         if optimizer == "BayesianOptimizer":
             self.opt = BayesianOptimizer(
                 algo_list=algo_list,
