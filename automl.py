@@ -1,17 +1,7 @@
-from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
-from hana_ml.dataframe import ConnectionContext
-from numpy import mod, ndarray
-from preprocess.preprocessor import Preprocessor
-from utils.connection import connection_context
-from pipeline.data import Data
+import pandas as pd
+
 from pipeline.input import Input
 from pipeline.pipeline import Pipeline
-from hana_ml import DataFrame, dataframe
-import hana_ml
-import pandas as pd
-from hana_ml.algorithms.pal.linear_model import LogisticRegression
-from hana_ml.algorithms.apl.classification import AutoClassifier
-from hana_ml.algorithms.pal.neighbors import KNNClassifier
 from utils.error import AutoMLError
 
 
@@ -24,7 +14,7 @@ class AutoML:
     def fit(
         self,
         df: pd.DataFrame = None,
-        steps: int = 10,
+        steps: int = 1,
         target: str = None,
         file_path: str = None,
         table_name: str = None,

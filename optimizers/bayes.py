@@ -17,7 +17,7 @@ class BayesianOptimizer(BaseOptimizer):
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
             verbose=False,
-            random_state=17
+            random_state=17,
         )
         opt.maximize(n_iter=10)
         self.algo_list[self.algo_index].set_params(**opt.max["params"])
@@ -56,7 +56,7 @@ class BayesianOptimizer(BaseOptimizer):
         return self.model
 
     def __init__(
-            self, algo_list: list, data, iterations, problem, categorical_list=None
+        self, algo_list: list, data, iterations, problem, categorical_list=None
     ):
         self.data = data
         self.algo_list = algo_list
@@ -76,7 +76,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "algo_index_tuned": (0, len(self.algo_list) - 1),
                 "preprocess_method": (0, len(self.imputerstrategy_list) - 1),
             },
-            random_state=17
+            random_state=17,
         )
         opt.maximize(n_iter=self.iter)
         self.tuned_params = opt.max

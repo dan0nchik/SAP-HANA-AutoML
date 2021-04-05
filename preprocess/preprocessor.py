@@ -1,13 +1,9 @@
-import pandas as pd
 from hana_ml.algorithms.pal.preprocessing import Imputer
 
 from algorithms.classification.decisiontreecls import DecisionTreeCls
-from algorithms.classification.kneighbors import KNeighbors
 from algorithms.classification.logregression import LogRegression
 from algorithms.regression.decisiontreereg import DecisionTreeReg
 from algorithms.regression.glmreg import GLMRegression
-from algorithms.regression.kneighborsreg import KNeighborsReg
-from preprocess.impsettings import ImputerSettings
 from utils.error import PreprocessError
 
 
@@ -80,15 +76,12 @@ class Preprocessor:
                 "DecisionTree": DecisionTreeCls(),
                 "Logistic Regression": LogRegression(),
             }
-            if "DecisionTree" in algo_exceptions:
-                clslist.remove(DecisionTreeCls())
-                clsdict.pop("DecisionTree")
-            if "Logistic Regression" in algo_exceptions:
-                clslist.remove(LogRegression())
-                clsdict.pop("Logistic Regression")
-            if "KNeighbors" in algo_exceptions:
-                clslist.remove(KNeighbors())
-                clsdict.pop("KNeighbors")
+            clslist = [i for i in clslist if i.title not in algo_exceptions]
+            clsdict = {
+                key: value
+                for key, value in clsdict.items()
+                if key.title not in algo_exceptions
+            }
             return clslist, "cls", clsdict
         else:
             reglist = [DecisionTreeReg(), GLMRegression()]
@@ -96,13 +89,10 @@ class Preprocessor:
                 "DecisionTreeReg": DecisionTreeReg(),
                 "GLMRegression": GLMRegression(),
             }
-            if "DecisionTreeReg" in algo_exceptions:
-                reglist.remove(DecisionTreeReg())
-                regdict.pop("DecisionTreeReg")
-            if "GLMRegression" in algo_exceptions:
-                reglist.remove(GLMRegression())
-                regdict.pop("GLMRegression")
-            if "KNNRegressor" in algo_exceptions:
-                reglist.remove(KNeighborsReg())
-                regdict.pop("KNRegressor")
+            reglist = [i for i in reglist if i.title not in algo_exceptions]
+            regdict = {
+                key: value
+                for key, value in regdict.items()
+                if key.title not in algo_exceptions
+            }
             return reglist, "reg", regdict

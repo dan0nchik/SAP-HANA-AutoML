@@ -1,7 +1,4 @@
 from automl import AutoML
-import hydra
-from omegaconf import DictConfig, OmegaConf
-from hdbcli import dbapi
 
 
 def main():
@@ -13,10 +10,30 @@ def main():
         id_column="PassengerId",
         columns_to_remove=[],
         categorical_features=["Survived"],
-        steps=5,
+        steps=1,
         # optimizer='OptunaSearch'
 
     )
+
+    # m.fit(
+    #     table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
+    #     file_path="data/reg.csv",
+    #     target="Все 18+_TVR",
+    #     id_column="ID",
+    #     categorical_features=[
+    #         "Канал_ПЕРВЫЙ КАНАЛ",
+    #         "Канал_РЕН ТВ",
+    #         "Канал_РОССИЯ 1",
+    #         "Канал_СТС",
+    #         "Канал_ТНТ",
+    #         "day",
+    #         "year",
+    #         "month",
+    #         "hour",
+    #         "holidays",
+    #     ],
+    #     optimizer="OptunaSearch",
+    # )
     print("Model: ", m.get_model())
     print(m.best_params)
     m.predict(
@@ -24,14 +41,7 @@ def main():
         file_path="data/test_cleaned_train.csv",
         id_column="PassengerId",
     )
-    m.save_results('results.csv')
-    # m.fit(
-    #     table_name="AUTOML3c13e97d-630b-4620-8f12-7d0ff8601069",
-    #     target="Все 18+_TVR",
-    #     id_column="ID",
-    #     categorical_features=['Канал_ПЕРВЫЙ КАНАЛ', 'Канал_РЕН ТВ', 'Канал_РОССИЯ 1', 'Канал_СТС', 'Канал_ТНТ', 'day',
-    #                           'year', 'month', 'hour', 'holidays']
-    # )
+    m.save_results("results.csv")
 
 
 if __name__ == "__main__":

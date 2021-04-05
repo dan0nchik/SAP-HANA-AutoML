@@ -1,9 +1,7 @@
 from optimizers.bayes import BayesianOptimizer
 from optimizers.optuna_optimizer import OptunaOptimizer
 from pipeline.data import Data
-from pipeline.leaderboard import Leaderboard
 from preprocess.preprocessor import Preprocessor
-import copy
 
 from utils.error import PipelineError
 

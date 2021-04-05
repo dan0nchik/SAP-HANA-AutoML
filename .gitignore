@@ -147,3 +147,9 @@ credentials.py
 #Hydra
 outputs/
 utils/tables.txt
+
+#general
+.DS_Store
+
+#Prediction results
+results.csv

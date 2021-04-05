@@ -1,10 +1,6 @@
-from hana_ml.algorithms.pal.metrics import accuracy_score
-
-from preprocess.impsettings import ImputerSettings
-import copy
-from preprocess.preprocessor import Preprocessor
-from optimizers.base_optimizer import BaseOptimizer
 import optuna
+
+from optimizers.base_optimizer import BaseOptimizer
 
 
 class OptunaOptimizer(BaseOptimizer):

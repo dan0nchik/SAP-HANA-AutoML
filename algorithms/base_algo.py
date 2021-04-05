@@ -21,3 +21,6 @@ class BaseAlgorithm:
 
     def predict(self, y_test):
         self.model.predict(y_test)
+
+    def __repr__(self):
+        return self.title
