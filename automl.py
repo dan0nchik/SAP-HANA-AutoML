@@ -1,8 +1,10 @@
 import pandas as pd
-
+import json
 from pipeline.input import Input
 from pipeline.pipeline import Pipeline
+from preprocess.preprocessor import Preprocessor
 from utils.error import AutoMLError
+from hana_ml.model_storage import ModelStorage
 
 
 class AutoML:
@@ -10,18 +12,19 @@ class AutoML:
         self.opt = None
         self.model = None
         self.predicted = None
+        self.preprocessor_settings = None
 
     def fit(
         self,
         df: pd.DataFrame = None,
-        steps: int = 1,
+        steps: int = 10,
         target: str = None,
         file_path: str = None,
         table_name: str = None,
         columns_to_remove: list = None,
         categorical_features: list = None,
         id_column=None,
-        optimizer: str = "BayesianOptimizer",
+        optimizer: str = "OptunaSearch",
         config=None,
     ):
         if steps < 1:
@@ -42,6 +45,7 @@ class AutoML:
             categorical_features=categorical_features, optimizer=optimizer
         )
         self.model = self.opt.get_model()
+        self.preprocessor_settings = self.opt.get_preprocessor_settings()
 
     def predict(
         self,
@@ -57,11 +61,22 @@ class AutoML:
             id_col=id_column,
         )
         data.load_data()
+        print("Preprocessor settings:", self.preprocessor_settings)
+        pr = Preprocessor()
+        data.hana_df = pr.clean(
+            data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
+        )
         self.predicted = self.model.predict(data.hana_df, id_column)
-        print(self.predicted.head(20).collect())
+        print(
+            "Prediction results (first 20 rows): \n", self.predicted.head(20).collect()
+        )
 
-    def save_results(self, file_path: str):
+    def save_results_as_csv(self, file_path: str):
         self.predicted.collect().to_csv(file_path)
+
+    def save_preprocessor(self, file_path: str):
+        with open(file_path, "w+") as file:
+            json.dump(self.preprocessor_settings, file)
 
     def get_model(self):
         return self.model
@@ -73,3 +88,8 @@ class AutoML:
     @property
     def best_params(self):
         return self.opt.get_tuned_params()
+
+
+class Storage(ModelStorage):
+    def __init__(self, connection_context):
+        super().__init__(connection_context)

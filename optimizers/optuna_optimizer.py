@@ -22,6 +22,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
         self.model = None
+        self.imputer = None
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
@@ -50,6 +51,7 @@ class OptunaOptimizer(BaseOptimizer):
             label=data.target,
             categorical_variable=self.categorical_features,
         )
+        self.imputer = imputer
         self.model = model
         return model.score(data.valid, key=data.id_colm, label=data.target)
 
@@ -58,3 +60,6 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_model(self):
         return self.model
+
+    def get_preprocessor_settings(self):
+        return {"imputer": self.imputer}

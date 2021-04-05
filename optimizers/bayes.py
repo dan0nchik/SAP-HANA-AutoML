@@ -7,8 +7,9 @@ class BayesianOptimizer(BaseOptimizer):
     def objective(self, algo_index_tuned, preprocess_method):
         self.algo_index = round(algo_index_tuned)
         rounded_preprocess_method = round(preprocess_method)
+        self.imputer = self.imputerstrategy_list[rounded_preprocess_method]
         self.inner_data = copy.copy(self.data).clear(
-            num_strategy=self.imputerstrategy_list[rounded_preprocess_method],
+            num_strategy=self.imputer,
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
@@ -19,14 +20,13 @@ class BayesianOptimizer(BaseOptimizer):
             verbose=False,
             random_state=17,
         )
-        opt.maximize(n_iter=10)
+        opt.maximize(n_iter=1)
         self.algo_list[self.algo_index].set_params(**opt.max["params"])
         return opt.max["target"]
 
     def child_objective(self, **hyperparameters):
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
-        # print(self.inner_data.train.head(20).collect())
         ftr: list = self.inner_data.train.columns
         ftr.remove(self.inner_data.target)
         ftr.remove(self.inner_data.id_colm)
@@ -55,6 +55,9 @@ class BayesianOptimizer(BaseOptimizer):
     def get_model(self):
         return self.model
 
+    def get_preprocessor_settings(self):
+        return {"imputer": self.imputer}
+
     def __init__(
         self, algo_list: list, data, iterations, problem, categorical_list=None
     ):
@@ -66,8 +69,9 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = 0
         self.imputerstrategy_list = ["mean", "median", "zero"]
         self.categorical_list = categorical_list
-        self.model = None
         self.inner_data = None
+        self.imputer = None
+        self.model = None
 
     def tune(self):
         opt = BayesianOptimization(

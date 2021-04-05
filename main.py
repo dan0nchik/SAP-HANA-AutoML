@@ -1,18 +1,18 @@
-from automl import AutoML
+from automl import AutoML, Storage
+from utils.connection import connection_context
 
 
 def main():
     m = AutoML()
     m.fit(
         table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
-        file_path='data/cleaned_train.csv',
+        file_path="data/cleaned_train.csv",
         target="Survived",
         id_column="PassengerId",
         columns_to_remove=[],
         categorical_features=["Survived"],
         steps=1,
-        # optimizer='OptunaSearch'
-
+        # optimizer="BayesianOptimizer",
     )
 
     # m.fit(
@@ -41,7 +41,8 @@ def main():
         file_path="data/test_cleaned_train.csv",
         id_column="PassengerId",
     )
-    m.save_results("results.csv")
+    m.save_results_as_csv("results.csv")
+    m.save_preprocessor("prep.json")
 
 
 if __name__ == "__main__":
