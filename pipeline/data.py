@@ -14,6 +14,13 @@ class Data:
         self.id_colm = id_col
 
     def drop(self, droplist_columns):
+        """Drops columns in table
+
+        Parameters
+        ----------
+        droplist_columns : list
+            Columns to remove.
+        """
         pr = Preprocessor()
         self.valid = pr.removecolumns(droplist_columns, df=self.valid)
         self.train = pr.removecolumns(droplist_columns, df=self.train)
@@ -26,6 +33,25 @@ class Data:
         dropempty=False,
         categorical_list=None,
     ):
+        """Clears data using methods defined in parameters.
+
+        Parameters
+        ----------
+        num_strategy : str
+            Strategy to decode numeric variables.
+        cat_strategy : str
+            Strategy to decode categorical variables.
+        dropempty : Bool
+            Drop empty rows or not.
+        categorical_list : list
+            List of categorical features.
+
+        Returns
+        -------
+        Data
+            Data with changes.
+
+        """
         pr = Preprocessor()
         valid = pr.autoimput(
             df=self.valid,

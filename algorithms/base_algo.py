@@ -1,4 +1,6 @@
 class BaseAlgorithm:
+    """Base algorithm class. Inherit from it for creating custom algorithms."""
+
     def __init__(self, custom_params: dict = None):
         self.title = ""  # for leaderboard
         self.model = None

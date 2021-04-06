@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 
 class BaseOptimizer(ABC):
+    """Base optimizer class. Inherit from it to create custom optimizer."""
+
     @abstractmethod
     def objective(self):
         """Implement the objective function here.

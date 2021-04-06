@@ -78,7 +78,7 @@ class Preprocessor:
                 "DecisionTree": DecisionTreeCls(),
                 "Logistic Regression": LogRegression(),
                 "NaiveBayes": NBayes(),
-                "MLPClassifier": MLPcls()
+                "MLPClassifier": MLPcls(),
             }
             clslist = [i for i in clslist if i.title not in algo_exceptions]
             clsdict = {

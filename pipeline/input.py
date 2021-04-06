@@ -6,9 +6,28 @@ from hana_ml.algorithms.pal.partition import train_test_val_split
 from utils.connection import connection_context
 from hana_ml.dataframe import create_dataframe_from_pandas
 from utils.error import InputError
+from pandas import DataFrame
 
 
 class Input:
+    """Handles input data.
+
+    Attributes
+    ----------
+    df : DataFrame
+        Pandas dataframe with data.
+    id_col : str
+        ID column for HANA table.
+    file_path : str
+        Path to data file.
+    target : str
+        Target variable that we want to predict.
+    table_name : str
+        Table's name in HANA database.
+    hana_df : hana_ml.dataframe
+        Converted HANA dataframe.
+    """
+
     def __init__(
         self,
         df: pd.DataFrame = None,
@@ -17,6 +36,7 @@ class Input:
         id_col=None,
         table_name: str = None,
     ):
+        """"""
         self.df = df
         self.id_col = id_col
         self.file_path = path
@@ -25,6 +45,8 @@ class Input:
         self.hana_df = None
 
     def load_data(self):
+        """Loads data to HANA database."""
+
         name = f"AUTOML{str(uuid.uuid4())}"
         with open("utils/tables.txt", "a+") as file:
             file.write(name + "\n")
@@ -60,11 +82,30 @@ class Input:
         return
 
     def split_data(self) -> Data:
+        """Splits single dataframe into multiple dataframes and passes them to Data.
+
+        Returns
+        -------
+        Data
+            Data with changes.
+        """
         train, test, valid = train_test_val_split(data=self.hana_df)
         return Data(train, test, valid, self.target, id_col=self.id_col)
 
     @staticmethod
     def download_data(path):
+        """Downloads data from path
+
+        Parameters
+        ----------
+        path : str
+            Path/url to the file.
+
+        Raises
+        ------
+        InputError
+            If file format is wrong.
+        """
         if path == "":
             raise InputError("Please provide valid file path or url")
         if file_type(path) == ".csv":
@@ -75,4 +116,5 @@ class Input:
 
 
 def file_type(file: str) -> str:
+    """Return type of given file"""
     return os.path.splitext(file)[1]

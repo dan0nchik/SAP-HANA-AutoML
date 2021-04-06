@@ -7,12 +7,40 @@ from utils.error import PipelineError
 
 
 class Pipeline:
+    """The 'director' of the whole hyperparameter searching process.
+
+    Attributes
+    ----------
+    data : Data
+        Input data.
+    iter : int
+        Number of iterations.
+    opt
+        Optimizer.
+    """
+
     def __init__(self, data: Data, steps):
         self.data = data
         self.iter = steps
         self.opt = None
 
     def train(self, categorical_features=None, optimizer=None):
+        """Preprocesses data and starts optimizer.
+
+        Parameters
+        ----------
+        categorical_features : list
+            List of categorical features.
+        optimizer : string
+            Optimizer for searching for hyperparameters.
+            Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
+
+        Returns
+        -------
+        opt
+            Optimizer.
+
+        """
         pr = Preprocessor()
         algo_list, task, algo_dict = pr.set_task(self.data, target=self.data.target)
         print("Task:", task)

@@ -4,6 +4,32 @@ from optimizers.base_optimizer import BaseOptimizer
 
 
 class OptunaOptimizer(BaseOptimizer):
+    """Optuna hyperparameters optimizer. (https://optuna.org/)
+
+    Attributes
+    ----------
+    data : Data
+        Input data.
+    algo_list : list
+        List of algorithms to be tuned and compared.
+    algo_dict : dict
+        Dictionary of algorithms to be tuned and compared.
+    iter : int
+        Number of iterations.
+    problem : str
+        Machine learning problem.
+    tuned_params : str
+        Final tuned hyperparameters of best algorithm.
+    categorical_features : list
+        List of categorical features in dataframe.
+    imputer
+        Imputer for preprocessing.
+    model
+        Tuned HANA ML model in algorithm.
+    droplist_columns
+        Columns in dataframe to be dropped.
+    """
+
     def __init__(
         self,
         algo_list,
@@ -30,6 +56,19 @@ class OptunaOptimizer(BaseOptimizer):
         self.tuned_params = opt.best_params
 
     def objective(self, trial):
+        """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
+
+        Parameters
+        ----------
+        trial
+            Optuna trial. Details here: https://optuna.readthedocs.io/en/stable/reference/trial.html
+
+        Returns
+        -------
+        Score
+            Model perfomance.
+
+        """
         algo = self.algo_dict.get(
             trial.suggest_categorical("algo", self.algo_dict.keys())
         )
@@ -56,10 +95,13 @@ class OptunaOptimizer(BaseOptimizer):
         return model.score(data.valid, key=data.id_colm, label=data.target)
 
     def get_tuned_params(self):
+        """Returns tuned hyperparameters."""
         print("Title: ", self.tuned_params.pop("algo"), "\nInfo:", self.tuned_params)
 
     def get_model(self):
+        """Returns tuned model."""
         return self.model
 
     def get_preprocessor_settings(self):
+        """Returns tuned preprocessor settings."""
         return {"imputer": self.imputer}
