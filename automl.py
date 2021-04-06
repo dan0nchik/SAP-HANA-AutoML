@@ -15,17 +15,17 @@ class AutoML:
         self.preprocessor_settings = None
 
     def fit(
-        self,
-        df: pd.DataFrame = None,
-        steps: int = 10,
-        target: str = None,
-        file_path: str = None,
-        table_name: str = None,
-        columns_to_remove: list = None,
-        categorical_features: list = None,
-        id_column=None,
-        optimizer: str = "OptunaSearch",
-        config=None,
+            self,
+            df: pd.DataFrame = None,
+            steps: int = 10,
+            target: str = None,
+            file_path: str = None,
+            table_name: str = None,
+            columns_to_remove: list = None,
+            categorical_features: list = None,
+            id_column=None,
+            optimizer: str = "OptunaSearch",
+            config=None,
     ):
         if steps < 1:
             raise AutoMLError("The number of steps < 1!")
@@ -48,11 +48,11 @@ class AutoML:
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
 
     def predict(
-        self,
-        df: pd.DataFrame = None,
-        file_path: str = None,
-        table_name: str = None,
-        id_column: str = None,
+            self,
+            df: pd.DataFrame = None,
+            file_path: str = None,
+            table_name: str = None,
+            id_column: str = None,
     ):
         data = Input(
             df=df,
@@ -67,12 +67,24 @@ class AutoML:
             data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
         )
         self.predicted = self.model.predict(data.hana_df, id_column)
+        res = self.predicted
+        if type(self.predicted) == tuple:
+            res = res[0]
         print(
-            "Prediction results (first 20 rows): \n", self.predicted.head(20).collect()
+            "Prediction results (first 20 rows): \n", res.head(20).collect()
         )
 
     def save_results_as_csv(self, file_path: str):
-        self.predicted.collect().to_csv(file_path)
+        res = self.predicted
+        if type(self.predicted) == tuple:
+            res = res[0]
+        res.collect().to_csv(file_path)
+
+    def save_stats_as_csv(self, file_path: str):
+        res = self.predicted
+        if type(self.predicted) == tuple:
+            res = res[1]
+        res.collect().to_csv(file_path)
 
     def save_preprocessor(self, file_path: str):
         with open(file_path, "w+") as file:

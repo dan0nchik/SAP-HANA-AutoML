@@ -2,6 +2,8 @@ from hana_ml.algorithms.pal.preprocessing import Imputer
 
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.logregression import LogRegression
+from algorithms.classification.mlpcl import MLPcls
+from algorithms.classification.naive_bayes import NBayes
 from algorithms.regression.decisiontreereg import DecisionTreeReg
 from algorithms.regression.glmreg import GLMRegression
 from utils.error import PreprocessError
@@ -71,10 +73,12 @@ class Preprocessor:
         if algo_exceptions is None:
             algo_exceptions = []
         if data.train.distinct(target).count() < 10:
-            clslist = [DecisionTreeCls(), LogRegression()]
+            clslist = [DecisionTreeCls(), LogRegression(), NBayes(), MLPcls()]
             clsdict = {
                 "DecisionTree": DecisionTreeCls(),
                 "Logistic Regression": LogRegression(),
+                "NaiveBayes": NBayes(),
+                "MLPClassifier": MLPcls()
             }
             clslist = [i for i in clslist if i.title not in algo_exceptions]
             clsdict = {

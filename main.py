@@ -11,7 +11,7 @@ def main():
         id_column="PassengerId",
         columns_to_remove=[],
         categorical_features=["Survived"],
-        steps=1,
+        steps=5,
         # optimizer="BayesianOptimizer",
     )
 
