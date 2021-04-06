@@ -78,7 +78,7 @@ class AutoML:
         if type(self.predicted) == tuple:
             res = res[0]
         print(
-            "Prediction results (first 20 rows): \n", self.predicted.head(20).collect()
+            "Prediction results (first 20 rows): \n", res.head(20).collect()
         )
 
     def save_results_as_csv(self, file_path: str):
