@@ -87,8 +87,8 @@ class OptunaOptimizer(BaseOptimizer):
             data.train,
             key=data.id_colm,
             features=ftr,
-            label=data.target,
             categorical_variable=self.categorical_features,
+            label=data.target,
         )
         self.imputer = imputer
         self.model = model

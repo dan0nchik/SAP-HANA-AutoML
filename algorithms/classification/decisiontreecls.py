@@ -9,7 +9,7 @@ class DecisionTreeCls(BaseAlgorithm):
         self.title = "DecisionTreeClassifier"
         self.params_range = {
             "algorithm": (0, 2),
-            "max_depth": (2, 50),
+            "max_depth": (2, 80),
             "min_records_of_leaf": (1, 100),
             "min_records_of_parent": (2, 100),
         }
