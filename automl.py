@@ -5,6 +5,7 @@ from pipeline.pipeline import Pipeline
 from preprocess.preprocessor import Preprocessor
 from utils.error import AutoMLError
 from hana_ml.model_storage import ModelStorage
+import pickle
 
 
 class AutoML:
@@ -53,6 +54,7 @@ class AutoML:
         file_path: str = None,
         table_name: str = None,
         id_column: str = None,
+        preprocessor_file: str = None,
     ):
         data = Input(
             df=df,
@@ -61,10 +63,15 @@ class AutoML:
             id_col=id_column,
         )
         data.load_data()
+
+        if preprocessor_file is not None:
+            with open(preprocessor_file) as json_file:
+                json_data = json.load(json_file)
+                self.preprocessor_settings = json_data
         print("Preprocessor settings:", self.preprocessor_settings)
         pr = Preprocessor()
         data.hana_df = pr.clean(
-            data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
+            data=data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
         )
         self.predicted = self.model.predict(data.hana_df, id_column)
         print(
@@ -77,6 +84,10 @@ class AutoML:
     def save_preprocessor(self, file_path: str):
         with open(file_path, "w+") as file:
             json.dump(self.preprocessor_settings, file)
+
+    def model_to_file(self, file_path: str):
+        with open(file_path, "w+") as file:
+            json.dump(self.opt.get_tuned_params(), file)
 
     def get_model(self):
         return self.model

@@ -43,6 +43,12 @@ def main():
     )
     m.save_results_as_csv("results.csv")
     m.save_preprocessor("prep.json")
+    m.predict(
+        table_name="AUTOML08df3e64-b749-489b-8f75-84eeee340342",
+        file_path="data/test_cleaned_train.csv",
+        id_column="PassengerId",
+        preprocessor_file="prep.json",
+    )
 
 
 if __name__ == "__main__":
