@@ -74,12 +74,24 @@ class AutoML:
             data=data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
         )
         self.predicted = self.model.predict(data.hana_df, id_column)
+        res = self.predicted
+        if type(self.predicted) == tuple:
+            res = res[0]
         print(
             "Prediction results (first 20 rows): \n", self.predicted.head(20).collect()
         )
 
     def save_results_as_csv(self, file_path: str):
-        self.predicted.collect().to_csv(file_path)
+        res = self.predicted
+        if type(self.predicted) == tuple:
+            res = res[0]
+        res.collect().to_csv(file_path)
+
+    def save_stats_as_csv(self, file_path: str):
+        res = self.predicted
+        if type(self.predicted) == tuple:
+            res = res[1]
+        res.collect().to_csv(file_path)
 
     def save_preprocessor(self, file_path: str):
         with open(file_path, "w+") as file:

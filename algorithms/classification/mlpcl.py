@@ -36,7 +36,6 @@ class MLPcls(BaseAlgorithm):
         activation = trial.suggest_categorical("CLS_MLP_activation", self.actv)
         output_activation = trial.suggest_categorical("CLS_MLPcls_output_activation", self.actv)
         hidden_layer_size = trial.suggest_int("CLS_MLP_hidden_layer_size", 10, 100, log=True)
-        print(hidden_layer_size)
         normalization = trial.suggest_categorical(
             "CLS_MLP_normalization",
             ['no', 'z-transform', 'scalar'],
