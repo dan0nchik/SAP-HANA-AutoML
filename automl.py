@@ -48,13 +48,16 @@ class AutoML:
         Parameters
         ----------
         df : pd.DataFrame
-            Dataframe. **Note**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+            Input dataframe.
+            **NOTE**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
         steps : int
             Number of iterations.
         target : str
-            The column we want to predict. For multiple columns pass a list. Example: ['feature1', 'feature2'].
+            The column we want to predict. For multiple columns pass a list.
+            **Example:** ['feature1', 'feature2'].
         file_path : str
             Path/url to dataframe. Accepts .csv and .xlsx
+            **Examples:** 'https://website/dataframe.csv' or 'users/dev/file.csv'
         table_name: str
             Name of table in HANA database
         columns_to_remove: list
