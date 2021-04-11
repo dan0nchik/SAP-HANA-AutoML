@@ -4,7 +4,7 @@ from utils.connection import connection_context
 
 def main():
     m = AutoML()
-    """    m.fit(
+    m.fit(
         table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
         file_path="data/cleaned_train.csv",
         target="Survived",
@@ -12,8 +12,9 @@ def main():
         columns_to_remove=[],
         categorical_features=["Survived"],
         steps=5,
-    )"""
-    m.fit(
+        output_leaderboard=True,
+    )
+    """m.fit(
         table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
         file_path="data/reg.csv",
         target="Все 18+_TVR",
@@ -30,9 +31,11 @@ def main():
             "hour",
             "holidays",
         ],
-        steps=5,
+        steps=3,
         optimizer="OptunaSearch",
-    )
+        output_leaderboard=True
+    )"""
+
     print("Model: ", m.get_model())
     print(m.best_params)
     """ m.predict(

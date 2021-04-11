@@ -42,6 +42,7 @@ class AutoML:
         id_column=None,
         optimizer: str = "OptunaSearch",
         config=None,
+        output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -71,6 +72,8 @@ class AutoML:
             Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
         config : dict
             Configuration file (not implemented yet)
+        output_leaderboard : bool
+            Print algorithms leaderboard or not
         """
         if steps < 1:
             raise AutoMLError("The number of steps < 1!")
@@ -89,6 +92,8 @@ class AutoML:
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
+        if output_leaderboard:
+            self.opt.print_leaderboard()
         self.model = self.opt.get_model()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
 

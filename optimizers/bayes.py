@@ -1,6 +1,8 @@
 from bayes_opt.bayesian_optimization import BayesianOptimization
 import copy
 from optimizers.base_optimizer import BaseOptimizer
+from pipeline.leaderboard import Leaderboard
+from pipeline.modelres import ModelBoard
 
 
 class BayesianOptimizer(BaseOptimizer):
@@ -46,6 +48,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.inner_data = None
         self.imputer = None
         self.model = None
+        self.leaderboard: Leaderboard = Leaderboard()
 
     def objective(self, algo_index_tuned, preprocess_method):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -117,8 +120,9 @@ class BayesianOptimizer(BaseOptimizer):
             key=self.inner_data.id_colm,
             label=self.inner_data.target,
         )
-        print("Iteration accuracy: " + str(acc))
+        print("Child Iteration accuracy: " + str(acc))
         self.model = algorithm.model
+        self.leaderboard.addmodel(ModelBoard(algorithm.model, acc))
         return acc
 
     def get_tuned_params(self):

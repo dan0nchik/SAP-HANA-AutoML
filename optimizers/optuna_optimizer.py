@@ -1,6 +1,8 @@
 import optuna
 
 from optimizers.base_optimizer import BaseOptimizer
+from pipeline.leaderboard import Leaderboard
+from pipeline.modelres import ModelBoard
 
 
 class OptunaOptimizer(BaseOptimizer):
@@ -49,6 +51,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.droplist_columns = droplist_columns
         self.model = None
         self.imputer = None
+        self.leaderboard: Leaderboard = Leaderboard()
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
@@ -92,7 +95,9 @@ class OptunaOptimizer(BaseOptimizer):
         )
         self.imputer = imputer
         self.model = model
-        return model.score(data.valid, key=data.id_colm, label=data.target)
+        acc = model.score(data.valid, key=data.id_colm, label=data.target)
+        self.leaderboard.addmodel(ModelBoard(model, acc))
+        return acc
 
     def get_tuned_params(self):
         """Returns tuned hyperparameters."""
