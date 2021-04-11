@@ -113,7 +113,15 @@ class Preprocessor:
             }
             return clslist, "cls", clsdict
         else:
-            reglist = [DecisionTreeReg(), GLMRegression(), MLPreg(), SVReg(), RDTReg(), GBReg(), HGBReg()]
+            reglist = [
+                DecisionTreeReg(),
+                GLMRegression(),
+                MLPreg(),
+                SVReg(),
+                RDTReg(),
+                GBReg(),
+                HGBReg(),
+            ]
             regdict = {
                 "DecisionTreeReg": DecisionTreeReg(),
                 "GLMRegression": GLMRegression(),
@@ -121,7 +129,7 @@ class Preprocessor:
                 "SupportVectorRegressor": SVReg(),
                 "Random_Decision_Tree_Reg": RDTReg(),
                 "GradientBoostingRegressor": GBReg(),
-                "HybridGradientBoostingRegressor": HGBReg()
+                "HybridGradientBoostingRegressor": HGBReg(),
             }
             reglist = [i for i in reglist if i.title not in algo_exceptions]
             regdict = {

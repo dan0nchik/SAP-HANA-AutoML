@@ -36,16 +36,18 @@ class GBReg(BaseAlgorithm):
             max_depth=max_depth,
             min_sample_weight_leaf=min_sample_weight_leaf,
             learning_rate=learning_rate,
-            categorical_variable=["Канал_ПЕРВЫЙ КАНАЛ",
-                                  "Канал_РЕН ТВ",
-                                  "Канал_РОССИЯ 1",
-                                  "Канал_СТС",
-                                  "Канал_ТНТ",
-                                  "day",
-                                  "year",
-                                  "month",
-                                  "hour",
-                                  "holidays"]
+            categorical_variable=[
+                "Канал_ПЕРВЫЙ КАНАЛ",
+                "Канал_РЕН ТВ",
+                "Канал_РОССИЯ 1",
+                "Канал_СТС",
+                "Канал_ТНТ",
+                "day",
+                "year",
+                "month",
+                "hour",
+                "holidays",
+            ]
             # TODO: fix this crutch
         )
         return model
