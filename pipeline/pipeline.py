@@ -1,3 +1,5 @@
+import time
+
 from optimizers.bayes import BayesianOptimizer
 from optimizers.optuna_optimizer import OptunaOptimizer
 from pipeline.data import Data
@@ -64,4 +66,5 @@ class Pipeline:
         else:
             raise PipelineError("Optimizer not found!")
         self.opt.tune()
+        time.sleep(1)
         return self.opt
