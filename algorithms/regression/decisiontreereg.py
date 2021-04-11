@@ -8,7 +8,7 @@ class DecisionTreeReg(BaseAlgorithm):
         super(DecisionTreeReg, self).__init__()
         self.title = "DecisionTreeRegressor"
         self.params_range = {
-            "max_depth": (2, 50),
+            "max_depth": (2, 56),
             "min_records_of_leaf": (1, 100),
             "min_records_of_parent": (2, 100),
         }
@@ -23,7 +23,7 @@ class DecisionTreeReg(BaseAlgorithm):
 
     def optunatune(self, trial):
         algorithm = "cart"
-        max_depth = trial.suggest_int("DTR_max_depth", 2, 100, log=True)
+        max_depth = trial.suggest_int("DTR_max_depth", 2, 56, log=True)
         min_records_of_leaf = trial.suggest_int(
             "DTR_min_records_of_leaf", 2, 100, log=True
         )

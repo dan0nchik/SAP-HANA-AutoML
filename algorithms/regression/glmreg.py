@@ -17,6 +17,5 @@ class GLMRegression(BaseAlgorithm):
     def optunatune(self, trial):
         # TODO: additional hp
         family = trial.suggest_categorical("family", ["gaussian", "normal", "poisson"])
-        print(family)
         model = GLM(family=family)
         return model
