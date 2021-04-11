@@ -11,6 +11,8 @@ from algorithms.classification.rdtclas import RDTCls
 from algorithms.classification.svc import SVCls
 from algorithms.regression.decisiontreereg import DecisionTreeReg
 from algorithms.regression.glmreg import GLMRegression
+from algorithms.regression.mlpreg import MLPreg
+from algorithms.regression.expreg import ExponentialReg
 from utils.error import PreprocessError
 
 
@@ -107,10 +109,11 @@ class Preprocessor:
             }
             return clslist, "cls", clsdict
         else:
-            reglist = [DecisionTreeReg(), GLMRegression()]
+            reglist = [DecisionTreeReg(), GLMRegression(), MLPreg()]
             regdict = {
                 "DecisionTreeReg": DecisionTreeReg(),
                 "GLMRegression": GLMRegression(),
+                "MLPRegressor": MLPreg(),
             }
             reglist = [i for i in reglist if i.title not in algo_exceptions]
             regdict = {
