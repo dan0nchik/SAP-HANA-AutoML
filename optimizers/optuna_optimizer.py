@@ -52,11 +52,23 @@ class OptunaOptimizer(BaseOptimizer):
         self.model = None
         self.imputer = None
         self.leaderboard: Leaderboard = Leaderboard()
+        self.accuracy = 0
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
         opt.optimize(self.objective, n_trials=self.iterations)
         self.tuned_params = opt.best_params
+        self.imputer = opt.best_params.pop("imputer")
+
+        # Model in Leaderboard is not tuned
+        self.model = self.leaderboard.board[0].model
+        data = self.data.clear(
+            num_strategy=self.imputer,
+            cat_strategy=None,
+            dropempty=False,
+            categorical_list=None,
+        )
+        self.fit(self.model, data)
 
     def objective(self, trial):
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -83,6 +95,29 @@ class OptunaOptimizer(BaseOptimizer):
             categorical_list=None,
         )
         model = algo.optunatune(trial)
+        self.fit(model, data)
+        acc = model.score(data.valid, key=data.id_colm, label=data.target)
+        self.leaderboard.addmodel(ModelBoard(model, acc))
+        return acc
+
+    def get_tuned_params(self):
+        """Returns tuned hyperparameters."""
+        return {
+            "title": self.tuned_params.pop("algo"),
+            "accuracy": self.leaderboard.board[0].accuracy,
+            "info": self.tuned_params,
+        }
+
+    def get_model(self):
+        """Returns tuned model."""
+        return self.model
+
+    def get_preprocessor_settings(self):
+        """Returns tuned preprocessor settings."""
+        return {"imputer": self.imputer}
+
+    def fit(self, model, data):
+        """Fits given model from data. Small method to reduce code repeating."""
         ftr: list = data.train.columns
         ftr.remove(data.target)
         ftr.remove(data.id_colm)
@@ -93,20 +128,3 @@ class OptunaOptimizer(BaseOptimizer):
             categorical_variable=self.categorical_features,
             label=data.target,
         )
-        self.imputer = imputer
-        self.model = model
-        acc = model.score(data.valid, key=data.id_colm, label=data.target)
-        self.leaderboard.addmodel(ModelBoard(model, acc))
-        return acc
-
-    def get_tuned_params(self):
-        """Returns tuned hyperparameters."""
-        print("Title: ", self.tuned_params.pop("algo"), "\nInfo:", self.tuned_params)
-
-    def get_model(self):
-        """Returns tuned model."""
-        return self.model
-
-    def get_preprocessor_settings(self):
-        """Returns tuned preprocessor settings."""
-        return {"imputer": self.imputer}

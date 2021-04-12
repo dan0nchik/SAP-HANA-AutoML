@@ -59,22 +59,21 @@ class BayesianOptimizer(BaseOptimizer):
             Index of algorithm in algo_list.
         preprocess_method : in
             Strategy to decode categorical variables.
-        dropempty : Bool
-            Drop empty rows or not.
-        categorical_list : list
-            List of categorical features.
 
         Returns
         -------
         Best params
             Optimal hyperparameters.
 
+        Note
+        ----
+            Total number of child objective iterations is n_iter + init_points!
         """
         self.algo_index = round(algo_index_tuned)
         rounded_preprocess_method = round(preprocess_method)
-        self.imputer = self.imputerstrategy_list[rounded_preprocess_method]
+        imputer = self.imputerstrategy_list[rounded_preprocess_method]
         self.inner_data = copy.copy(self.data).clear(
-            num_strategy=self.imputer,
+            num_strategy=imputer,
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
@@ -85,7 +84,7 @@ class BayesianOptimizer(BaseOptimizer):
             verbose=False,
             random_state=17,
         )
-        opt.maximize(n_iter=1)
+        opt.maximize(n_iter=1, init_points=1)
         self.algo_list[self.algo_index].set_params(**opt.max["params"])
         return opt.max["target"]
 
@@ -96,32 +95,20 @@ class BayesianOptimizer(BaseOptimizer):
         ----------
         **hyperparameters
             Parameters of algorithm's model.
-
         Returns
         -------
         acc
             Accuracy score of a model.
-
         """
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
-        ftr: list = self.inner_data.train.columns
-        ftr.remove(self.inner_data.target)
-        ftr.remove(self.inner_data.id_colm)
-        algorithm.model.fit(
-            self.inner_data.train,
-            key=self.inner_data.id_colm,
-            features=ftr,
-            label=self.inner_data.target,
-            categorical_variable=self.categorical_list,
-        )
+        self.fit(algorithm.model, self.inner_data)
         acc = algorithm.model.score(
             self.inner_data.valid,
             key=self.inner_data.id_colm,
             label=self.inner_data.target,
         )
         print("Child Iteration accuracy: " + str(acc))
-        self.model = algorithm.model
         self.leaderboard.addmodel(ModelBoard(algorithm.model, acc))
         return acc
 
@@ -130,7 +117,8 @@ class BayesianOptimizer(BaseOptimizer):
 
         return {
             "title": self.algo_list[self.algo_index].title,
-            "params": self.tuned_params,
+            "accuracy": self.leaderboard.board[0].accuracy,
+            "info": self.tuned_params,
         }
 
     def get_model(self):
@@ -154,5 +142,32 @@ class BayesianOptimizer(BaseOptimizer):
             },
             random_state=17,
         )
-        opt.maximize(n_iter=self.iter)
+        opt.maximize(n_iter=self.iter, init_points=1)
         self.tuned_params = opt.max
+        self.model = self.algo_list[round(opt.max["params"]["algo_index_tuned"])].model
+        self.imputer = self.imputerstrategy_list[
+            round(opt.max["params"]["preprocess_method"])
+        ]
+        # Model in Leaderboard is not tuned
+
+        self.model = self.leaderboard.board[0].model
+        data = copy.copy(self.data).clear(
+            num_strategy=self.imputer,
+            cat_strategy=None,
+            dropempty=False,
+            categorical_list=None,
+        )
+        self.fit(self.model, data)
+
+    def fit(self, model, data):
+        """Fits given model from data. Small method to reduce code repeating."""
+        ftr: list = data.train.columns
+        ftr.remove(data.target)
+        ftr.remove(data.id_colm)
+        model.fit(
+            data.train,
+            key=data.id_colm,
+            features=ftr,
+            label=data.target,
+            categorical_variable=self.categorical_list,
+        )
