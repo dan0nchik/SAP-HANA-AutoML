@@ -6,6 +6,7 @@ from preprocess.preprocessor import Preprocessor
 from utils.error import AutoMLError
 from hana_ml.model_storage import ModelStorage
 import pickle
+import hana_ml
 
 
 class AutoML:
@@ -14,6 +15,8 @@ class AutoML:
 
     Attributes
     ----------
+    connection_context : hana_ml.ConnectionContext
+        Connection info to HANA database.
     opt
         Optimizer from pipeline.
     model
@@ -24,7 +27,8 @@ class AutoML:
         Preprocessor settings.
     """
 
-    def __init__(self):
+    def __init__(self, connection_context: hana_ml.ConnectionContext):
+        self.connection_context = connection_context
         self.opt = None
         self.model = None
         self.predicted = None
@@ -78,6 +82,7 @@ class AutoML:
         if steps < 1:
             raise AutoMLError("The number of steps < 1!")
         inputted = Input(
+            connection_context=self.connection_context,
             df=df,
             target=target,
             path=file_path,
@@ -121,6 +126,7 @@ class AutoML:
             Path to JSON file containing preprocessor settings.
         """
         data = Input(
+            connection_context=self.connection_context,
             df=df,
             path=file_path,
             table_name=table_name,
@@ -170,7 +176,7 @@ class AutoML:
         res.collect().to_csv(file_path)
 
     def save_preprocessor(self, file_path: str):
-        """Saves preprocessor settings to JSON file
+        """Saves preprocessor settings to JSON file to use it in future predictions.
 
         Parameters
         ----------
@@ -208,7 +214,8 @@ class AutoML:
 
 class Storage(ModelStorage):
     """Save your HANA PAL model easily.
-    Details here:https://help.sap.com/doc/1d0ebfe5e8dd44d09606814d83308d4b/2.0.04/en-US/hana_ml.model_storage.html"""
+    Details here:
+    https://help.sap.com/doc/1d0ebfe5e8dd44d09606814d83308d4b/2.0.04/en-US/hana_ml.model_storage.html"""
 
     def __init__(self, connection_context):
         super().__init__(connection_context)

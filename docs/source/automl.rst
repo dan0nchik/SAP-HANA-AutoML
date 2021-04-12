@@ -22,4 +22,8 @@ AutoML class
 
 .. autofunction:: automl.AutoML.model_to_file
 
+.. autofunction:: automl.AutoML.save_preprocessor
+
+.. autofunction:: automl.AutoML.get_model
+
 .. autoclass:: automl.Storage

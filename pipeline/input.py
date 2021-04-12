@@ -3,7 +3,6 @@ import pandas as pd
 import uuid
 from pipeline.data import Data
 from hana_ml.algorithms.pal.partition import train_test_val_split
-from utils.connection import connection_context
 from hana_ml.dataframe import create_dataframe_from_pandas
 from utils.error import InputError
 from pandas import DataFrame
@@ -14,6 +13,8 @@ class Input:
 
     Attributes
     ----------
+    connection_context : hana_ml.ConnectionContext
+        Connection info to HANA database.
     df : DataFrame
         Pandas dataframe with data.
     id_col : str
@@ -30,19 +31,20 @@ class Input:
 
     def __init__(
         self,
+        connection_context=None,
         df: pd.DataFrame = None,
         target=None,
         path: str = None,
         id_col=None,
         table_name: str = None,
     ):
-        """"""
         self.df = df
         self.id_col = id_col
         self.file_path = path
         self.target = target
         self.table_name = table_name
         self.hana_df = None
+        self.connection_context = connection_context
 
     def load_data(self):
         """Loads data to HANA database."""
@@ -59,22 +61,25 @@ class Input:
                 self.df = self.download_data(self.file_path)
             print(f"Creating table with name: {name}")
             self.hana_df = create_dataframe_from_pandas(
-                connection_context, self.df, name
+                self.connection_context, self.df, name
             )
         elif (
             self.table_name is not None or self.table_name != ""
         ) and self.file_path is None:
             print(f"Connecting to existing table {self.table_name}")
-            self.hana_df = connection_context.table(self.table_name)
+            self.hana_df = self.connection_context.table(self.table_name)
         elif self.table_name is not None and self.file_path is not None:
             print(f"Recreating table {self.table_name} with data from file")
             self.hana_df = create_dataframe_from_pandas(
-                connection_context, self.download_data(self.file_path), name, force=True
+                self.connection_context,
+                self.download_data(self.file_path),
+                name,
+                force=True,
             )
         elif self.table_name is not None and self.df is not None:
             print(f"Recreating table with data from dataframe")
             self.hana_df = create_dataframe_from_pandas(
-                connection_context, self.df, name, force=True
+                self.connection_context, self.df, name, force=True
             )
         else:
             raise InputError("No data provided")
