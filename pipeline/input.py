@@ -50,9 +50,6 @@ class Input:
         """Loads data to HANA database."""
 
         name = f"AUTOML{str(uuid.uuid4())}"
-        with open("utils/tables.txt", "a+") as file:
-            file.write(name + "\n")
-            file.close()
 
         if (
             self.df is not None or self.file_path is not None
@@ -65,7 +62,7 @@ class Input:
             )
         elif (
             self.table_name is not None or self.table_name != ""
-        ) and self.file_path is None:
+        ) and self.file_path is None and self.df is None:
             print(f"Connecting to existing table {self.table_name}")
             self.hana_df = self.connection_context.table(self.table_name)
         elif self.table_name is not None and self.file_path is not None:
@@ -77,7 +74,7 @@ class Input:
                 force=True,
             )
         elif self.table_name is not None and self.df is not None:
-            print(f"Recreating table with data from dataframe")
+            print(f"Recreating table {self.table_name} with data from dataframe")
             self.hana_df = create_dataframe_from_pandas(
                 self.connection_context, self.df, name, force=True
             )
