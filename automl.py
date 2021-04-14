@@ -5,7 +5,6 @@ from pipeline.pipeline import Pipeline
 from preprocess.preprocessor import Preprocessor
 from utils.error import AutoMLError
 from hana_ml.model_storage import ModelStorage
-import pickle
 import hana_ml
 
 

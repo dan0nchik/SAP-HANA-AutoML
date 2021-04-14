@@ -6,6 +6,9 @@
 Welcome to hana_automl's documentation!
 =======================================
 
+.. warning::
+   This library is an open-source research project and is not a part of any official `SAP <https://www.sap.com/>`_ products. 
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

@@ -21,12 +21,14 @@ class Pipeline:
         Optimizer.
     """
 
-    def __init__(self, data: Data, steps):
+    def __init__(self, data: Data, steps: int):
         self.data = data
         self.iter = steps
         self.opt = None
+        if steps < 1:
+            raise PipelineError("Steps < 1!")
 
-    def train(self, categorical_features=None, optimizer=None):
+    def train(self, categorical_features: list = None, optimizer: str = None):
         """Preprocesses data and starts optimizer.
 
         Parameters

@@ -29,8 +29,10 @@ class Preprocessor:
         predict_column_importance=False,
         dropempty=False,
         num_strategy="mean",
-        cat_strategy=[],
+        cat_strategy=None,
     ):
+        if cat_strategy is None:
+            cat_strategy = []
         if data is None:
             raise PreprocessError("Enter not null data!")
         if predict_column_importance:
