@@ -1,4 +1,4 @@
-from hana_ml.algorithms.pal.metrics import accuracy_score
+from hana_ml.algorithms.pal.metrics import r2_score
 from hana_ml.algorithms.pal.neighbors import KNNRegressor
 
 from algorithms.base_algo import BaseAlgorithm
@@ -45,3 +45,12 @@ class KNeighborsReg(BaseAlgorithm):
             metric=metric,
         )
         self.model = model
+
+    def score(self, data):
+        ftr: list = data.test.columns
+        ftr.remove(data.target)
+        ftr.remove(data.id_colm)
+        res, stats = self.model.predict(data.test, key=data.id_colm, features=ftr)
+        df = data.test.drop(ftr)
+        itg = res.join(df, "1 = 1")
+        return r2_score(data=itg, label_true=data.target, label_pred='TARGET')

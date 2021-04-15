@@ -1,11 +1,14 @@
+import random
+
+from hana_ml.algorithms.pal.metrics import accuracy_score
 from hana_ml.algorithms.pal.neighbors import KNNClassifier
 
 from algorithms.base_algo import BaseAlgorithm
 
 
-class KNeighbors(BaseAlgorithm):
+class KNeighborsCls(BaseAlgorithm):
     def __init__(self):
-        super(KNeighbors, self).__init__()
+        super(KNeighborsCls, self).__init__()
         self.title = "KNeighborsClassifier"
         self.params_range = {
             "algorithm": (0, 1),
@@ -48,3 +51,12 @@ class KNeighbors(BaseAlgorithm):
             metric=metric,
         )
         self.model = model
+
+    def score(self, data):
+        ftr: list = data.test.columns
+        ftr.remove(data.target)
+        ftr.remove(data.id_colm)
+        res, stats = self.model.predict(data.test, key=data.id_colm, features=ftr)
+        df = data.test.drop(ftr)
+        itg = res.join(df, "1 = 1")
+        return accuracy_score(data=itg, label_true=data.target, label_pred='TARGET')
