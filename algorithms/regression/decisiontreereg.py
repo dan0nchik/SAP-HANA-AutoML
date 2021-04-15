@@ -12,7 +12,6 @@ class DecisionTreeReg(BaseAlgorithm):
             "min_records_of_leaf": (1, 100),
             "min_records_of_parent": (2, 100),
         }
-        self.model = DecisionTreeRegressor()
 
     def set_params(self, **params):
         params["algorithm"] = "cart"
@@ -36,4 +35,4 @@ class DecisionTreeReg(BaseAlgorithm):
             min_records_of_leaf=min_records_of_leaf,
             min_records_of_parent=min_records_of_parent,
         )
-        return model
+        self.model = model

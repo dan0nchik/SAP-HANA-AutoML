@@ -14,7 +14,6 @@ class HGBReg(BaseAlgorithm):
             "min_sample_weight_leaf": (1, 100),
             "learning_rate": (0.01, 1),
         }
-        self.model = HybridGradientBoostingRegressor()
 
     def set_params(self, **params):
         params["n_estimators"] = round(params["n_estimators"])
@@ -42,4 +41,4 @@ class HGBReg(BaseAlgorithm):
             min_sample_weight_leaf=min_sample_weight_leaf,
             learning_rate=learning_rate,
         )
-        return model
+        self.model = model

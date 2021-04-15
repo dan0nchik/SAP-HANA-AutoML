@@ -14,7 +14,6 @@ class GBCls(BaseAlgorithm):
             "min_sample_weight_leaf": (1, 100),
             "learning_rate": (0.01, 1),
         }
-        self.model = GradientBoostingClassifier()
 
     def set_params(self, **params):
         params["n_estimators"] = round(params["n_estimators"])
@@ -40,4 +39,4 @@ class GBCls(BaseAlgorithm):
             categorical_variable=["Survived"]
             # TODO: fix this crutch
         )
-        return model
+        self.model = model

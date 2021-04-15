@@ -53,7 +53,7 @@ class Pipeline:
                 algo_list=algo_list,
                 data=self.data,
                 iterations=self.iter,
-                categorical_list=categorical_features,
+                categorical_features=categorical_features,
                 problem=task,
             )
         elif optimizer == "OptunaSearch":

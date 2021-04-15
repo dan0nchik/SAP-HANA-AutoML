@@ -13,7 +13,6 @@ class KNeighbors(BaseAlgorithm):
             "voting_type": (0, 1),
             "metric": (0, 4),
         }
-        self.model = KNNClassifier()
 
     def set_params(self, **params):
         params["voting_type"] = ["majority", "distance-weighted"][
@@ -48,4 +47,4 @@ class KNeighbors(BaseAlgorithm):
             voting_type=voting_type,
             metric=metric,
         )
-        return model
+        self.model = model

@@ -28,4 +28,4 @@ class ExponentialReg(BaseAlgorithm):
             decomposition=decomposition,
             adjusted_r2=adjusted_r2,
         )
-        return model
+        self.model = model

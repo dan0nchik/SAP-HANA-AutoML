@@ -13,7 +13,6 @@ class RDTReg(BaseAlgorithm):
             "min_samples_leaf": (1, 100),
             "calculate_oob": (0, 1),
         }
-        self.model = RDTRegressor()
 
     def set_params(self, **params):
         params["calculate_oob"] = [True, False][round(params["calculate_oob"])]
@@ -37,4 +36,4 @@ class RDTReg(BaseAlgorithm):
             calculate_oob=calculate_oob,
             min_samples_leaf=min_samples_leaf,
         )
-        return model
+        self.model = model

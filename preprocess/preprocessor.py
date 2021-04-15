@@ -101,7 +101,7 @@ class Preprocessor:
                 "DecisionTree": DecisionTreeCls(),
                 "Logistic Regression": LogRegression(),
                 "NaiveBayes": NBayes(),
-                "MLPClassifier": MLPcls(),
+                #    "MLPClassifier": MLPcls(),
                 "SVCls": SVCls(),
                 "RDTCls": RDTCls(),
                 "GradientBoostingClassifier": GBCls(),
