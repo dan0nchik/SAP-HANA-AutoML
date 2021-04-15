@@ -1,7 +1,8 @@
 from bayes_opt.bayesian_optimization import BayesianOptimization
-import copy
+
 from optimizers.base_optimizer import BaseOptimizer
 from pipeline.leaderboard import Leaderboard
+
 from pipeline.modelres import ModelBoard
 
 
@@ -24,7 +25,7 @@ class BayesianOptimizer(BaseOptimizer):
         Index of algorithm in algorithms list.
     imputerstrategy_list : list
         List of imputer strategies for preprocessing.
-    categorical_list : list
+    categorical_features : list
         List of categorical features in dataframe.
     inner_data : Data
         Copy of Data object to prevent from preprocessing data object multiple times while optimizing.
@@ -35,7 +36,7 @@ class BayesianOptimizer(BaseOptimizer):
     """
 
     def __init__(
-        self, algo_list: list, data, iterations, problem, categorical_list=None
+        self, algo_list: list, data, iterations, problem, categorical_features=None
     ):
         self.data = data
         self.algo_list = algo_list
@@ -44,7 +45,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.tuned_params = {}
         self.algo_index = 0
         self.imputerstrategy_list = ["mean", "median", "zero"]
-        self.categorical_list = categorical_list
+        self.categorical_features = categorical_features
         self.inner_data = None
         self.imputer = None
         self.model = None
@@ -72,7 +73,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = round(algo_index_tuned)
         rounded_preprocess_method = round(preprocess_method)
         imputer = self.imputerstrategy_list[rounded_preprocess_method]
-        self.inner_data = copy.copy(self.data).clear(
+        self.inner_data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
             dropempty=False,
@@ -102,12 +103,8 @@ class BayesianOptimizer(BaseOptimizer):
         """
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
-        self.fit(algorithm.model, self.inner_data)
-        acc = algorithm.model.score(
-            self.inner_data.valid,
-            key=self.inner_data.id_colm,
-            label=self.inner_data.target,
-        )
+        self.fit(algorithm, self.inner_data)
+        acc = algorithm.score(self.inner_data)
         print("Child Iteration accuracy: " + str(acc))
         self.leaderboard.addmodel(ModelBoard(algorithm.model, acc))
         return acc
@@ -148,26 +145,11 @@ class BayesianOptimizer(BaseOptimizer):
         self.imputer = self.imputerstrategy_list[
             round(opt.max["params"]["preprocess_method"])
         ]
-        # Model in Leaderboard is not tuned
-
         self.model = self.leaderboard.board[0].model
-        data = copy.copy(self.data).clear(
-            num_strategy=self.imputer,
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
-        )
-        self.fit(self.model, data)
 
-    def fit(self, model, data):
+    def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""
         ftr: list = data.train.columns
         ftr.remove(data.target)
         ftr.remove(data.id_colm)
-        model.fit(
-            data.train,
-            key=data.id_colm,
-            features=ftr,
-            label=data.target,
-            categorical_variable=self.categorical_list,
-        )
+        algo.fit(data, ftr, self.categorical_features)
