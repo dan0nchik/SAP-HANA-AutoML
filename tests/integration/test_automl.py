@@ -9,7 +9,7 @@ m = AutoML(connection_context)
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
 def test_regression(optimizer):
     m.fit(
-        table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
+        table_name="test_reg",
         file_path="../../data/reg.csv",
         target="Все 18+_TVR",
         id_column="ID",
@@ -34,7 +34,7 @@ def test_regression(optimizer):
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
 def test_classification(optimizer):
     m.fit(
-        table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
+        table_name="test_cls",
         file_path="../../data/train.csv",
         target="Survived",
         id_column="PassengerId",

@@ -13,7 +13,7 @@ class Input:
 
     Attributes
     ----------
-    connection_context : hana_ml.ConnectionContext
+    connection_context : hana_ml.dataframe.ConnectionContext
         Connection info to HANA database.
     df : DataFrame
         Pandas dataframe with data.
