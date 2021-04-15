@@ -10,7 +10,6 @@ class LogRegression(BaseAlgorithm):
         self.params_range = {
             "max_iter": (100, 1000),
         }
-        self.model = LogisticRegression()
 
     def set_params(self, **params):
         params["max_iter"] = round(params["max_iter"])
@@ -22,4 +21,4 @@ class LogRegression(BaseAlgorithm):
 
         max_iter = trial.suggest_int("LGReg_max_iter", 100, 1000, log=True)
         model = LogisticRegression(max_iter=max_iter, multi_class=False)
-        return model
+        self.model = model

@@ -13,7 +13,6 @@ class DecisionTreeCls(BaseAlgorithm):
             "min_records_of_leaf": (1, 100),
             "min_records_of_parent": (2, 100),
         }
-        self.model = DecisionTreeClassifier()
 
     def set_params(self, **params):
         params["algorithm"] = ["c45", "chaid", "cart"][round(params["algorithm"])]
@@ -37,4 +36,4 @@ class DecisionTreeCls(BaseAlgorithm):
             min_records_of_leaf=min_records_of_leaf,
             min_records_of_parent=min_records_of_parent,
         )
-        return model
+        self.model = model

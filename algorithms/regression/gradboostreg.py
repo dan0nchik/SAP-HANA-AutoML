@@ -50,4 +50,4 @@ class GBReg(BaseAlgorithm):
             ]
             # TODO: fix this crutch
         )
-        return model
+        self.model = model

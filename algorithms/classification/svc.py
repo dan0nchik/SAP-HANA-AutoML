@@ -14,7 +14,6 @@ class SVCls(BaseAlgorithm):
             "tol": (0.001, 1),
             "scale_info": (0, 1),
         }
-        self.model = SVC()
 
     def set_params(self, **params):
         params["c"] = round(params["с"])
@@ -36,4 +35,4 @@ class SVCls(BaseAlgorithm):
             "CLS_SV_scale_info", ["no", "standardization", "rescale"]
         )
         model = SVC(c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
-        return model
+        self.model = model

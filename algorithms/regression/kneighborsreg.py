@@ -1,3 +1,4 @@
+from hana_ml.algorithms.pal.metrics import accuracy_score
 from hana_ml.algorithms.pal.neighbors import KNNRegressor
 
 from algorithms.base_algo import BaseAlgorithm
@@ -13,7 +14,6 @@ class KNeighborsReg(BaseAlgorithm):
             "aggregate_type": (0, 1),
             "metric": (0, 3),
         }
-        self.model = KNNRegressor()
 
     def set_params(self, **params):
         params["aggregate_type"] = ["average", "distance-weighted"][
@@ -44,4 +44,4 @@ class KNeighborsReg(BaseAlgorithm):
             aggregate_type=aggregate_type,
             metric=metric,
         )
-        return model
+        self.model = model

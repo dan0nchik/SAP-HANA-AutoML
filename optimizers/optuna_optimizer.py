@@ -53,6 +53,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.imputer = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
+        self.tuned_params = None
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
@@ -62,13 +63,6 @@ class OptunaOptimizer(BaseOptimizer):
 
         # Model in Leaderboard is not tuned
         self.model = self.leaderboard.board[0].model
-        data = self.data.clear(
-            num_strategy=self.imputer,
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
-        )
-        self.fit(self.model, data)
 
     def objective(self, trial):
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -87,6 +81,7 @@ class OptunaOptimizer(BaseOptimizer):
         algo = self.algo_dict.get(
             trial.suggest_categorical("algo", self.algo_dict.keys())
         )
+        algo.set_categ(self.categorical_features)
         imputer = trial.suggest_categorical("imputer", ["mean", "median", "zero"])
         data = self.data.clear(
             num_strategy=imputer,
@@ -94,10 +89,10 @@ class OptunaOptimizer(BaseOptimizer):
             dropempty=False,
             categorical_list=None,
         )
-        model = algo.optunatune(trial)
-        self.fit(model, data)
-        acc = model.score(data.valid, key=data.id_colm, label=data.target)
-        self.leaderboard.addmodel(ModelBoard(model, acc))
+        algo.optunatune(trial)
+        self.fit(algo, data)
+        acc = algo.score(data)
+        self.leaderboard.addmodel(ModelBoard(algo.model, acc))
         return acc
 
     def get_tuned_params(self):
@@ -116,15 +111,9 @@ class OptunaOptimizer(BaseOptimizer):
         """Returns tuned preprocessor settings."""
         return {"imputer": self.imputer}
 
-    def fit(self, model, data):
+    def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""
         ftr: list = data.train.columns
         ftr.remove(data.target)
         ftr.remove(data.id_colm)
-        model.fit(
-            data.train,
-            key=data.id_colm,
-            features=ftr,
-            categorical_variable=self.categorical_features,
-            label=data.target,
-        )
+        algo.fit(data, ftr, self.categorical_features)

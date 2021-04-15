@@ -18,4 +18,4 @@ class GLMRegression(BaseAlgorithm):
         # TODO: additional hp
         family = trial.suggest_categorical("family", ["gaussian", "normal", "poisson"])
         model = GLM(family=family)
-        return model
+        self.model = model

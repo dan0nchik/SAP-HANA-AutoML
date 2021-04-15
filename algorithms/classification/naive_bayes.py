@@ -23,4 +23,4 @@ class NBayes(BaseAlgorithm):
             "CLS_NaiveBayes_discretization", ["no", "supervised"]
         )
         model = NaiveBayes(alpha=alpha, discretization=discretization)
-        return model
+        self.model = model

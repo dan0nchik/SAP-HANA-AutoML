@@ -79,4 +79,4 @@ class MLPreg(BaseAlgorithm):
             weight_init=weight_init,
             learning_rate=learning_rate,
         )
-        return model
+        self.model = model
