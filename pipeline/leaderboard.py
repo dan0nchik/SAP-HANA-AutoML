@@ -7,7 +7,6 @@ class Leaderboard:
 
     def addmodel(self, model):
         self.board.append(model)
-        self.board.sort(key=self.accSort, reverse=True)
 
     def accSort(self, model: ModelBoard):
-        return model.accuracy
+        return model.valid_accuracy

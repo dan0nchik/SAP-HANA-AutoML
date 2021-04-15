@@ -61,8 +61,19 @@ class OptunaOptimizer(BaseOptimizer):
         self.tuned_params = opt.best_params
         self.imputer = opt.best_params.pop("imputer")
 
-        # Model in Leaderboard is not tuned
+        self.leaderboard.board.sort(key=self.leaderboard.accSort, reverse=True)
         self.model = self.leaderboard.board[0].model
+        for algo in self.leaderboard.board:
+            data = self.data.clear(
+                num_strategy=algo.preprocessor["imputer"],
+                cat_strategy=None,
+                dropempty=False,
+                categorical_list=None,
+            )
+            acc = algo.model.score(
+                data.valid, key=self.data.id_colm, label=self.data.target
+            )
+            algo.add_valid_acc(acc)
 
     def objective(self, trial):
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -91,15 +102,15 @@ class OptunaOptimizer(BaseOptimizer):
         )
         algo.optunatune(trial)
         self.fit(algo, data)
-        acc = algo.score(data)
-        self.leaderboard.addmodel(ModelBoard(algo.model, acc))
+        acc = algo.score(data, data.test)
+        self.leaderboard.addmodel(ModelBoard(algo.model, acc, {"imputer": imputer}))
         return acc
 
     def get_tuned_params(self):
         """Returns tuned hyperparameters."""
         return {
             "title": self.tuned_params.pop("algo"),
-            "accuracy": self.leaderboard.board[0].accuracy,
+            "accuracy": self.leaderboard.board[0].valid_accuracy,
             "info": self.tuned_params,
         }
 
