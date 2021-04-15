@@ -3,9 +3,9 @@ from hana_ml.algorithms.pal.regression import GLM
 from algorithms.base_algo import BaseAlgorithm
 
 
-class GLMRegression(BaseAlgorithm):
+class GLMReg(BaseAlgorithm):
     def __init__(self):
-        super(GLMRegression, self).__init__()
+        super(GLMReg, self).__init__()
         self.title = "GLMRegression"
         self.params_range = {"family": (0, 2)}
         self.model = GLM()

@@ -3,16 +3,17 @@ from hana_ml.algorithms.pal.preprocessing import Imputer
 from algorithms.classification.decisiontreecls import DecisionTreeCls
 from algorithms.classification.gradboostcls import GBCls
 from algorithms.classification.hybgradboostcls import HGBCls
-from algorithms.classification.kneighbors import KNeighbors
-from algorithms.classification.logregression import LogRegression
+from algorithms.classification.kneighborscls import KNeighborsCls
+from algorithms.classification.logregressioncls import LogRegressionCls
 from algorithms.classification.mlpcl import MLPcls
-from algorithms.classification.naive_bayes import NBayes
+from algorithms.classification.naive_bayes import NBayesCls
 from algorithms.classification.rdtclas import RDTCls
 from algorithms.classification.svc import SVCls
 from algorithms.regression.decisiontreereg import DecisionTreeReg
-from algorithms.regression.glmreg import GLMRegression
+from algorithms.regression.glmreg import GLMReg
 from algorithms.regression.gradboostreg import GBReg
 from algorithms.regression.hybgradboostreg import HGBReg
+from algorithms.regression.kneighborsreg import KNeighborsReg
 from algorithms.regression.mlpreg import MLPreg
 from algorithms.regression.expreg import ExponentialReg
 from algorithms.regression.rdtreg import RDTReg
@@ -88,8 +89,8 @@ class Preprocessor:
         if data.train.distinct(target).count() < 10:
             clslist = [
                 DecisionTreeCls(),
-                LogRegression(),
-                NBayes(),
+                LogRegressionCls(),
+                NBayesCls(),
                 MLPcls(),
                 SVCls(),
                 RDTCls(),
@@ -97,13 +98,13 @@ class Preprocessor:
                 HGBCls(),
             ]
             clsdict = {
-                #    "KNeighborsClassifier": KNeighbors(),
-                "DecisionTree": DecisionTreeCls(),
-                "Logistic Regression": LogRegression(),
-                "NaiveBayes": NBayes(),
-                #    "MLPClassifier": MLPcls(),
-                "SVCls": SVCls(),
-                "RDTCls": RDTCls(),
+                "KNeighborsClassifier": KNeighborsCls(),
+                "DecisionTreeClassifier": DecisionTreeCls(),
+                "LogisticRegressionClassifier": LogRegressionCls(),
+                "NaiveBayesClassifier": NBayesCls(),
+                "MLPClassifier": MLPcls(),
+                "SVClassifier": SVCls(),
+                "RDTClassifier": RDTCls(),
                 "GradientBoostingClassifier": GBCls(),
                 "HybridGradientBoostingClassifier": HGBCls(),
             }
@@ -117,7 +118,8 @@ class Preprocessor:
         else:
             reglist = [
                 DecisionTreeReg(),
-                GLMRegression(),
+                GLMReg(),
+                KNeighborsReg(),
                 MLPreg(),
                 SVReg(),
                 RDTReg(),
@@ -125,11 +127,12 @@ class Preprocessor:
                 HGBReg(),
             ]
             regdict = {
-                "DecisionTreeReg": DecisionTreeReg(),
-                "GLMRegression": GLMRegression(),
+                "DecisionTreeRegressor": DecisionTreeReg(),
+                "GLMRegressor": GLMReg(),
                 "MLPRegressor": MLPreg(),
+                "KNeighborsRegressor": KNeighborsReg(),
                 "SupportVectorRegressor": SVReg(),
-                "Random_Decision_Tree_Reg": RDTReg(),
+                "RDTRegressor": RDTReg(),
                 "GradientBoostingRegressor": GBReg(),
                 "HybridGradientBoostingRegressor": HGBReg(),
             }

@@ -3,9 +3,9 @@ from hana_ml.algorithms.pal.naive_bayes import NaiveBayes
 from algorithms.base_algo import BaseAlgorithm
 
 
-class NBayes(BaseAlgorithm):
+class NBayesCls(BaseAlgorithm):
     def __init__(self):
-        super(NBayes, self).__init__()
+        super(NBayesCls, self).__init__()
         self.title = "NaiveBayes"
         self.params_range = {
             "alpha": (0, 2),
