@@ -19,15 +19,15 @@ class BaseAlgorithm:
     def optunatune(self, trial):
         pass
 
-    def score(self, data):
-        return self.model.score(data.valid, key=data.id_colm, label=data.target)
+    def score(self, data, df):
+        return self.model.score(df, key=data.id_colm, label=data.target)
 
     def set_categ(self, cat):
         self.categorical_features = cat
 
     def fit(self, data, features, categorical_features):
         self.model.fit(
-            data.train,
+            data=data.train,
             key=data.id_colm,
             features=features,
             categorical_variable=categorical_features,

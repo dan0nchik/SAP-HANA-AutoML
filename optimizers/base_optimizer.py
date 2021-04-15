@@ -42,8 +42,10 @@ class BaseOptimizer(ABC):
                     str(place)
                     + ".  "
                     + str(algorithm.model)
-                    + "\n Accuracy: "
-                    + str(algorithm.accuracy)
+                    + "\n Train accuracy: "
+                    + str(algorithm.train_accuracy)
+                    + " Validation accuracy: "
+                    + str(algorithm.valid_accuracy)
                 )
             )
             print("\033[0m {}".format(""))

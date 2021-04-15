@@ -86,7 +86,13 @@ class BayesianOptimizer(BaseOptimizer):
             random_state=17,
         )
         opt.maximize(n_iter=1, init_points=1)
-        self.algo_list[self.algo_index].set_params(**opt.max["params"])
+
+        algo = self.algo_list[self.algo_index]
+        algo.set_params(**opt.max["params"])
+        self.leaderboard.addmodel(
+            ModelBoard(algo.model, opt.max["target"], {"imputer": imputer})
+        )
+
         return opt.max["target"]
 
     def child_objective(self, **hyperparameters):
@@ -104,9 +110,8 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
-        acc = algorithm.score(self.inner_data)
+        acc = algorithm.score(self.inner_data, self.inner_data.test)
         print("Child Iteration accuracy: " + str(acc))
-        self.leaderboard.addmodel(ModelBoard(algorithm.model, acc))
         return acc
 
     def get_tuned_params(self):
@@ -114,7 +119,7 @@ class BayesianOptimizer(BaseOptimizer):
 
         return {
             "title": self.algo_list[self.algo_index].title,
-            "accuracy": self.leaderboard.board[0].accuracy,
+            "accuracy": self.leaderboard.board[0].valid_accuracy,
             "info": self.tuned_params,
         }
 
@@ -145,7 +150,29 @@ class BayesianOptimizer(BaseOptimizer):
         self.imputer = self.imputerstrategy_list[
             round(opt.max["params"]["preprocess_method"])
         ]
+        self.leaderboard.board.sort(key=self.leaderboard.accSort, reverse=True)
         self.model = self.leaderboard.board[0].model
+        for algo in self.leaderboard.board:
+            data = self.data.clear(
+                num_strategy=algo.preprocessor["imputer"],
+                cat_strategy=None,
+                dropempty=False,
+                categorical_list=None,
+            )
+            ftr: list = data.train.columns
+            ftr.remove(data.target)
+            ftr.remove(data.id_colm)
+            algo.model.fit(
+                data=data.train,
+                key=data.id_colm,
+                features=ftr,
+                categorical_variable=self.categorical_features,
+                label=data.target,
+            )
+            acc = algo.model.score(
+                data.valid, key=self.data.id_colm, label=self.data.target
+            )
+            algo.add_valid_acc(acc)
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""
