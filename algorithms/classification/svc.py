@@ -8,7 +8,7 @@ class SVCls(BaseAlgorithm):
         super(SVCls, self).__init__()
         self.title = "SupportVectorClassifier"
         self.params_range = {
-            "c": (50, 300),
+            "c": (10, 150),
             "kernel": (0, 3),
             "shrink": (0, 1),
             "tol": (0.001, 1),

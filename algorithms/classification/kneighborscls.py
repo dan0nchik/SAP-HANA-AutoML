@@ -52,11 +52,13 @@ class KNeighborsCls(BaseAlgorithm):
         )
         self.model = model
 
-    def score(self, data):
-        ftr: list = data.test.columns
+    def score(self, data, df):
+        ftr: list = df.columns
         ftr.remove(data.target)
         ftr.remove(data.id_colm)
-        res, stats = self.model.predict(data.test, key=data.id_colm, features=ftr)
-        df = data.test.drop(ftr)
-        itg = res.join(df, "1 = 1")
+        res, stats = self.model.predict(df, key=data.id_colm, features=ftr)
+        dataframe = df.drop(ftr)
+        itg = res.join(dataframe, "1 = 1")
         return accuracy_score(data=itg, label_true=data.target, label_pred="TARGET")
+
+

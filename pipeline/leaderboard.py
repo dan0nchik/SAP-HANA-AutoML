@@ -7,6 +7,3 @@ class Leaderboard:
 
     def addmodel(self, model):
         self.board.append(model)
-
-    def accSort(self, model: ModelBoard):
-        return model.valid_accuracy

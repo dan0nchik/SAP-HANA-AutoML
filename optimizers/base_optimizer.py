@@ -34,18 +34,18 @@ class BaseOptimizer(ABC):
         """Return a dictionary with preprocessor settings"""
 
     def print_leaderboard(self):
-        print("\033[33m {}".format("Leaderboard (top 5 best algorithms):\n"))
+        print("\033[33m {}".format("Leaderboard (top best algorithms):\n"))
         place = 1
-        for algorithm in self.leaderboard.board[:5]:
+        for member in self.leaderboard.board:
             print(
                 "\033[33m {}".format(
                     str(place)
                     + ".  "
-                    + str(algorithm.model)
+                    + str(member.algorithm.model)
                     + "\n Train accuracy: "
-                    + str(algorithm.train_accuracy)
-                    + " Validation accuracy: "
-                    + str(algorithm.valid_accuracy)
+                    + str(member.train_accuracy * 100) + "%"
+                    + "  Validation accuracy: "
+                    + str(member.valid_accuracy * 100) + "%"
                 )
             )
             print("\033[0m {}".format(""))

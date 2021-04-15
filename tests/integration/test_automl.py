@@ -25,8 +25,9 @@ def test_regression(optimizer):
             "hour",
             "holidays",
         ],
-        steps=5,
+        steps=10,
         optimizer=optimizer,
+        output_leaderboard=True
     )
     assert m.best_params["accuracy"] > 0.70
 
@@ -40,7 +41,7 @@ def test_classification(optimizer):
         id_column="PassengerId",
         categorical_features=["Survived", "Sex"],
         columns_to_remove=["Name", "Ticket", "Cabin", "Embarked"],
-        steps=5,
+        steps=10,
         output_leaderboard=True,
         optimizer=optimizer,
     )

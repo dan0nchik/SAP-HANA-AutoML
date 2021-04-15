@@ -36,7 +36,7 @@ class BayesianOptimizer(BaseOptimizer):
     """
 
     def __init__(
-        self, algo_list: list, data, iterations, problem, categorical_features=None
+            self, algo_list: list, data, iterations, problem, categorical_features=None
     ):
         self.data = data
         self.algo_list = algo_list
@@ -89,6 +89,8 @@ class BayesianOptimizer(BaseOptimizer):
 
         algo = self.algo_list[self.algo_index]
         algo.set_params(**opt.max["params"])
+        self.fit(algo, self.inner_data)
+
         self.leaderboard.addmodel(
             ModelBoard(algo.model, opt.max["target"], {"imputer": imputer})
         )
@@ -146,33 +148,24 @@ class BayesianOptimizer(BaseOptimizer):
         )
         opt.maximize(n_iter=self.iter, init_points=1)
         self.tuned_params = opt.max
-        self.model = self.algo_list[round(opt.max["params"]["algo_index_tuned"])].model
         self.imputer = self.imputerstrategy_list[
             round(opt.max["params"]["preprocess_method"])
         ]
-        self.leaderboard.board.sort(key=self.leaderboard.accSort, reverse=True)
-        self.model = self.leaderboard.board[0].model
-        for algo in self.leaderboard.board:
+
+        for member in self.leaderboard.board:
             data = self.data.clear(
-                num_strategy=algo.preprocessor["imputer"],
+                num_strategy=member.preprocessor["imputer"],
                 cat_strategy=None,
                 dropempty=False,
                 categorical_list=None,
             )
-            ftr: list = data.train.columns
-            ftr.remove(data.target)
-            ftr.remove(data.id_colm)
-            algo.model.fit(
-                data=data.train,
-                key=data.id_colm,
-                features=ftr,
-                categorical_variable=self.categorical_features,
-                label=data.target,
+            acc = member.algorithm.score(
+                data=data, df=data.valid
             )
-            acc = algo.model.score(
-                data.valid, key=self.data.id_colm, label=self.data.target
-            )
-            algo.add_valid_acc(acc)
+            member.add_valid_acc(acc)
+
+        self.leaderboard.board.sort(key=lambda member: member.valid_accuracy, reverse=True)
+        self.model = self.leaderboard.board[0].algorithm.model
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

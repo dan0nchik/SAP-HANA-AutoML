@@ -61,19 +61,20 @@ class OptunaOptimizer(BaseOptimizer):
         self.tuned_params = opt.best_params
         self.imputer = opt.best_params.pop("imputer")
 
-        self.leaderboard.board.sort(key=self.leaderboard.accSort, reverse=True)
-        self.model = self.leaderboard.board[0].model
-        for algo in self.leaderboard.board:
+        for member in self.leaderboard.board:
             data = self.data.clear(
-                num_strategy=algo.preprocessor["imputer"],
+                num_strategy=member.preprocessor["imputer"],
                 cat_strategy=None,
                 dropempty=False,
-                categorical_list=None,
+                categorical_list=self.categorical_features,
             )
-            acc = algo.model.score(
-                data.valid, key=self.data.id_colm, label=self.data.target
+            acc = member.algorithm.score(
+                data=data, df=data.valid
             )
-            algo.add_valid_acc(acc)
+            member.add_valid_acc(acc)
+
+        self.leaderboard.board.sort(key=lambda member: member.valid_accuracy, reverse=True)
+        self.model = self.leaderboard.board[0].algorithm.model
 
     def objective(self, trial):
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -102,8 +103,8 @@ class OptunaOptimizer(BaseOptimizer):
         )
         algo.optunatune(trial)
         self.fit(algo, data)
-        acc = algo.score(data, data.test)
-        self.leaderboard.addmodel(ModelBoard(algo.model, acc, {"imputer": imputer}))
+        acc = algo.score(data=data, df=data.test)
+        self.leaderboard.addmodel(ModelBoard(algo, acc, {"imputer": imputer}))
         return acc
 
     def get_tuned_params(self):

@@ -23,7 +23,7 @@ class KNeighborsReg(BaseAlgorithm):
             round(params["metric"])
         ]
         params["n_neighbors"] = round(params["n_neighbors"])
-        params["algorithm"] = ["brute-force", "kd-tree"][round(params["algorithm"])]
+        params["algorithm"] = ["brute_force", "kd-tree"][round(params["algorithm"])]
         self.model = KNNRegressor(**params)
 
     def optunatune(self, trial):
@@ -32,7 +32,7 @@ class KNeighborsReg(BaseAlgorithm):
         )
         n_neighbors = trial.suggest_int("REG_KNeighbors_n_neighbors", 5, 100, log=True)
         algorithm = trial.suggest_categorical(
-            "REG_KNeighbors_algorithm", ["brute-force", "kd-tree"]
+            "REG_KNeighbors_algorithm", ["brute_force", "kd-tree"]
         )
         metric = trial.suggest_categorical(
             "REG_KNeighbors_metric",
@@ -46,11 +46,11 @@ class KNeighborsReg(BaseAlgorithm):
         )
         self.model = model
 
-    def score(self, data):
-        ftr: list = data.test.columns
+    def score(self, data, df):
+        ftr: list = df.columns
         ftr.remove(data.target)
         ftr.remove(data.id_colm)
-        res, stats = self.model.predict(data.test, key=data.id_colm, features=ftr)
-        df = data.test.drop(ftr)
-        itg = res.join(df, "1 = 1")
+        res, stats = self.model.predict(df, key=data.id_colm, features=ftr)
+        dataframe = df.drop(ftr)
+        itg = res.join(dataframe, "1 = 1")
         return r2_score(data=itg, label_true=data.target, label_pred="TARGET")
