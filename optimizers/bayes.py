@@ -36,7 +36,7 @@ class BayesianOptimizer(BaseOptimizer):
     """
 
     def __init__(
-            self, algo_list: list, data, iterations, problem, categorical_features=None
+        self, algo_list: list, data, iterations, problem, categorical_features=None
     ):
         self.data = data
         self.algo_list = algo_list
@@ -92,7 +92,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.fit(algo, self.inner_data)
 
         self.leaderboard.addmodel(
-            ModelBoard(algo.model, opt.max["target"], {"imputer": imputer})
+            ModelBoard(algo, opt.max["target"], {"imputer": imputer})
         )
 
         return opt.max["target"]
@@ -159,12 +159,12 @@ class BayesianOptimizer(BaseOptimizer):
                 dropempty=False,
                 categorical_list=None,
             )
-            acc = member.algorithm.score(
-                data=data, df=data.valid
-            )
+            acc = member.algorithm.score(data=data, df=data.valid)
             member.add_valid_acc(acc)
 
-        self.leaderboard.board.sort(key=lambda member: member.valid_accuracy, reverse=True)
+        self.leaderboard.board.sort(
+            key=lambda member: member.valid_accuracy, reverse=True
+        )
         self.model = self.leaderboard.board[0].algorithm.model
 
     def fit(self, algo, data):

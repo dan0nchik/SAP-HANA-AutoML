@@ -68,12 +68,12 @@ class OptunaOptimizer(BaseOptimizer):
                 dropempty=False,
                 categorical_list=self.categorical_features,
             )
-            acc = member.algorithm.score(
-                data=data, df=data.valid
-            )
+            acc = member.algorithm.score(data=data, df=data.valid)
             member.add_valid_acc(acc)
 
-        self.leaderboard.board.sort(key=lambda member: member.valid_accuracy, reverse=True)
+        self.leaderboard.board.sort(
+            key=lambda member: member.valid_accuracy, reverse=True
+        )
         self.model = self.leaderboard.board[0].algorithm.model
 
     def objective(self, trial):

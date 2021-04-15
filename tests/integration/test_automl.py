@@ -25,11 +25,11 @@ def test_regression(optimizer):
             "hour",
             "holidays",
         ],
-        steps=10,
+        steps=3,
         optimizer=optimizer,
-        output_leaderboard=True
+        output_leaderboard=True,
     )
-    assert m.best_params["accuracy"] > 0.70
+    assert m.best_params["accuracy"] > 0.50
 
 
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
@@ -41,8 +41,8 @@ def test_classification(optimizer):
         id_column="PassengerId",
         categorical_features=["Survived", "Sex"],
         columns_to_remove=["Name", "Ticket", "Cabin", "Embarked"],
-        steps=10,
+        steps=3,
         output_leaderboard=True,
         optimizer=optimizer,
     )
-    assert m.best_params["accuracy"] > 0.70
+    assert m.best_params["accuracy"] > 0.50

@@ -60,5 +60,3 @@ class KNeighborsCls(BaseAlgorithm):
         dataframe = df.drop(ftr)
         itg = res.join(dataframe, "1 = 1")
         return accuracy_score(data=itg, label_true=data.target, label_pred="TARGET")
-
-

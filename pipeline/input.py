@@ -74,7 +74,7 @@ class Input:
                 self.download_data(self.file_path),
                 name,
                 force=True,
-                drop_exist_tab=True
+                drop_exist_tab=True,
             )
         elif self.table_name is not None and self.df is not None:
             print(f"Recreating table {self.table_name} with data from dataframe")
