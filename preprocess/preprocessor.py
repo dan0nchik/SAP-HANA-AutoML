@@ -102,7 +102,7 @@ class Preprocessor:
                 "DecisionTreeClassifier": DecisionTreeCls(),
                 "LogisticRegressionClassifier": LogRegressionCls(),
                 "NaiveBayesClassifier": NBayesCls(),
-                "MLPClassifier": MLPcls(),
+                # "MLPClassifier": MLPcls(),
                 "SVClassifier": SVCls(),
                 "RDTClassifier": RDTCls(),
                 "GradientBoostingClassifier": GBCls(),
@@ -129,7 +129,7 @@ class Preprocessor:
             regdict = {
                 "DecisionTreeRegressor": DecisionTreeReg(),
                 "GLMRegressor": GLMReg(),
-                "MLPRegressor": MLPreg(),
+                # "MLPRegressor": MLPreg(),
                 "KNeighborsRegressor": KNeighborsReg(),
                 "SupportVectorRegressor": SVReg(),
                 "RDTRegressor": RDTReg(),

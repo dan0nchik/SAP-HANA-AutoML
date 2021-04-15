@@ -36,7 +36,6 @@ class GBCls(BaseAlgorithm):
             max_depth=max_depth,
             min_sample_weight_leaf=min_sample_weight_leaf,
             learning_rate=learning_rate,
-            categorical_variable=["Survived"]
-            # TODO: fix this crutch
+            categorical_variable=self.categorical_features,
         )
         self.model = model

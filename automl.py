@@ -34,18 +34,18 @@ class AutoML:
         self.preprocessor_settings = None
 
     def fit(
-            self,
-            df: pd.DataFrame = None,
-            steps: int = 10,
-            target: str = None,
-            file_path: str = None,
-            table_name: str = None,
-            columns_to_remove: list = None,
-            categorical_features: list = None,
-            id_column=None,
-            optimizer: str = "OptunaSearch",
-            config=None,
-            output_leaderboard=False,
+        self,
+        df: pd.DataFrame = None,
+        steps: int = 10,
+        target: str = None,
+        file_path: str = None,
+        table_name: str = None,
+        columns_to_remove: list = None,
+        categorical_features: list = None,
+        id_column=None,
+        optimizer: str = "OptunaSearch",
+        config=None,
+        output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -102,12 +102,12 @@ class AutoML:
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
 
     def predict(
-            self,
-            df: pd.DataFrame = None,
-            file_path: str = None,
-            table_name: str = None,
-            id_column: str = None,
-            preprocessor_file: str = None,
+        self,
+        df: pd.DataFrame = None,
+        file_path: str = None,
+        table_name: str = None,
+        id_column: str = None,
+        preprocessor_file: str = None,
     ):
         """Makes predictions using fitted model.
 

@@ -59,4 +59,4 @@ class KNeighborsCls(BaseAlgorithm):
         res, stats = self.model.predict(data.test, key=data.id_colm, features=ftr)
         df = data.test.drop(ftr)
         itg = res.join(df, "1 = 1")
-        return accuracy_score(data=itg, label_true=data.target, label_pred='TARGET')
+        return accuracy_score(data=itg, label_true=data.target, label_pred="TARGET")
