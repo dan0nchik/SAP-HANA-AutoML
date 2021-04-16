@@ -14,7 +14,7 @@ def test_main(optimizer, tmpdir):
         file_path="../../data/cleaned_train.csv",
         target="Survived",
         id_column="PassengerId",
-        steps=3,
+        steps=5,
         categorical_features=["Survived"],
         optimizer=optimizer,
     )

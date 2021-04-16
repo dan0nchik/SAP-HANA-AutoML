@@ -16,7 +16,7 @@ class SVReg(BaseAlgorithm):
         }
 
     def set_params(self, **params):
-        params["c"] = round(params["с"])
+        params["c"] = params["с"]
         params["kernel"] = ["linear", "poly", "rbf", "sigmoid"][round(params["kernel"])]
         params["shrink"] = [True, False][round(params["shrink"])]
         params["scale_info"] = ["no", "standardization", "rescale"][

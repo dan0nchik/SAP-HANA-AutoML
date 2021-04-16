@@ -114,9 +114,15 @@ class Input:
         if path == "":
             raise InputError("Please provide valid file path or url")
         if file_type(path) == ".csv":
-            return pd.read_csv(path)
+            if pd.read_csv(path).columns[0] == 'Unnamed: 0':
+                return pd.read_csv(path, index_col=0)
+            else:
+                return pd.read_csv(path)
         if file_type(path) == ".xlsx":
-            return pd.read_excel(path)
+            if pd.read_excel(path).columns[0] == 'Unnamed: 0':
+                return pd.read_excel(path, index_col=0)
+            else:
+                return pd.read_excel(path)
         raise InputError("The file format is missing or not supported")
 
 

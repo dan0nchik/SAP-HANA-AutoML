@@ -1,4 +1,3 @@
-import sys, os
 import pytest
 from automl import AutoML
 from utils.connection import connection_context
@@ -10,22 +9,10 @@ m = AutoML(connection_context)
 def test_regression(optimizer):
     m.fit(
         table_name="test_reg",
-        file_path="../../data/reg.csv",
-        target="Все 18+_TVR",
+        file_path="../../data/boston_data.csv",
+        target="medv",
         id_column="ID",
-        categorical_features=[
-            "Канал_ПЕРВЫЙ КАНАЛ",
-            "Канал_РЕН ТВ",
-            "Канал_РОССИЯ 1",
-            "Канал_СТС",
-            "Канал_ТНТ",
-            "day",
-            "year",
-            "month",
-            "hour",
-            "holidays",
-        ],
-        steps=3,
+        steps=5,
         optimizer=optimizer,
         output_leaderboard=True,
     )
@@ -36,12 +23,12 @@ def test_regression(optimizer):
 def test_classification(optimizer):
     m.fit(
         table_name="test_cls",
-        file_path="../../data/train.csv",
-        target="Survived",
-        id_column="PassengerId",
-        categorical_features=["Survived", "Sex"],
-        columns_to_remove=["Name", "Ticket", "Cabin", "Embarked"],
-        steps=3,
+        file_path="../../data/bank.csv",
+        target="y",
+        id_column="ID",
+        categorical_features=["job", "marital", 'education', 'default', 'housing', 'loan', 'contact', 'month', 'y'],
+        columns_to_remove=["poutcome"],
+        steps=5,
         output_leaderboard=True,
         optimizer=optimizer,
     )
