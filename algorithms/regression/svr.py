@@ -16,13 +16,14 @@ class SVReg(BaseAlgorithm):
         }
 
     def set_params(self, **params):
-        params["c"] = params["с"]
-        params["kernel"] = ["linear", "poly", "rbf", "sigmoid"][round(params["kernel"])]
-        params["shrink"] = [True, False][round(params["shrink"])]
-        params["scale_info"] = ["no", "standardization", "rescale"][
+        params1 = {}
+        params1["c"] = params.get("с", 30)
+        params1["kernel"] = ["linear", "poly", "rbf", "sigmoid"][round(params["kernel"])]
+        params1["shrink"] = [True, False][round(params["shrink"])]
+        params1["scale_info"] = ["no", "standardization", "rescale"][
             round(params["scale_info"])
         ]
-        self.model = SVR(**params)
+        self.model = SVR(**params1)
 
     def optunatune(self, trial):
         c = trial.suggest_int("REG_SV_c", 50, 300, log=True)

@@ -10,18 +10,16 @@ def test_main(optimizer, tmpdir):
     m = AutoML(connection_context)
 
     m.fit(
-        table_name="test_when_clean",
         file_path="../../data/cleaned_train.csv",
         target="Survived",
-        id_column="PassengerId",
-        steps=5,
+        id_column="_id",
+        steps=30,
         categorical_features=["Survived"],
         optimizer=optimizer,
     )
     assert m.best_params["accuracy"] > 0.50
     m.predict(
         file_path="../../data/test_cleaned_train.csv",
-        table_name="test_when_clean",
         id_column="PassengerId",
     )
     m.save_results_as_csv("res.csv")
@@ -29,7 +27,6 @@ def test_main(optimizer, tmpdir):
     m.save_preprocessor("prep.json")
     m.predict(
         file_path="../../data/test_cleaned_train.csv",
-        table_name="test_when_clean",
         id_column="PassengerId",
         preprocessor_file="prep.json",
     )

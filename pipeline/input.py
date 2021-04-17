@@ -94,7 +94,7 @@ class Input:
         Data
             Data with changes.
         """
-        train, test, valid = train_test_val_split(data=self.hana_df)
+        train, test, valid = train_test_val_split(data=self.hana_df, id_column=self.id_col, random_seed=17)
         return Data(train, test, valid, self.target, id_col=self.id_col)
 
     @staticmethod
