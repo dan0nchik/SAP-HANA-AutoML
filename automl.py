@@ -48,6 +48,7 @@ class AutoML:
             id_column=None,
             optimizer: str = "OptunaSearch",
             config=None,
+            ensemble=False,
             output_leaderboard=False,
     ):
         """Fits AutoML object
@@ -103,8 +104,17 @@ class AutoML:
             self.opt.print_leaderboard()
         self.model = self.opt.get_model()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
-        m = BaggingCls(categorical_features=categorical_features, id_col=id_column, leaderboard=self.opt.leaderboard)
-        m.score(data=data)
+        if ensemble:
+            if pipe.task == 'cls':
+                self.model = BaggingCls(categorical_features=categorical_features, id_col=id_column,
+                                        connection_context=self.connection_context, table_name=table_name,
+                                        leaderboard=self.opt.leaderboard)
+            else:
+                self.model = BaggingCls(categorical_features=categorical_features, id_col=id_column,
+                                        connection_context=self.connection_context, table_name=table_name,
+                                        leaderboard=self.opt.leaderboard)
+            print('Ensemble consists of: ' + str(self.model.model_list) + '\nEnsemble accuracy: '
+                  + str(self.model.score(data=data)))
 
     def predict(
             self,
@@ -113,7 +123,7 @@ class AutoML:
             table_name: str = None,
             id_column: str = None,
             preprocessor_file: str = None,
-            target_drop = None
+            target_drop=None
     ):
         """Makes predictions using fitted model.
 
@@ -129,7 +139,7 @@ class AutoML:
             ID column in table. Needed for HANA.
         preprocessor_file : str
             Path to JSON file containing preprocessor settings.
-        param target_drop: str
+        param target_drop: Bool
             Target to drop, if it exists in inputted data
         """
         data = Input(
