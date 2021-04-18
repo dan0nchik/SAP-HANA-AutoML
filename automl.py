@@ -35,6 +35,7 @@ class AutoML:
         self.model = None
         self.predicted = None
         self.preprocessor_settings = None
+        self.ensemble = False
 
     def fit(
             self,
@@ -105,6 +106,7 @@ class AutoML:
         self.model = self.opt.get_model()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
         if ensemble:
+            self.ensemble = ensemble
             if pipe.task == 'cls':
                 self.model = BaggingCls(categorical_features=categorical_features, id_col=id_column,
                                         connection_context=self.connection_context, table_name=table_name,
@@ -113,8 +115,10 @@ class AutoML:
                 self.model = BaggingCls(categorical_features=categorical_features, id_col=id_column,
                                         connection_context=self.connection_context, table_name=table_name,
                                         leaderboard=self.opt.leaderboard)
+            print("\033[33m {}".format("Leaderboard (top best algorithms):\n"))
             print('Ensemble consists of: ' + str(self.model.model_list) + '\nEnsemble accuracy: '
                   + str(self.model.score(data=data)))
+            print("\033[0m {}".format(""))
 
     def predict(
             self,
@@ -139,7 +143,7 @@ class AutoML:
             ID column in table. Needed for HANA.
         preprocessor_file : str
             Path to JSON file containing preprocessor settings.
-        param target_drop: Bool
+        target_drop: Bool
             Target to drop, if it exists in inputted data
         """
         data = Input(
@@ -150,19 +154,22 @@ class AutoML:
             id_col=id_column,
         )
         data.load_data()
-
-        if preprocessor_file is not None:
-            with open(preprocessor_file) as json_file:
-                json_data = json.load(json_file)
-                self.preprocessor_settings = json_data
-        print("Preprocessor settings:", self.preprocessor_settings)
-        pr = Preprocessor()
-        data.hana_df = pr.clean(
-            data=data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
-        )
         if target_drop is not None:
             data.hana_df = data.hana_df.drop(target_drop)
-        self.predicted = self.model.predict(data.hana_df, id_column)
+        if self.ensemble:
+            self.model.id_col = id_column
+            self.predicted = self.model.predict(df=data.hana_df)
+        else:
+            if preprocessor_file is not None:
+                with open(preprocessor_file) as json_file:
+                    json_data = json.load(json_file)
+                    self.preprocessor_settings = json_data
+            print("Preprocessor settings:", self.preprocessor_settings)
+            pr = Preprocessor()
+            data.hana_df = pr.clean(
+                data=data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
+            )
+            self.predicted = self.model.predict(data.hana_df, id_column)
         res = self.predicted
         if type(self.predicted) == tuple:
             res = res[0]

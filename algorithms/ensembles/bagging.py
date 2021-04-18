@@ -1,10 +1,12 @@
 from pipeline.leaderboard import Leaderboard
+from preprocess.preprocessor import Preprocessor
 from utils.error import BaggingError
 
 
 class Bagging:
 
-    def __init__(self, categorical_features, id_col, connection_context, table_name, model_list: dict = None, leaderboard: Leaderboard = None):
+    def __init__(self, categorical_features, id_col, connection_context, table_name, model_list: dict = None,
+                 leaderboard: Leaderboard = None):
         self.id_col = id_col
         self.categorical_features = categorical_features
         self.title = ""
@@ -20,7 +22,23 @@ class Bagging:
     def score(self, data, df):
         pass
 
-    def predict(self, cat):
-        pass
-
-
+    def predict(self, data, df):
+        predictions = list()
+        if data is None and df is None:
+            raise BaggingError("Provide valid data for accuracy estimation")
+        pr = Preprocessor()
+        for model in self.model_list:
+            if df is not None:
+                df2 = pr.clean(
+                    data=df, num_strategy=model.preprocessor['imputer']
+                )
+            else:
+                df2 = pr.clean(
+                    data=data.valid.drop(data.target), num_strategy=model.preprocessor['imputer']
+                )
+            pred = model.algorithm.model.predict(df2, self.id_col)
+            if type(pred) == tuple:
+                predictions.append(pred[0])
+            else:
+                predictions.append(pred)
+        return predictions

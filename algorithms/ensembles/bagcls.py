@@ -1,11 +1,9 @@
+import pandas as pd
 from hana_ml.algorithms.pal.metrics import accuracy_score
 from hana_ml.dataframe import create_dataframe_from_pandas
 
 from algorithms.ensembles.bagging import Bagging
 from pipeline.leaderboard import Leaderboard
-from preprocess.preprocessor import Preprocessor
-import pandas as pd
-from utils.error import BaggingError
 
 
 class BaggingCls(Bagging):
@@ -16,24 +14,16 @@ class BaggingCls(Bagging):
         self.title = "BaggingClassifier"
 
     def score(self, data=None, df=None):
-        predictions = list()
-        if data is None and df is None:
-            raise BaggingError("Provide valid data for accuracy estimation")
-        pr = Preprocessor()
-        for model in self.model_list:
-            if df is not None:
-                df2 = pr.clean(
-                    data=df, num_strategy=model.preprocessor['imputer']
-                )
-            else:
-                df2 = pr.clean(
-                    data=data.valid.drop(data.target), num_strategy=model.preprocessor['imputer']
-                )
-            pred = model.algorithm.model.predict(df2, self.id_col)
-            if type(pred) == tuple:
-                predictions.append(pred[0])
-            else:
-                predictions.append(pred)
+        hana_df = self.predict(data=data, df=df)
+        ftr: list = data.valid.columns
+        ftr.remove(data.target)
+        dat = data.valid.drop(ftr)
+        itg = hana_df.join(dat, "1 = 1")
+        print(itg.collect().head())
+        return accuracy_score(data=itg, label_true=data.target, label_pred="PREDICTION")
+
+    def predict(self, data=None, df=None):
+        predictions = super(BaggingCls, self).predict(data=data, df=df)
         pd_res = list()
         for res in predictions:
             pd_res.append(res.collect())
@@ -48,15 +38,4 @@ class BaggingCls(Bagging):
         hana_df = create_dataframe_from_pandas(
             self.connection_context, df, self.table_name + "_bagging", force=True, drop_exist_tab=True
         )
-        ftr: list = data.valid.columns
-        ftr.remove(data.target)
-        dat = data.valid.drop(ftr)
-        itg = hana_df.join(dat, "1 = 1")
-        print(itg.collect().head())
-        return accuracy_score(data=itg, label_true=data.target, label_pred="PREDICTION")
-
-    def get_models(self):
-        return self.model_list
-
-    def predict(self, cat):
-        pass
+        return hana_df
