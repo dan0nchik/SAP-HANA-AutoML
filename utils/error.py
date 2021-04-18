@@ -16,3 +16,7 @@ class PipelineError(Exception):
 
 class AutoMLError(Exception):
     pass
+
+
+class BaggingError(Exception):
+    pass
