@@ -34,7 +34,7 @@ class MLPcls(BaseAlgorithm):
     def set_params(self, **params):
         params["output_activation"] = self.actv[round(params["output_activation"])]
         params["activation"] = self.actv[round(params["activation"])]
-        params["hidden_layer_size"] = round(params["hidden_layer_size"])
+        params["hidden_layer_size"] = int(params["hidden_layer_size"])
         params["normalization"] = ["no", "z-transform", "scalar"][
             round(params["normalization"])
         ]
