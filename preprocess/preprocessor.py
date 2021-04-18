@@ -39,14 +39,14 @@ class Preprocessor:
         if predict_column_importance:
             None
             # TODO: AutoRemove
-        self.autoimput(
+        df = self.autoimput(
             data,
             num_strategy=num_strategy,
             cat_strategy=cat_strategy,
             dropempty=dropempty,
         )
 
-        return data
+        return df
 
     def autoimput(
         self, df, num_strategy, cat_strategy, dropempty=False, categorical_list=None

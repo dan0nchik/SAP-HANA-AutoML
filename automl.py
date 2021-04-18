@@ -1,5 +1,8 @@
 import pandas as pd
 import json
+
+from algorithms.ensembles.bagcls import BaggingCls
+from algorithms.ensembles.bagging import Bagging
 from pipeline.input import Input
 from pipeline.pipeline import Pipeline
 from preprocess.preprocessor import Preprocessor
@@ -34,18 +37,18 @@ class AutoML:
         self.preprocessor_settings = None
 
     def fit(
-        self,
-        df: pd.DataFrame = None,
-        steps: int = 10,
-        target: str = None,
-        file_path: str = None,
-        table_name: str = None,
-        columns_to_remove: list = None,
-        categorical_features: list = None,
-        id_column=None,
-        optimizer: str = "OptunaSearch",
-        config=None,
-        output_leaderboard=False,
+            self,
+            df: pd.DataFrame = None,
+            steps: int = 10,
+            target: str = None,
+            file_path: str = None,
+            table_name: str = None,
+            columns_to_remove: list = None,
+            categorical_features: list = None,
+            id_column=None,
+            optimizer: str = "OptunaSearch",
+            config=None,
+            output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -100,14 +103,17 @@ class AutoML:
             self.opt.print_leaderboard()
         self.model = self.opt.get_model()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
+        m = BaggingCls(categorical_features=categorical_features, id_col=id_column, leaderboard=self.opt.leaderboard)
+        m.score(data=data)
 
     def predict(
-        self,
-        df: pd.DataFrame = None,
-        file_path: str = None,
-        table_name: str = None,
-        id_column: str = None,
-        preprocessor_file: str = None,
+            self,
+            df: pd.DataFrame = None,
+            file_path: str = None,
+            table_name: str = None,
+            id_column: str = None,
+            preprocessor_file: str = None,
+            target_drop = None
     ):
         """Makes predictions using fitted model.
 
@@ -123,6 +129,8 @@ class AutoML:
             ID column in table. Needed for HANA.
         preprocessor_file : str
             Path to JSON file containing preprocessor settings.
+        param target_drop: str
+            Target to drop, if it exists in inputted data
         """
         data = Input(
             connection_context=self.connection_context,
@@ -142,6 +150,8 @@ class AutoML:
         data.hana_df = pr.clean(
             data=data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
         )
+        if target_drop is not None:
+            data.hana_df = data.hana_df.drop(target_drop)
         self.predicted = self.model.predict(data.hana_df, id_column)
         res = self.predicted
         if type(self.predicted) == tuple:
