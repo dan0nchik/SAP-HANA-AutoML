@@ -19,7 +19,6 @@ class BaggingReg(Bagging):
         ftr.remove(data.target)
         dat = data.valid.drop(ftr)
         itg = hana_df.join(dat, "1 = 1")
-        print(itg.collect().head())
         return r2_score(data=itg, label_true=data.target, label_pred="PREDICTION")
 
     def predict(self, data=None, df=None):

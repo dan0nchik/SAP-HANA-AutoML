@@ -115,7 +115,7 @@ class AutoML:
                 self.model = BaggingCls(categorical_features=categorical_features, id_col=id_column,
                                         connection_context=self.connection_context, table_name=table_name,
                                         leaderboard=self.opt.leaderboard)
-            print("\033[33m {}".format("Leaderboard (top best algorithms):\n"))
+            print("\033[33m {}".format("\n"))
             print('Ensemble consists of: ' + str(self.model.model_list) + '\nEnsemble accuracy: '
                   + str(self.model.score(data=data)))
             print("\033[0m {}".format(""))
