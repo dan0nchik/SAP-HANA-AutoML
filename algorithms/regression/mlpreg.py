@@ -32,7 +32,7 @@ class MLPreg(BaseAlgorithm):
         ]
 
     def set_params(self, **params):
-        params["hidden_layer_size"] = int(params["hidden_layer_size"])
+        params["hidden_layer_size"] = (int(params["hidden_layer_size"]))
         params["output_activation"] = self.actv[round(params["output_activation"])]
         params["activation"] = self.actv[round(params["activation"])]
         params["normalization"] = ["no", "z-transform", "scalar"][
