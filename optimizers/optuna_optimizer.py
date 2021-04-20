@@ -1,5 +1,5 @@
 import optuna
-
+optuna.logging.set_verbosity(optuna.logging.WARNING)
 from optimizers.base_optimizer import BaseOptimizer
 from pipeline.leaderboard import Leaderboard
 from pipeline.modelres import ModelBoard

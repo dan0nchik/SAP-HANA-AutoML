@@ -12,7 +12,7 @@ def test_main(optimizer, tmpdir):
     m.fit(
         file_path="../../data/cleaned_train.csv",
         target="Survived",
-        id_column="_id",
+        id_column="PassengerId",
         steps=30,
         categorical_features=["Survived"],
         optimizer=optimizer,

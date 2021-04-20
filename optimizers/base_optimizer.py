@@ -42,9 +42,9 @@ class BaseOptimizer(ABC):
                     str(place)
                     + ".  "
                     + str(member.algorithm.model)
-                    + "\n Train accuracy: "
+                    + "\n Test accuracy: "
                     + str(member.train_accuracy)
-                    + "  Validation accuracy: "
+                    + "  Holdout accuracy: "
                     + str(member.valid_accuracy)
                 )
             )
