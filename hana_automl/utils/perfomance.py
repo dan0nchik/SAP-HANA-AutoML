@@ -1,0 +1,93 @@
+import hana_ml
+import matplotlib.pyplot as plt
+import pandas as pd
+from hana_ml.algorithms.apl.classification import AutoClassifier
+from hana_ml.algorithms.apl.gradient_boosting_classification import (
+    GradientBoostingBinaryClassifier,
+)
+from hana_ml.algorithms.apl.gradient_boosting_classification import (
+    GradientBoostingClassifier,
+)
+from hana_ml.algorithms.apl.gradient_boosting_regression import (
+    GradientBoostingRegressor,
+)
+from hana_ml.algorithms.apl.regression import AutoRegressor
+from hana_ml.dataframe import create_dataframe_from_pandas
+from sklearn.model_selection import train_test_split
+
+from hana_automl.automl import AutoML
+
+
+class Benchmark:
+    def __init__(self, connection_context: hana_ml.dataframe.ConnectionContext):
+        self.connection_context = connection_context
+        self.apl_model = None
+        self.automl_model = None
+        self.apl_accuracy = 0
+        self.automl_accuracy = 0
+
+    def run(
+        self,
+        dataset: str,
+        task: str,
+        grad_boost: bool,
+        label: str,
+        id_column: str = None,
+        categorical: list = None
+    ):
+        df = pd.read_csv(dataset)
+        if id_column is None:
+            df["ID"] = range(0, len(df))
+            id_column = "ID"
+
+        train, test = train_test_split(df, test_size=0.3)
+
+        train_df = create_dataframe_from_pandas(self.connection_context, table_name='BENCHMARK_TRAIN', pandas_df=train, force=True, drop_exist_tab=True)
+        test_df = create_dataframe_from_pandas(self.connection_context, table_name='BENCHMARK_TEST', pandas_df=test, force=True, drop_exist_tab=True)
+
+        if task == "cls":
+            if grad_boost:
+                self.apl_model = GradientBoostingClassifier(
+                    self.connection_context
+                )
+            else:
+                self.apl_model = AutoClassifier(self.connection_context)
+
+        if task == "binary_cls":
+            if grad_boost:
+                self.apl_model = GradientBoostingBinaryClassifier(
+                    self.connection_context
+                )
+            else:
+                self.apl_model = AutoClassifier(self.connection_context)
+        if task == "reg":
+            if grad_boost:
+                self.apl_model = GradientBoostingRegressor(
+                    self.connection_context
+                )
+            else:
+                self.apl_model = AutoRegressor(self.connection_context)
+
+        self.automl_model = AutoML(self.connection_context)
+
+        self.apl_model.fit(train_df, key=id_column, label=label)
+        self.apl_accuracy = self.apl_model.score(test_df)
+        print(self.apl_accuracy)
+
+        self.automl_model.fit(
+            df,
+            steps=30,
+            target=label,
+            table_name="BENCHMARK_AUTOML",
+            categorical_features=categorical,
+            id_column=id_column,
+            # optimizer=BayesianOptimizer
+        )
+        self.automl_accuracy = self.automl_model.get_model().score(test_df, label=label, key=id_column)
+        print(self.automl_accuracy)
+
+    def plot_results(self):
+        plt.barh(['hana_automl', 'APL'], [self.automl_accuracy, self.apl_accuracy])
+        plt.xlabel('Accuracy')
+        plt.ylabel('Models')
+        plt.show()

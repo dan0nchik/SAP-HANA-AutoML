@@ -1,7 +1,7 @@
-from pipeline.pipeline import Pipeline
+from hana_automl.pipeline.pipeline import Pipeline
 from unittest import mock
 import pytest
-from utils.error import PipelineError
+from hana_automl.utils.error import PipelineError
 
 
 @mock.patch("pipeline.data.Data")

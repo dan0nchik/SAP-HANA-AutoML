@@ -1,4 +1,4 @@
-from automl import AutoML
+from hana_automl.automl import AutoML
 from unittest import mock
 import os
 

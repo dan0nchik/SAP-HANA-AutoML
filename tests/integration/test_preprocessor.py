@@ -1,7 +1,7 @@
-from pipeline.input import Input
-from preprocess.preprocessor import Preprocessor
+from hana_automl.pipeline.input import Input
+from hana_automl.preprocess.preprocessor import Preprocessor
 import pandas as pd
-from utils.connection import connection_context
+from hana_automl.utils.connection import connection_context
 import pytest
 
 
@@ -12,9 +12,9 @@ def test_tasks(name):
 
 def multiple_tasks(name):
     if name == "cls":
-        df = pd.read_csv("../../data/train.csv")
+        df = pd.read_csv("data/train.csv")
     if name == "reg":
-        df = pd.read_csv("../../data/reg.csv")
+        df = pd.read_csv("data/reg.csv")
 
     inputted = Input(connection_context, df, table_name="test")
     inputted.load_data()
