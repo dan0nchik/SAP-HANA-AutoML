@@ -14,7 +14,9 @@ class LogRegressionCls(BaseAlgorithm):
     def set_params(self, **params):
         params["max_iter"] = round(params["max_iter"])
 
-        params["multi_class"] = True
+        # ValueError: class_map0 and class_map1 are mandatory
+        # when `label` column type is VARCHAR or NVARCHAR.
+        # params["multi_class"] = True
         self.model = LogisticRegression(**params)
 
     def optunatune(self, trial):

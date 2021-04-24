@@ -80,10 +80,16 @@ class Preprocessor:
                 df = df.drop([cl], axis=1)
         return df
 
-    def set_task(self, data, target, algo_exceptions=None):
+    def set_task(self, data, target, task: str, algo_exceptions=None):
         if algo_exceptions is None:
             algo_exceptions = []
-        if data.train.distinct(target).count() < 10:
+        if task is None:
+            if data.train.distinct(target).count() < 10:
+                task = 'cls'
+            else:
+                task = 'reg'
+
+        if task == 'cls':
             clslist = [
                 DecisionTreeCls(),
                 LogRegressionCls(),
@@ -97,7 +103,7 @@ class Preprocessor:
             clsdict = {
                 "KNeighborsClassifier": KNeighborsCls(),
                 "DecisionTreeClassifier": DecisionTreeCls(),
-                "LogisticRegressionClassifier": LogRegressionCls(),
+                # "LogisticRegressionClassifier": LogRegressionCls(),
                 "NaiveBayesClassifier": NBayesCls(),
                 # "MLPClassifier": MLPcls(),
                 "SVClassifier": SVCls(),

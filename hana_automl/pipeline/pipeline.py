@@ -21,10 +21,10 @@ class Pipeline:
         Optimizer.
     """
 
-    def __init__(self, data: Data, steps: int):
+    def __init__(self, data: Data, steps: int, task: str):
         self.data = data
         self.iter = steps
-        self.task = None
+        self.task = task
         self.opt = None
         if steps < 1:
             raise PipelineError("Steps < 1!")
@@ -48,7 +48,7 @@ class Pipeline:
         """
         pr = Preprocessor()
         algo_list, self.task, algo_dict = pr.set_task(
-            self.data, target=self.data.target
+            self.data, target=self.data.target, task=self.task
         )
         print("Task:", self.task)
         if optimizer == "BayesianOptimizer":

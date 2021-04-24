@@ -39,6 +39,7 @@ class AutoML:
     def fit(
         self,
         df: pd.DataFrame = None,
+        task: str = None,
         steps: int = 10,
         target: str = None,
         file_path: str = None,
@@ -58,6 +59,8 @@ class AutoML:
         df : pd.DataFrame
             Input dataframe.
             **NOTE**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+        task: str
+            Machine Learning task. 'reg'(regression) and 'cls'(classification) are currently supported.
         steps : int
             Number of iterations.
         target : str
@@ -96,7 +99,7 @@ class AutoML:
         data = inputted.split_data()
         if columns_to_remove is not None:
             data.drop(droplist_columns=columns_to_remove)
-        pipe = Pipeline(data, steps)
+        pipe = Pipeline(data, steps, task)
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )

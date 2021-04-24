@@ -1,7 +1,7 @@
 import optuna
 
 # TODO: turn off optuna logging if verbose set to False
-# optuna.logging.set_verbosity(optuna.logging.WARNING)
+optuna.logging.set_verbosity(optuna.logging.WARNING)
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard
@@ -74,7 +74,7 @@ class OptunaOptimizer(BaseOptimizer):
             member.add_valid_acc(acc)
 
         self.leaderboard.board.sort(
-            key=lambda member: member.valid_accuracy, reverse=True
+            key=lambda member: member.valid_accuracy + member.train_accuracy, reverse=True
         )
         self.model = self.leaderboard.board[0].algorithm.model
 

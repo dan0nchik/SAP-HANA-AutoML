@@ -76,11 +76,13 @@ class Benchmark:
 
         self.automl_model.fit(
             df,
-            steps=30,
+            steps=15,
             target=label,
             table_name="BENCHMARK_AUTOML",
             categorical_features=categorical,
             id_column=id_column,
+            task=task,
+            # output_leaderboard=True
             # optimizer=BayesianOptimizer
         )
         self.automl_accuracy = self.automl_model.get_model().score(test_df, label=label, key=id_column)
