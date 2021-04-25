@@ -2,11 +2,11 @@ import pandas as pd
 from hana_ml.algorithms.pal.metrics import r2_score
 from hana_ml.dataframe import create_dataframe_from_pandas
 
-from hana_automl.algorithms.ensembles.bagging import Bagging
+from hana_automl.algorithms.ensembles.blending import Blending
 from hana_automl.pipeline.leaderboard import Leaderboard
 
 
-class BaggingReg(Bagging):
+class BlendingReg(Blending):
     def __init__(
         self,
         categorical_features,
@@ -16,7 +16,7 @@ class BaggingReg(Bagging):
         model_list: list = None,
         leaderboard: Leaderboard = None,
     ):
-        super(BaggingReg, self).__init__(
+        super(BlendingReg, self).__init__(
             categorical_features,
             id_col,
             connection_context,
@@ -24,7 +24,7 @@ class BaggingReg(Bagging):
             model_list,
             leaderboard,
         )
-        self.title = "BaggingClassifier"
+        self.title = "BlendingRegressor"
 
     def score(self, data=None, df=None):
         hana_df = self.predict(data=data, df=df)
@@ -35,7 +35,7 @@ class BaggingReg(Bagging):
         return r2_score(data=itg, label_true=data.target, label_pred="PREDICTION")
 
     def predict(self, data=None, df=None):
-        predictions = super(BaggingReg, self).predict(data=data, df=df)
+        predictions = super(BlendingReg, self).predict(data=data, df=df)
         pd_res = list()
         for res in predictions:
             pd_res.append(res.collect())
