@@ -1,7 +1,7 @@
 import pandas as pd
 import json
 
-from hana_automl.algorithms.ensembles.bagcls import BaggingCls
+from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.pipeline.input import Input
 from hana_automl.pipeline.pipeline import Pipeline
 from hana_automl.preprocess.preprocessor import Preprocessor
@@ -110,7 +110,7 @@ class AutoML:
         if ensemble:
             self.ensemble = ensemble
             if pipe.task == "cls":
-                self.model = BaggingCls(
+                self.model = BlendingCls(
                     categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,
@@ -118,7 +118,7 @@ class AutoML:
                     leaderboard=self.opt.leaderboard,
                 )
             else:
-                self.model = BaggingCls(
+                self.model = BlendingCls(
                     categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,

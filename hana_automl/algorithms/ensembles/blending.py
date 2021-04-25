@@ -1,9 +1,9 @@
 from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.preprocess.preprocessor import Preprocessor
-from hana_automl.utils.error import BaggingError
+from hana_automl.utils.error import BlendingError
 
 
-class Bagging:
+class Blending:
     def __init__(
         self,
         categorical_features,
@@ -19,7 +19,7 @@ class Bagging:
         self.table_name = table_name
         self.connection_context = connection_context
         if model_list is None and leaderboard is None:
-            raise BaggingError(
+            raise BlendingError(
                 "Provide list of models or a leaderboard for ensemble creation"
             )
         if model_list is not None:
@@ -33,7 +33,7 @@ class Bagging:
     def predict(self, data, df):
         predictions = list()
         if data is None and df is None:
-            raise BaggingError("Provide valid data for accuracy estimation")
+            raise BlendingError("Provide valid data for accuracy estimation")
         pr = Preprocessor()
         for model in self.model_list:
             if df is not None:

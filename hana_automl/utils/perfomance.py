@@ -33,7 +33,7 @@ class Benchmark:
         grad_boost: bool,
         label: str,
         id_column: str = None,
-        categorical: list = None
+        categorical: list = None,
     ):
         df = pd.read_csv(dataset)
         if id_column is None:
@@ -42,14 +42,24 @@ class Benchmark:
 
         train, test = train_test_split(df, test_size=0.3)
 
-        train_df = create_dataframe_from_pandas(self.connection_context, table_name='BENCHMARK_TRAIN', pandas_df=train, force=True, drop_exist_tab=True)
-        test_df = create_dataframe_from_pandas(self.connection_context, table_name='BENCHMARK_TEST', pandas_df=test, force=True, drop_exist_tab=True)
+        train_df = create_dataframe_from_pandas(
+            self.connection_context,
+            table_name="BENCHMARK_TRAIN",
+            pandas_df=train,
+            force=True,
+            drop_exist_tab=True,
+        )
+        test_df = create_dataframe_from_pandas(
+            self.connection_context,
+            table_name="BENCHMARK_TEST",
+            pandas_df=test,
+            force=True,
+            drop_exist_tab=True,
+        )
 
         if task == "cls":
             if grad_boost:
-                self.apl_model = GradientBoostingClassifier(
-                    self.connection_context
-                )
+                self.apl_model = GradientBoostingClassifier(self.connection_context)
             else:
                 self.apl_model = AutoClassifier(self.connection_context)
 
@@ -62,9 +72,7 @@ class Benchmark:
                 self.apl_model = AutoClassifier(self.connection_context)
         if task == "reg":
             if grad_boost:
-                self.apl_model = GradientBoostingRegressor(
-                    self.connection_context
-                )
+                self.apl_model = GradientBoostingRegressor(self.connection_context)
             else:
                 self.apl_model = AutoRegressor(self.connection_context)
 
@@ -85,11 +93,13 @@ class Benchmark:
             # output_leaderboard=True
             # optimizer=BayesianOptimizer
         )
-        self.automl_accuracy = self.automl_model.get_model().score(test_df, label=label, key=id_column)
+        self.automl_accuracy = self.automl_model.get_model().score(
+            test_df, label=label, key=id_column
+        )
         print(self.automl_accuracy)
 
     def plot_results(self):
-        plt.barh(['hana_automl', 'APL'], [self.automl_accuracy, self.apl_accuracy])
-        plt.xlabel('Accuracy')
-        plt.ylabel('Models')
+        plt.barh(["hana_automl", "APL"], [self.automl_accuracy, self.apl_accuracy])
+        plt.xlabel("Accuracy")
+        plt.ylabel("Models")
         plt.show()

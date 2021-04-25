@@ -85,11 +85,11 @@ class Preprocessor:
             algo_exceptions = []
         if task is None:
             if data.train.distinct(target).count() < 10:
-                task = 'cls'
+                task = "cls"
             else:
-                task = 'reg'
+                task = "reg"
 
-        if task == 'cls':
+        if task == "cls":
             clslist = [
                 DecisionTreeCls(),
                 LogRegressionCls(),

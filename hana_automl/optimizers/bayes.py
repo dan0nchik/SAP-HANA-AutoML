@@ -163,7 +163,8 @@ class BayesianOptimizer(BaseOptimizer):
             member.add_valid_acc(acc)
 
         self.leaderboard.board.sort(
-            key=lambda member: member.valid_accuracy + member.train_accuracy, reverse=True
+            key=lambda member: member.valid_accuracy + member.train_accuracy,
+            reverse=True,
         )
         self.model = self.leaderboard.board[0].algorithm.model
 

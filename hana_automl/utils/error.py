@@ -18,5 +18,5 @@ class AutoMLError(Exception):
     pass
 
 
-class BaggingError(Exception):
+class BlendingError(Exception):
     pass
