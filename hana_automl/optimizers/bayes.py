@@ -113,7 +113,7 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
         acc = algorithm.score(self.inner_data, self.inner_data.test)
-        print("Child Iteration accuracy: " + str(acc))
+        # print("Child Iteration accuracy: " + str(acc))
         return acc
 
     def get_tuned_params(self):
@@ -145,6 +145,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "preprocess_method": (0, len(self.imputerstrategy_list) - 1),
             },
             random_state=17,
+            verbose=False,
         )
         opt.maximize(n_iter=self.iter, init_points=1)
         self.tuned_params = opt.max
@@ -163,7 +164,8 @@ class BayesianOptimizer(BaseOptimizer):
             member.add_valid_acc(acc)
 
         self.leaderboard.board.sort(
-            key=lambda member: member.valid_accuracy + member.train_accuracy, reverse=True
+            key=lambda member: member.valid_accuracy + member.train_accuracy,
+            reverse=True,
         )
         self.model = self.leaderboard.board[0].algorithm.model
 
