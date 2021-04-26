@@ -93,6 +93,7 @@ class Benchmark:
             categorical_features=categorical,
             id_column=id_column,
             task=task,
+            # output_leaderboard=True
             # optimizer='BayesianOptimizer'
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")

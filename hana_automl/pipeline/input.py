@@ -72,14 +72,18 @@ class Input:
             self.hana_df = create_dataframe_from_pandas(
                 self.connection_context,
                 self.download_data(self.file_path),
-                name,
+                self.table_name,
                 force=True,
                 drop_exist_tab=True,
             )
         elif self.table_name is not None and self.df is not None:
             print(f"Recreating table {self.table_name} with data from dataframe")
             self.hana_df = create_dataframe_from_pandas(
-                self.connection_context, self.df, name, force=True, drop_exist_tab=True
+                self.connection_context,
+                self.df,
+                self.table_name,
+                force=True,
+                drop_exist_tab=True,
             )
         else:
             raise InputError("No data provided")
