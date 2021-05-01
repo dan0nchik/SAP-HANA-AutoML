@@ -146,3 +146,12 @@ class Preprocessor:
                 if key.title not in algo_exceptions
             }
             return reglist, "reg", regdict
+
+    @staticmethod
+    def check_binomial(df, target):
+        if target is None or df is None:
+            raise PreprocessError("Enter correct data for check!")
+        if df.distinct(target).count() < 3:
+            return True
+        else:
+            return False

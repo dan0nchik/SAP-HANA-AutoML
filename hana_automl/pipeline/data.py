@@ -12,6 +12,7 @@ class Data:
         self.valid = valid
         self.target = target
         self.id_colm = id_col
+        self.binomial = None
 
     def drop(self, droplist_columns):
         """Drops columns in table

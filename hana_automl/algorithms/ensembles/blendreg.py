@@ -41,20 +41,14 @@ class BlendingReg(Blending):
             pd_res.append(res.collect())
         pred = list()
         for i in range(pd_res[0].shape[0]):
-            if (
-                pd_res[0].at[i, pd_res[0].columns[1]]
-                == pd_res[1].at[i, pd_res[1].columns[1]]
-            ):
-                pred.append(pd_res[0].at[i, pd_res[0].columns[1]])
-            else:
-                pred.append(
-                    (
-                        pd_res[0].at[i, pd_res[0].columns[1]]
-                        + pd_res[1].at[i, pd_res[1].columns[1]]
-                        + pd_res[2].at[i, pd_res[2].columns[1]]
-                    )
-                    / 3
+            pred.append(
+                (
+                    float(pd_res[0].at[i, pd_res[0].columns[1]])
+                    + float(pd_res[1].at[i, pd_res[1].columns[1]])
+                    + float(pd_res[2].at[i, pd_res[2].columns[1]])
                 )
+                / 3
+            )
         d = {"PREDICTION": pred}
         df = pd.DataFrame(data=d)
         hana_df = create_dataframe_from_pandas(

@@ -2,10 +2,11 @@ import pandas as pd
 import json
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
+from hana_automl.algorithms.ensembles.blendreg import BlendingReg
 from hana_automl.pipeline.input import Input
 from hana_automl.pipeline.pipeline import Pipeline
 from hana_automl.preprocess.preprocessor import Preprocessor
-from hana_automl.utils.error import AutoMLError
+from hana_automl.utils.error import AutoMLError, BlendingError
 from hana_ml.model_storage import ModelStorage
 import hana_ml
 
@@ -28,13 +29,14 @@ class AutoML:
         Preprocessor settings.
     """
 
-    def __init__(self, connection_context: hana_ml.ConnectionContext):
+    def __init__(self, connection_context: hana_ml.dataframe.ConnectionContext):
         self.connection_context = connection_context
         self.opt = None
         self.model = None
         self.predicted = None
         self.preprocessor_settings = None
         self.ensemble = False
+        self.columns_to_remove = None
 
     def fit(
         self,
@@ -97,7 +99,11 @@ class AutoML:
         )
         inputted.load_data()
         data = inputted.split_data()
+        data.binomial = Preprocessor.check_binomial(
+            df=inputted.hana_df, target=data.target
+        )
         if columns_to_remove is not None:
+            self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
         pipe = Pipeline(data, steps, task)
         self.opt = pipe.train(
@@ -107,6 +113,10 @@ class AutoML:
             self.opt.print_leaderboard()
         self.model = self.opt.get_model()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
+        if ensemble and pipe.task == "cls" and not data.binomial:
+            raise BlendingError(
+                "Sorry, non binomial blending classification is not supported yet!"
+            )
         if ensemble:
             self.ensemble = ensemble
             if pipe.task == "cls":
@@ -118,7 +128,7 @@ class AutoML:
                     leaderboard=self.opt.leaderboard,
                 )
             else:
-                self.model = BlendingCls(
+                self.model = BlendingReg(
                     categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,
@@ -170,6 +180,9 @@ class AutoML:
         data.load_data()
         if target_drop is not None:
             data.hana_df = data.hana_df.drop(target_drop)
+        if self.columns_to_remove is not None:
+            print("removal")
+            data.hana_df.drop(self.columns_to_remove)
         if self.ensemble:
             self.model.id_col = id_column
             self.predicted = self.model.predict(df=data.hana_df)

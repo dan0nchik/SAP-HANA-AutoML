@@ -38,6 +38,7 @@ class BlendingCls(Blending):
         predictions = super(BlendingCls, self).predict(data=data, df=df)
         pd_res = list()
         for res in predictions:
+            print(res.collect().head())
             pd_res.append(res.collect())
         pred = list()
         for i in range(pd_res[0].shape[0]):
