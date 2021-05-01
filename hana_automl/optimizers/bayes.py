@@ -1,3 +1,5 @@
+import time
+
 from bayes_opt.bayesian_optimization import BayesianOptimization
 
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
@@ -36,7 +38,7 @@ class BayesianOptimizer(BaseOptimizer):
     """
 
     def __init__(
-        self, algo_list: list, data, iterations, problem, categorical_features=None
+        self, algo_list: list, data, iterations, time_limit, problem, categorical_features=None
     ):
         self.data = data
         self.algo_list = algo_list
@@ -44,6 +46,9 @@ class BayesianOptimizer(BaseOptimizer):
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
+        self.time_limit = time_limit
+        self.start_time = time.perf_counter()
+        print(self.start_time)
         self.imputerstrategy_list = ["mean", "median", "zero"]
         self.categorical_features = categorical_features
         self.inner_data = None

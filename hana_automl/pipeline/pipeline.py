@@ -21,13 +21,12 @@ class Pipeline:
         Optimizer.
     """
 
-    def __init__(self, data: Data, steps: int, task: str):
+    def __init__(self, data: Data, steps: int, task: str, time_limit=None):
         self.data = data
         self.iter = steps
         self.task = task
+        self.time_limit = time_limit
         self.opt = None
-        if steps < 1:
-            raise PipelineError("Steps < 1!")
 
     def train(self, categorical_features: list = None, optimizer: str = None):
         """Preprocesses data and starts optimizer.
@@ -56,6 +55,7 @@ class Pipeline:
                 algo_list=algo_list,
                 data=self.data,
                 iterations=self.iter,
+                time_limit=self.time_limit,
                 categorical_features=categorical_features,
                 problem=self.task,
             )
@@ -65,6 +65,7 @@ class Pipeline:
                 data=self.data,
                 problem=self.task,
                 iterations=self.iter,
+                time_limit=self.time_limit,
                 algo_dict=algo_dict,
                 categorical_features=categorical_features,
             )

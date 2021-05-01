@@ -39,20 +39,20 @@ class AutoML:
         self.columns_to_remove = None
 
     def fit(
-        self,
-        df: pd.DataFrame = None,
-        task: str = None,
-        steps: int = 10,
-        target: str = None,
-        file_path: str = None,
-        table_name: str = None,
-        columns_to_remove: list = None,
-        categorical_features: list = None,
-        id_column=None,
-        optimizer: str = "OptunaSearch",
-        config=None,
-        ensemble=False,
-        output_leaderboard=False,
+            self,
+            df: pd.DataFrame = None,
+            task: str = None,
+            steps: int = None,
+            target: str = None,
+            file_path: str = None,
+            table_name: str = None,
+            columns_to_remove: list = None,
+            categorical_features: list = None,
+            id_column=None,
+            optimizer: str = "OptunaSearch",
+            time_limit=None,
+            ensemble=False,
+            output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -82,13 +82,22 @@ class AutoML:
         optimizer: str
             Optimizer to tune hyperparameters.
             Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
-        config : dict
-            Configuration file (not implemented yet)
+        time_limit: int
+            Amount of time(in seconds) to tune model
+        ensemble: str
+            Specify if you want to get a blending or stacking ensemble
+            Currently supported: "blending", "stacking"
         output_leaderboard : bool
             Print algorithms leaderboard or not
         """
-        if steps < 1:
-            raise AutoMLError("The number of steps < 1!")
+        if time_limit is None and steps is None:
+            raise AutoMLError("Specify time limit or number of iterations!")
+        if steps is not None:
+            if steps < 1:
+                raise AutoMLError("The number of steps < 1!")
+        if time_limit is not None:
+            if time_limit < 1:
+                raise AutoMLError("The number of time_limit < 1!")
         inputted = Input(
             connection_context=self.connection_context,
             df=df,
@@ -105,7 +114,7 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
-        pipe = Pipeline(data, steps, task)
+        pipe = Pipeline(data, steps, task, time_limit=time_limit)
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
@@ -145,13 +154,13 @@ class AutoML:
             print("\033[0m {}".format(""))
 
     def predict(
-        self,
-        df: pd.DataFrame = None,
-        file_path: str = None,
-        table_name: str = None,
-        id_column: str = None,
-        preprocessor_file: str = None,
-        target_drop=None,
+            self,
+            df: pd.DataFrame = None,
+            file_path: str = None,
+            table_name: str = None,
+            id_column: str = None,
+            preprocessor_file: str = None,
+            target_drop=None,
     ):
         """Makes predictions using fitted model.
 

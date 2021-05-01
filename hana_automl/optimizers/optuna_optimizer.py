@@ -1,3 +1,5 @@
+import time
+
 import optuna
 
 # TODO: turn off optuna logging if verbose set to False
@@ -40,6 +42,7 @@ class OptunaOptimizer(BaseOptimizer):
         data,
         problem,
         iterations,
+        time_limit,
         algo_dict,
         categorical_features=None,
         droplist_columns=None,
@@ -48,6 +51,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.data = data
         self.iterations = iterations
         self.problem = problem
+        self.time_limit = time_limit
         self.algo_dict = algo_dict
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
@@ -59,10 +63,23 @@ class OptunaOptimizer(BaseOptimizer):
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
-        opt.optimize(self.objective, n_trials=self.iterations)
+        if self.iterations is None and self.time_limit is None:
+            opt.optimize(self.objective, n_trials=self.iterations, timeout=self.time_limit)
+        elif self.iterations is None:
+            opt.optimize(self.objective, timeout=self.time_limit)
+        else:
+            opt.optimize(self.objective, n_trials=self.time_limit)
+        time.sleep(2)
         self.tuned_params = opt.best_params
         self.imputer = opt.best_params.pop("imputer")
-
+        res = len(opt.trials)
+        if self.iterations is None:
+            print('There was a stop due to a time limit! Completed ' + str(res) + ' iterations')
+        elif res == self.iterations:
+            print('All iterations completed successfully!')
+        else:
+            print('There was a stop due to a time limit! Completed '+str(res)+' iterations of '+str(self.iterations))
+        print('Starting model accuracy evaluation on the validation data!')
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor["imputer"],
@@ -72,7 +89,6 @@ class OptunaOptimizer(BaseOptimizer):
             )
             acc = member.algorithm.score(data=data, df=data.valid)
             member.add_valid_acc(acc)
-
         self.leaderboard.board.sort(
             key=lambda member: member.valid_accuracy + member.train_accuracy,
             reverse=True,
