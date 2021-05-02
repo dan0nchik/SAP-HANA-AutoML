@@ -38,11 +38,19 @@ class BayesianOptimizer(BaseOptimizer):
     """
 
     def __init__(
-        self, algo_list: list, data, iterations, time_limit, problem, categorical_features=None
+        self,
+        algo_list: list,
+        data,
+        iterations,
+        time_limit,
+        problem,
+        categorical_features=None,
     ):
         self.data = data
         self.algo_list = algo_list
-        self.iter = iterations
+        self.iter = None
+        if iterations is not None:
+            self.iter = iterations-1
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
@@ -74,7 +82,7 @@ class BayesianOptimizer(BaseOptimizer):
             Total number of child objective iterations is n_iter + init_points!
         """
         if self.time_limit is not None:
-            if time.perf_counter()-self.start_time > self.time_limit:
+            if time.perf_counter() - self.start_time > self.time_limit:
                 raise OptimizerError()
         self.algo_index = round(algo_index_tuned)
         imputer = self.imputer.num_strategy[round(num_strategy_method)]
@@ -97,9 +105,7 @@ class BayesianOptimizer(BaseOptimizer):
         algo.set_params(**opt.max["params"])
         self.fit(algo, self.inner_data)
 
-        self.leaderboard.addmodel(
-            ModelBoard(algo, opt.max["target"], self.imputer)
-        )
+        self.leaderboard.addmodel(ModelBoard(algo, opt.max["target"], self.imputer))
 
         return opt.max["target"]
 
@@ -151,18 +157,32 @@ class BayesianOptimizer(BaseOptimizer):
                 "num_strategy_method": (0, len(self.imputer.num_strategy) - 1),
             },
             random_state=17,
-
         )
         self.start_time = time.perf_counter()
         try:
-            opt.maximize(n_iter=self.iter, init_points=1)
+            if self.iter is None:
+                opt.maximize(n_iter=99999999999999, init_points=1)
+            else:
+                opt.maximize(n_iter=self.iter, init_points=1)
         except OptimizerError:
-            print('There was a stop due to a time limit! Completed ' + str(len(opt.res)) + ' iterations of ' + str(
-                self.iter))
+            if self.iter is None:
+                print(
+                    "There was a stop due to a time limit! Completed "
+                    + str(len(opt.res))
+                    + " iterations"
+                )
+            else:
+                print(
+                    "There was a stop due to a time limit! Completed "
+                    + str(len(opt.res))
+                    + " iterations of "
+                    + str(self.iter)
+                )
+
         else:
-            print('All iterations completed successfully!')
+            print("All iterations completed successfully!")
         self.tuned_params = opt.max
-        print('Starting model accuracy evaluation on the validation data!')
+        print("Starting model accuracy evaluation on the validation data!")
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
