@@ -40,20 +40,20 @@ class AutoML:
         self.columns_to_remove = None
 
     def fit(
-            self,
-            df: pd.DataFrame = None,
-            task: str = None,
-            steps: int = None,
-            target: str = None,
-            file_path: str = None,
-            table_name: str = None,
-            columns_to_remove: list = None,
-            categorical_features: list = None,
-            id_column=None,
-            optimizer: str = "OptunaSearch",
-            time_limit=None,
-            ensemble=False,
-            output_leaderboard=False,
+        self,
+        df: pd.DataFrame = None,
+        task: str = None,
+        steps: int = None,
+        target: str = None,
+        file_path: str = None,
+        table_name: str = None,
+        columns_to_remove: list = None,
+        categorical_features: list = None,
+        id_column=None,
+        optimizer: str = "OptunaSearch",
+        time_limit=None,
+        ensemble=False,
+        output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -155,13 +155,13 @@ class AutoML:
             print("\033[0m {}".format(""))
 
     def predict(
-            self,
-            df: pd.DataFrame = None,
-            file_path: str = None,
-            table_name: str = None,
-            id_column: str = None,
-            preprocessor_file: str = None,
-            target_drop: str=None,
+        self,
+        df: pd.DataFrame = None,
+        file_path: str = None,
+        table_name: str = None,
+        id_column: str = None,
+        preprocessor_file: str = None,
+        target_drop: str = None,
     ):
         """Makes predictions using fitted model.
 
@@ -204,7 +204,8 @@ class AutoML:
             print("Preprocessor settings:", self.preprocessor_settings)
             pr = Preprocessor()
             data.hana_df = pr.clean(
-                data=data.hana_df, num_strategy=self.preprocessor_settings.tuned_num_strategy
+                data=data.hana_df,
+                num_strategy=self.preprocessor_settings.tuned_num_strategy,
             )
             self.predicted = self.model.predict(data.hana_df, id_column)
         res = self.predicted

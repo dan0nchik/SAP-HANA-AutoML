@@ -9,4 +9,4 @@ class PreprocessorSettings:
 
     def __init__(self):
         self.num_strategy = ["mean", "median", "zero"]
-        self.tuned_num_strategy: str = ''
+        self.tuned_num_strategy: str = ""
