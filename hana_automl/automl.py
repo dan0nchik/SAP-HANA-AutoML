@@ -6,6 +6,7 @@ from hana_automl.algorithms.ensembles.blendreg import BlendingReg
 from hana_automl.pipeline.input import Input
 from hana_automl.pipeline.pipeline import Pipeline
 from hana_automl.preprocess.preprocessor import Preprocessor
+from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import AutoMLError, BlendingError
 from hana_ml.model_storage import ModelStorage
 import hana_ml
@@ -25,7 +26,7 @@ class AutoML:
         Tuned and fitted HANA PAL model.
     predicted
         Dataframe containig predicted values.
-    preprocessor_settings : dict
+    preprocessor_settings : PreprocessorSettings
         Preprocessor settings.
     """
 
@@ -203,7 +204,7 @@ class AutoML:
             print("Preprocessor settings:", self.preprocessor_settings)
             pr = Preprocessor()
             data.hana_df = pr.clean(
-                data=data.hana_df, num_strategy=self.preprocessor_settings["imputer"]
+                data=data.hana_df, num_strategy=self.preprocessor_settings.tuned_num_strategy
             )
             self.predicted = self.model.predict(data.hana_df, id_column)
         res = self.predicted

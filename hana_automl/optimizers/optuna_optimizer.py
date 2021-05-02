@@ -1,3 +1,4 @@
+from hana_automl.preprocess.settings import PreprocessorSettings
 import time
 
 import optuna
@@ -56,7 +57,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
         self.model = None
-        self.imputer = None
+        self.imputer: PreprocessorSettings = PreprocessorSettings()
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
@@ -71,18 +72,27 @@ class OptunaOptimizer(BaseOptimizer):
             opt.optimize(self.objective, n_trials=self.iterations)
         time.sleep(2)
         self.tuned_params = opt.best_params
-        self.imputer = opt.best_params.pop("imputer")
+        self.imputer.tuned_num_strategy = opt.best_params.pop("imputer")
         res = len(opt.trials)
         if self.iterations is None:
-            print('There was a stop due to a time limit! Completed ' + str(res) + ' iterations')
+            print(
+                "There was a stop due to a time limit! Completed "
+                + str(res)
+                + " iterations"
+            )
         elif res == self.iterations:
-            print('All iterations completed successfully!')
+            print("All iterations completed successfully!")
         else:
-            print('There was a stop due to a time limit! Completed '+str(res)+' iterations of '+str(self.iterations))
-        print('Starting model accuracy evaluation on the validation data!')
+            print(
+                "There was a stop due to a time limit! Completed "
+                + str(res)
+                + " iterations of "
+                + str(self.iterations)
+            )
+        print("Starting model accuracy evaluation on the validation data!")
         for member in self.leaderboard.board:
             data = self.data.clear(
-                num_strategy=member.preprocessor["imputer"],
+                num_strategy=member.preprocessor.tuned_num_strategy,
                 cat_strategy=None,
                 dropempty=False,
                 categorical_list=self.categorical_features,
@@ -113,7 +123,8 @@ class OptunaOptimizer(BaseOptimizer):
             trial.suggest_categorical("algo", self.algo_dict.keys())
         )
         algo.set_categ(self.categorical_features)
-        imputer = trial.suggest_categorical("imputer", ["mean", "median", "zero"])
+        imputer = trial.suggest_categorical("imputer", self.imputer.num_strategy)
+        self.imputer.tuned_num_strategy = imputer
         data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
@@ -123,7 +134,7 @@ class OptunaOptimizer(BaseOptimizer):
         algo.optunatune(trial)
         self.fit(algo, data)
         acc = algo.score(data=data, df=data.test)
-        self.leaderboard.addmodel(ModelBoard(algo, acc, {"imputer": imputer}))
+        self.leaderboard.addmodel(ModelBoard(algo, acc, self.imputer))
         return acc
 
     def get_tuned_params(self):
@@ -140,7 +151,7 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_preprocessor_settings(self):
         """Returns tuned preprocessor settings."""
-        return {"imputer": self.imputer}
+        return self.imputer
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

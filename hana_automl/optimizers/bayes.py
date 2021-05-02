@@ -6,6 +6,7 @@ from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.leaderboard import Leaderboard
 
 from hana_automl.pipeline.modelres import ModelBoard
+from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import OptimizerError
 
 
@@ -26,8 +27,6 @@ class BayesianOptimizer(BaseOptimizer):
         Final tuned hyperparameters of best algorithm.
     algo_index : int
         Index of algorithm in algorithms list.
-    imputerstrategy_list : list
-        List of imputer strategies for preprocessing.
     categorical_features : list
         List of categorical features in dataframe.
     inner_data : Data
@@ -49,21 +48,20 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = 0
         self.time_limit = time_limit
         self.start_time = None
-        self.imputerstrategy_list = ["mean", "median", "zero"]
         self.categorical_features = categorical_features
         self.inner_data = None
-        self.imputer = None
+        self.imputer: PreprocessorSettings = PreprocessorSettings()
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
 
-    def objective(self, algo_index_tuned, preprocess_method):
+    def objective(self, algo_index_tuned, num_strategy_method):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
         Parameters
         ----------
         algo_index_tuned : int
             Index of algorithm in algo_list.
-        preprocess_method : in
+        num_strategy_method : int
             Strategy to decode categorical variables.
 
         Returns
@@ -79,8 +77,8 @@ class BayesianOptimizer(BaseOptimizer):
             if time.perf_counter()-self.start_time > self.time_limit:
                 raise OptimizerError()
         self.algo_index = round(algo_index_tuned)
-        rounded_preprocess_method = round(preprocess_method)
-        imputer = self.imputerstrategy_list[rounded_preprocess_method]
+        imputer = self.imputer.num_strategy[round(num_strategy_method)]
+        self.imputer.tuned_num_strategy = imputer
         self.inner_data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
@@ -100,7 +98,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.fit(algo, self.inner_data)
 
         self.leaderboard.addmodel(
-            ModelBoard(algo, opt.max["target"], {"imputer": imputer})
+            ModelBoard(algo, opt.max["target"], self.imputer)
         )
 
         return opt.max["target"]
@@ -121,7 +119,7 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
         acc = algorithm.score(self.inner_data, self.inner_data.test)
-        # print("Child Iteration accuracy: " + str(acc))
+        print("Child Iteration accuracy: " + str(acc))
         return acc
 
     def get_tuned_params(self):
@@ -141,7 +139,7 @@ class BayesianOptimizer(BaseOptimizer):
     def get_preprocessor_settings(self):
         """Returns tuned preprocessor settings."""
 
-        return {"imputer": self.imputer}
+        return self.imputer
 
     def tune(self):
         """Starts hyperparameter searching."""
@@ -150,7 +148,7 @@ class BayesianOptimizer(BaseOptimizer):
             f=self.objective,
             pbounds={
                 "algo_index_tuned": (0, len(self.algo_list) - 1),
-                "preprocess_method": (0, len(self.imputerstrategy_list) - 1),
+                "num_strategy_method": (0, len(self.imputer.num_strategy) - 1),
             },
             random_state=17,
 
@@ -164,13 +162,10 @@ class BayesianOptimizer(BaseOptimizer):
         else:
             print('All iterations completed successfully!')
         self.tuned_params = opt.max
-        self.imputer = self.imputerstrategy_list[
-            round(opt.max["params"]["preprocess_method"])
-        ]
         print('Starting model accuracy evaluation on the validation data!')
         for member in self.leaderboard.board:
             data = self.data.clear(
-                num_strategy=member.preprocessor["imputer"],
+                num_strategy=member.preprocessor.tuned_num_strategy,
                 cat_strategy=None,
                 dropempty=False,
                 categorical_list=None,

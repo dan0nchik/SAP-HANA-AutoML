@@ -31,7 +31,7 @@ class BaseOptimizer(ABC):
 
     @abstractmethod
     def get_preprocessor_settings(self):
-        """Return a dictionary with preprocessor settings"""
+        """Return a PreprocessorSettings object with preprocessor settings"""
 
     def print_leaderboard(self):
         print("\033[33m {}".format("Leaderboard (top best algorithms):\n"))
