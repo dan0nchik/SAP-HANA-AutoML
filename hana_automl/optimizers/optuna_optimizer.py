@@ -63,12 +63,12 @@ class OptunaOptimizer(BaseOptimizer):
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
-        if self.iterations is None and self.time_limit is None:
+        if self.iterations is not None and self.time_limit is not None:
             opt.optimize(self.objective, n_trials=self.iterations, timeout=self.time_limit)
         elif self.iterations is None:
             opt.optimize(self.objective, timeout=self.time_limit)
         else:
-            opt.optimize(self.objective, n_trials=self.time_limit)
+            opt.optimize(self.objective, n_trials=self.iterations)
         time.sleep(2)
         self.tuned_params = opt.best_params
         self.imputer = opt.best_params.pop("imputer")

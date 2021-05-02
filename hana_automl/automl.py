@@ -114,7 +114,7 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
-        pipe = Pipeline(data, steps, task, time_limit=time_limit)
+        pipe = Pipeline(data=data, steps=steps, task=task, time_limit=time_limit)
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
@@ -160,7 +160,7 @@ class AutoML:
             table_name: str = None,
             id_column: str = None,
             preprocessor_file: str = None,
-            target_drop=None,
+            target_drop: str=None,
     ):
         """Makes predictions using fitted model.
 
@@ -176,7 +176,7 @@ class AutoML:
             ID column in table. Needed for HANA.
         preprocessor_file : str
             Path to JSON file containing preprocessor settings.
-        target_drop: Bool
+        target_drop: str
             Target to drop, if it exists in inputted data
         """
         data = Input(
@@ -191,7 +191,7 @@ class AutoML:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
             print("removal")
-            data.hana_df.drop(self.columns_to_remove)
+            data.hana_df = data.hana_df.drop(self.columns_to_remove)
         if self.ensemble:
             self.model.id_col = id_column
             self.predicted = self.model.predict(df=data.hana_df)

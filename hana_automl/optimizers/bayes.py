@@ -6,6 +6,7 @@ from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.leaderboard import Leaderboard
 
 from hana_automl.pipeline.modelres import ModelBoard
+from hana_automl.utils.error import OptimizerError
 
 
 class BayesianOptimizer(BaseOptimizer):
@@ -47,8 +48,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.tuned_params = {}
         self.algo_index = 0
         self.time_limit = time_limit
-        self.start_time = time.perf_counter()
-        print(self.start_time)
+        self.start_time = None
         self.imputerstrategy_list = ["mean", "median", "zero"]
         self.categorical_features = categorical_features
         self.inner_data = None
@@ -75,6 +75,9 @@ class BayesianOptimizer(BaseOptimizer):
         ----
             Total number of child objective iterations is n_iter + init_points!
         """
+        if self.time_limit is not None:
+            if time.perf_counter()-self.start_time > self.time_limit:
+                raise OptimizerError()
         self.algo_index = round(algo_index_tuned)
         rounded_preprocess_method = round(preprocess_method)
         imputer = self.imputerstrategy_list[rounded_preprocess_method]
@@ -150,14 +153,21 @@ class BayesianOptimizer(BaseOptimizer):
                 "preprocess_method": (0, len(self.imputerstrategy_list) - 1),
             },
             random_state=17,
-            verbose=False,
+
         )
-        opt.maximize(n_iter=self.iter, init_points=1)
+        self.start_time = time.perf_counter()
+        try:
+            opt.maximize(n_iter=self.iter, init_points=1)
+        except OptimizerError:
+            print('There was a stop due to a time limit! Completed ' + str(len(opt.res)) + ' iterations of ' + str(
+                self.iter))
+        else:
+            print('All iterations completed successfully!')
         self.tuned_params = opt.max
         self.imputer = self.imputerstrategy_list[
             round(opt.max["params"]["preprocess_method"])
         ]
-
+        print('Starting model accuracy evaluation on the validation data!')
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor["imputer"],
