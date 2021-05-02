@@ -37,11 +37,11 @@ class Blending:
         pr = Preprocessor()
         for model in self.model_list:
             if df is not None:
-                df2 = pr.clean(data=df, num_strategy=model.preprocessor["imputer"])
+                df2 = pr.clean(data=df, num_strategy=model.preprocessor.tuned_num_strategy)
             else:
                 df2 = pr.clean(
                     data=data.valid.drop(data.target),
-                    num_strategy=model.preprocessor["imputer"],
+                    num_strategy=model.preprocessor.tuned_num_strategy,
                 )
             pred = model.algorithm.model.predict(df2, self.id_col)
             if type(pred) == tuple:

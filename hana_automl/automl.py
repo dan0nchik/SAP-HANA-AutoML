@@ -25,7 +25,7 @@ class AutoML:
     model
         Tuned and fitted HANA PAL model.
     predicted
-        Dataframe containig predicted values.
+        Dataframe containing predicted values.
     preprocessor_settings : PreprocessorSettings
         Preprocessor settings.
     """
@@ -160,8 +160,7 @@ class AutoML:
             file_path: str = None,
             table_name: str = None,
             id_column: str = None,
-            preprocessor_file: str = None,
-            target_drop: str=None,
+            target_drop: str = None,
     ):
         """Makes predictions using fitted model.
 
@@ -175,8 +174,6 @@ class AutoML:
             Name of table in HANA database
         id_column: str
             ID column in table. Needed for HANA.
-        preprocessor_file : str
-            Path to JSON file containing preprocessor settings.
         target_drop: str
             Target to drop, if it exists in inputted data
         """
@@ -197,10 +194,6 @@ class AutoML:
             self.model.id_col = id_column
             self.predicted = self.model.predict(df=data.hana_df)
         else:
-            if preprocessor_file is not None:
-                with open(preprocessor_file) as json_file:
-                    json_data = json.load(json_file)
-                    self.preprocessor_settings = json_data
             print("Preprocessor settings:", self.preprocessor_settings)
             pr = Preprocessor()
             data.hana_df = pr.clean(
@@ -238,17 +231,6 @@ class AutoML:
             res = res[1]
         res.collect().to_csv(file_path)
 
-    def save_preprocessor(self, file_path: str):
-        """Saves preprocessor settings to JSON file to use it in future predictions.
-
-        Parameters
-        ----------
-        file_path : str
-            Path to save
-        """
-        with open(file_path, "w+") as file:
-            json.dump(self.preprocessor_settings, file)
-
     def model_to_file(self, file_path: str):
         """Saves model information to JSON file
 
@@ -273,12 +255,3 @@ class AutoML:
     def best_params(self):
         """Get best hyperparameters"""
         return self.opt.get_tuned_params()
-
-
-class Storage(ModelStorage):
-    """Save your HANA PAL model easily.
-    Details here:
-    https://help.sap.com/doc/1d0ebfe5e8dd44d09606814d83308d4b/2.0.04/en-US/hana_ml.model_storage.html"""
-
-    def __init__(self, connection_context):
-        super().__init__(connection_context)
