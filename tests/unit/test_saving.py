@@ -3,8 +3,8 @@ from unittest import mock
 import os
 
 
-@mock.patch("automl.hana_ml.dataframe.DataFrame")
-@mock.patch("automl.hana_ml.ConnectionContext")
+@mock.patch("hana_automl.automl.hana_ml.dataframe.DataFrame")
+@mock.patch("hana_automl.automl.hana_ml.ConnectionContext")
 def test_saving_predicted(conn, hana_df):
     automl = AutoML(conn)
     automl.predicted = hana_df

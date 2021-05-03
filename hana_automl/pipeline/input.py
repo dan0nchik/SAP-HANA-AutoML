@@ -89,11 +89,8 @@ class Input:
         else:
             raise InputError("No data provided")
         if self.id_col is None:
-            print("Table with created Id column:")
             self.hana_df = self.hana_df.add_id()
             self.id_col = "ID"
-            print(self.hana_df.collect().head())
-        print("Done")
         return
 
     def split_data(self) -> Data:

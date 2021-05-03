@@ -26,9 +26,9 @@ def multiple_tasks(name):
         auto_imput(i, data, pr)
 
     if name == "cls":
-        assert pr.set_task(data, "Survived")[1] == name
+        assert pr.set_task(data, "Survived", task="cls")[1] == name
     if name == "reg":
-        assert pr.set_task(data, "Все 18+_TVR")[1] == name
+        assert pr.set_task(data, "Все 18+_TVR", task="reg")[1] == name
 
 
 def auto_imput(imputer, data, pr):
