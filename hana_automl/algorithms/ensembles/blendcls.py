@@ -42,11 +42,13 @@ class BlendingCls(Blending):
                               label_true='ACTUAL',
                               label_pred='PREDICTION')
 
-    def predict(self, data=None, df=None):
+    def predict(self, data=None, df=None, id_colm=None):
         predictions = super(BlendingCls, self).predict(data=data, df=df)
         pd_res = list()
+        if id_colm is None:
+            id_colm = data.id_colm
         for i in range(len(predictions)):
-            k = predictions[i].select(data.id_colm,
+            k = predictions[i].select(id_colm,
                                       predictions[i].columns[1]).rename_columns(['ID_' + str(i), 'PREDICTION' + str(i)])
             pd_res.append(k)
         joined = pd_res[0].join(pd_res[1], 'ID_0=ID_1').select('ID_0', 'PREDICTION0', 'PREDICTION1').join(

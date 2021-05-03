@@ -197,11 +197,11 @@ class AutoML:
         if target_drop is not None:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
-            print("removal")
             data.hana_df = data.hana_df.drop(self.columns_to_remove)
+            print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
-            self.predicted = self.model.predict(df=data.hana_df)
+            self.predicted = self.model.predict(df=data.hana_df, id_colm=id_column)
         else:
             print("Preprocessor settings:", self.preprocessor_settings)
             pr = Preprocessor()
