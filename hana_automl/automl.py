@@ -108,6 +108,8 @@ class AutoML:
             id_col=id_column,
         )
         inputted.load_data()
+        if table_name is None:
+            table_name = inputted.table_name
         data = inputted.split_data()
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target

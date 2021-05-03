@@ -60,6 +60,7 @@ class Input:
             self.hana_df = create_dataframe_from_pandas(
                 self.connection_context, self.df, name
             )
+            self.table_name = name
         elif (
             (self.table_name is not None or self.table_name != "")
             and self.file_path is None

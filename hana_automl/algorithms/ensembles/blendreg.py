@@ -1,4 +1,5 @@
 import pandas as pd
+from hana_ml.algorithms.pal import metrics
 from hana_ml.algorithms.pal.metrics import r2_score
 from hana_ml.dataframe import create_dataframe_from_pandas
 
@@ -26,36 +27,31 @@ class BlendingReg(Blending):
         )
         self.title = "BlendingRegressor"
 
-    def score(self, data=None, df=None):
-        hana_df = self.predict(data=data, df=df)
-        ftr: list = data.valid.columns
-        ftr.remove(data.target)
-        dat = data.valid.drop(ftr)
-        itg = hana_df.join(dat, "1 = 1")
-        return r2_score(data=itg, label_true=data.target, label_pred="PREDICTION")
-
     def predict(self, data=None, df=None):
         predictions = super(BlendingReg, self).predict(data=data, df=df)
         pd_res = list()
-        for res in predictions:
-            pd_res.append(res.collect())
-        pred = list()
-        for i in range(pd_res[0].shape[0]):
-            pred.append(
-                (
-                    float(pd_res[0].at[i, pd_res[0].columns[1]])
-                    + float(pd_res[1].at[i, pd_res[1].columns[1]])
-                    + float(pd_res[2].at[i, pd_res[2].columns[1]])
-                )
-                / 3
-            )
-        d = {"PREDICTION": pred}
-        df = pd.DataFrame(data=d)
-        hana_df = create_dataframe_from_pandas(
-            self.connection_context,
-            df,
-            self.table_name + "_bagging",
-            force=True,
-            drop_exist_tab=True,
-        )
-        return hana_df
+        for i in range(len(predictions)):
+            k = predictions[i].select("ID",
+                                      predictions[i].columns[1]).rename_columns(['ID_'+str(i), 'PREDICTION'+str(i)])
+            pd_res.append(k)
+        joined = pd_res[0].join(pd_res[1], 'ID_0=ID_1').select('ID_0', 'PREDICTION0', 'PREDICTION1').join(
+            pd_res[2], 'ID_0=ID_2').select('ID_0', 'PREDICTION0', 'PREDICTION1', 'PREDICTION2')
+        joined = joined.rename_columns(['ID', 'PREDICTION1', 'PREDICTION2', 'PREDICTION3'])
+        joined = joined.select('ID', ('(PREDICTION1 + PREDICTION2 + PREDICTION3)/3', 'PREDICTION'))
+        return joined
+
+    def score(self, data):
+        return self.inner_score(data, key=data.id_colm, label=data.target)
+
+    def inner_score(self, data, key, label=None):
+        cols = data.valid.columns
+        cols.remove(key)
+        cols.remove(label)
+        prediction = self.predict(data=data)
+        prediction = prediction.select('ID', 'PREDICTION').rename_columns(['ID_P', 'PREDICTION'])
+        actual = data.valid.select(key, label).rename_columns(['ID_A', 'ACTUAL'])
+        joined = actual.join(prediction, 'ID_P=ID_A').select('ACTUAL', 'PREDICTION')
+        return metrics.r2_score(joined,
+                                      label_true='ACTUAL',
+                                      label_pred='PREDICTION')
+
