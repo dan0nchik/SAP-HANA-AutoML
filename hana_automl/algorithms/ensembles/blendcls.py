@@ -1,6 +1,7 @@
-import pandas as pd
 from hana_ml.algorithms.pal.metrics import accuracy_score
 from hana_ml.dataframe import create_dataframe_from_pandas
+
+from hana_automl.utils.connection import connection_context
 
 from hana_automl.algorithms.ensembles.blending import Blending
 from hana_automl.pipeline.leaderboard import Leaderboard
@@ -8,13 +9,13 @@ from hana_automl.pipeline.leaderboard import Leaderboard
 
 class BlendingCls(Blending):
     def __init__(
-        self,
-        categorical_features,
-        id_col,
-        connection_context,
-        table_name,
-        model_list: list = None,
-        leaderboard: Leaderboard = None,
+            self,
+            categorical_features,
+            id_col,
+            connection_context,
+            table_name,
+            model_list: list = None,
+            leaderboard: Leaderboard = None,
     ):
         super(BlendingCls, self).__init__(
             categorical_features,
@@ -26,36 +27,48 @@ class BlendingCls(Blending):
         )
         self.title = "BlendingClassifier"
 
-    def score(self, data=None, df=None):
-        hana_df = self.predict(data=data, df=df)
-        ftr: list = data.valid.columns
-        ftr.remove(data.target)
-        dat = data.valid.drop(ftr)
-        itg = hana_df.join(dat, "1 = 1")
-        return accuracy_score(data=itg, label_true=data.target, label_pred="PREDICTION")
+    def score(self, data):
+        return self.inner_score(data, key=data.id_colm, label=data.target)
+
+    def inner_score(self, data, key, label=None):
+        cols = data.valid.columns
+        cols.remove(key)
+        cols.remove(label)
+        prediction = self.predict(data=data)
+        prediction = prediction.select('ID', 'PREDICTION').rename_columns(['ID_P', 'PREDICTION'])
+        actual = data.valid.select(key, label).rename_columns(['ID_A', 'ACTUAL'])
+        joined = actual.join(prediction, 'ID_P=ID_A').select('ACTUAL', 'PREDICTION')
+        return accuracy_score(joined,
+                              label_true='ACTUAL',
+                              label_pred='PREDICTION')
 
     def predict(self, data=None, df=None):
         predictions = super(BlendingCls, self).predict(data=data, df=df)
         pd_res = list()
-        for res in predictions:
-            print(res.collect().head())
-            pd_res.append(res.collect())
-        pred = list()
-        for i in range(pd_res[0].shape[0]):
+        for i in range(len(predictions)):
+            k = predictions[i].select(data.id_colm,
+                                      predictions[i].columns[1]).rename_columns(['ID_' + str(i), 'PREDICTION' + str(i)])
+            pd_res.append(k)
+        joined = pd_res[0].join(pd_res[1], 'ID_0=ID_1').select('ID_0', 'PREDICTION0', 'PREDICTION1').join(
+            pd_res[2], 'ID_0=ID_2').select('ID_0', 'PREDICTION0', 'PREDICTION1', 'PREDICTION2')
+        joined = joined.rename_columns(['ID', 'PREDICTION1', 'PREDICTION2', 'PREDICTION3'])
+        joined = joined.collect()
+        k = list()
+        for i in range(joined.shape[0]):
             if (
-                pd_res[0].at[i, pd_res[0].columns[1]]
-                == pd_res[1].at[i, pd_res[1].columns[1]]
+                    joined.at[i, 'PREDICTION1']
+                    == joined.at[i, 'PREDICTION2']
             ):
-                pred.append(pd_res[0].at[i, pd_res[0].columns[1]])
+                k.append(joined.at[i, 'PREDICTION1'])
             else:
-                pred.append(pd_res[2].at[i, pd_res[2].columns[1]])
-        d = {"PREDICTION": pred}
-        df = pd.DataFrame(data=d)
+                k.append(joined.at[i, 'PREDICTION3'])
+        joined.insert(4, "PREDICTION", k, True)
         hana_df = create_dataframe_from_pandas(
             self.connection_context,
-            df,
-            self.table_name + "_bagging",
+            joined,
+            self.table_name + "_sclsblending",
             force=True,
             drop_exist_tab=True,
+            disable_progressbar=True
         )
         return hana_df

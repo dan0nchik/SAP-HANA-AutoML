@@ -110,6 +110,8 @@ class AutoML:
         inputted.load_data()
         if table_name is None:
             table_name = inputted.table_name
+        if id_column is None:
+            id_column = inputted.id_col
         data = inputted.split_data()
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target
@@ -130,6 +132,11 @@ class AutoML:
                 "Sorry, non binomial blending classification is not supported yet!"
             )
         if ensemble:
+            if len(self.opt.leaderboard.board)<3:
+                raise BlendingError(
+                    "Sorry, not enough fitted models for ensembling! Restart the process"
+                )
+            print("Starting ensemble accuracy evaluation on the validation data!")
             self.ensemble = ensemble
             if pipe.task == "cls":
                 self.model = BlendingCls(
