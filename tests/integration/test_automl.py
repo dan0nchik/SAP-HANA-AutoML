@@ -36,7 +36,7 @@ def test_classification(optimizer):
             "y",
         ],
         columns_to_remove=["poutcome"],
-        steps=30,
+        steps=15,
         output_leaderboard=True,
         optimizer=optimizer,
     )
