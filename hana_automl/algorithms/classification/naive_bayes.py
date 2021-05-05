@@ -18,7 +18,7 @@ class NBayesCls(BaseAlgorithm):
         self.model = NaiveBayes(**params)
 
     def optunatune(self, trial):
-        alpha = trial.suggest_float("CLS_NaiveBayes_alpha", 0, 2)
+        alpha = trial.suggest_float("CLS_NaiveBayes_alpha", 1e-2, 100, log=True)
         discretization = trial.suggest_categorical(
             "CLS_NaiveBayes_discretization", ["no", "supervised"]
         )

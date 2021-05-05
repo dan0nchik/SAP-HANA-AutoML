@@ -26,9 +26,9 @@ class HGBCls(BaseAlgorithm):
 
     def optunatune(self, trial):
         n_estimators = trial.suggest_int("CLS_HGB_n_estimators", 10, 100, log=True)
-        max_depth = trial.suggest_int("CLS_HGB_max_depth", 6, 30, log=True)
+        max_depth = trial.suggest_int("CLS_HGB_max_depth", 1, 50, log=True)
         min_sample_weight_leaf = trial.suggest_int(
-            "CLS_HGB_min_sample_weight_leaf", 1, 100, log=True
+            "CLS_HGB_min_sample_weight_leaf", 1, 20, log=True
         )
         learning_rate = trial.suggest_float("CLS_HGB_learning_rate", 0.01, 1, log=True)
         split_method = trial.suggest_categorical(

@@ -4,7 +4,7 @@ import time
 import optuna
 
 # TODO: turn off optuna logging if verbose set to False
-# optuna.logging.set_verbosity(optuna.logging.WARNING)
+optuna.logging.set_verbosity(optuna.logging.WARNING)
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard

@@ -25,10 +25,10 @@ class DecisionTreeCls(BaseAlgorithm):
         algorithm = trial.suggest_categorical("DTC_algorithm", ["c45", "chaid", "cart"])
         max_depth = trial.suggest_int("DTC_max_depth", 2, 50, log=True)
         min_records_of_leaf = trial.suggest_int(
-            "DTC_min_records_of_leaf", 2, 100, log=True
+            "DTC_min_records_of_leaf", 1, 20, log=True
         )
         min_records_of_parent = trial.suggest_int(
-            "DTC_min_records_of_parent", 2, 100, log=True
+            "DTC_min_records_of_parent", 2, 20, log=True
         )
         model = DecisionTreeClassifier(
             algorithm=algorithm,

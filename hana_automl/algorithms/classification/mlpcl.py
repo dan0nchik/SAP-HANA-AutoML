@@ -53,7 +53,7 @@ class MLPcls(BaseAlgorithm):
         output_activation = trial.suggest_categorical(
             "CLS_MLPcls_output_activation", self.actv
         )
-        hidden_layer_size = trial.suggest_int(" self.model = model", 10, 100, log=True)
+        hidden_layer_size = trial.suggest_int("Hidden_Layer_Size", 1, 3, log=True)
         normalization = trial.suggest_categorical(
             "CLS_MLP_normalization",
             ["no", "z-transform", "scalar"],
@@ -68,7 +68,7 @@ class MLPcls(BaseAlgorithm):
                 "variance-scale-uniform",
             ],
         )
-        learning_rate = trial.suggest_float("CLS_MLP_learning_rate", 0.01, 1, log=True)
+        learning_rate = trial.suggest_float("CLS_MLP_learning_rate", 1e-4, 0.5, log=True)
         model = MLPClassifier(
             activation=activation,
             output_activation=output_activation,
@@ -78,4 +78,4 @@ class MLPcls(BaseAlgorithm):
             weight_init=weight_init,
             learning_rate=learning_rate,
         )
-        return model
+        self.model = model

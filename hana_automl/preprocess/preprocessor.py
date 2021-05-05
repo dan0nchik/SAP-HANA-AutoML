@@ -5,6 +5,7 @@ from hana_automl.algorithms.classification.gradboostcls import GBCls
 from hana_automl.algorithms.classification.hybgradboostcls import HGBCls
 from hana_automl.algorithms.classification.kneighborscls import KNeighborsCls
 from hana_automl.algorithms.classification.logregressioncls import LogRegressionCls
+from hana_automl.algorithms.classification.mlpcl import MLPcls
 from hana_automl.algorithms.classification.naive_bayes import NBayesCls
 from hana_automl.algorithms.classification.rdtclas import RDTCls
 from hana_automl.algorithms.classification.svc import SVCls
@@ -92,7 +93,7 @@ class Preprocessor:
         if task == "cls":
             clslist = [
                 DecisionTreeCls(),
-                LogRegressionCls(),
+                # LogRegressionCls(),
                 NBayesCls(),
                 # MLPcls(),
                 SVCls(),
@@ -105,7 +106,7 @@ class Preprocessor:
                 "DecisionTreeClassifier": DecisionTreeCls(),
                 # "LogisticRegressionClassifier": LogRegressionCls(),
                 "NaiveBayesClassifier": NBayesCls(),
-                # "MLPClassifier": MLPcls(),
+                "MLPClassifier": MLPcls(),
                 "SVClassifier": SVCls(),
                 "RDTClassifier": RDTCls(),
                 "GradientBoostingClassifier": GBCls(),

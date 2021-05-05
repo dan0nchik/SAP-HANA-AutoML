@@ -25,10 +25,10 @@ class RDTCls(BaseAlgorithm):
         calculate_oob = trial.suggest_categorical(
             "CLS_RDT_calculate_oob", [True, False]
         )
-        n_estimators = trial.suggest_int("CLS_RDT_n_estimators", 50, 300, log=True)
-        max_depth = trial.suggest_int("CLS_RDT_max_depth", 20, 56)
+        n_estimators = trial.suggest_int("CLS_RDT_n_estimators", 10, 100, log=True)
+        max_depth = trial.suggest_int("CLS_RDT_max_depth", 2, 50)
         min_samples_leaf = trial.suggest_int(
-            "CLS_RDT_min_samples_leaf", 1, 100, log=True
+            "CLS_RDT_min_samples_leaf", 1, 20, log=True
         )
         model = RDTClassifier(
             n_estimators=n_estimators,
