@@ -40,20 +40,20 @@ class AutoML:
         self.columns_to_remove = None
 
     def fit(
-        self,
-        df: pd.DataFrame = None,
-        task: str = None,
-        steps: int = None,
-        target: str = None,
-        file_path: str = None,
-        table_name: str = None,
-        columns_to_remove: list = None,
-        categorical_features: list = None,
-        id_column=None,
-        optimizer: str = "OptunaSearch",
-        time_limit=None,
-        ensemble=False,
-        output_leaderboard=False,
+            self,
+            df: pd.DataFrame = None,
+            task: str = None,
+            steps: int = None,
+            target: str = None,
+            file_path: str = None,
+            table_name: str = None,
+            columns_to_remove: list = None,
+            categorical_features: list = None,
+            id_column=None,
+            optimizer: str = "OptunaSearch",
+            time_limit=None,
+            ensemble=False,
+            output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -132,7 +132,7 @@ class AutoML:
                 "Sorry, non binomial blending classification is not supported yet!"
             )
         if ensemble:
-            if len(self.opt.leaderboard.board)<3:
+            if len(self.opt.leaderboard.board) < 3:
                 raise BlendingError(
                     "Sorry, not enough fitted models for ensembling! Restart the process"
                 )

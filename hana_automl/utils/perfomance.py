@@ -15,7 +15,7 @@ from hana_ml.algorithms.apl.gradient_boosting_regression import (
 from hana_ml.algorithms.apl.regression import AutoRegressor
 from hana_ml.dataframe import create_dataframe_from_pandas
 from sklearn.model_selection import train_test_split
-
+from hana_automl.utils.cleanup import clean
 from hana_automl.automl import AutoML
 
 
@@ -50,6 +50,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
+        train_df.declare_lttab_usage(True)
         test_df = create_dataframe_from_pandas(
             self.connection_context,
             table_name="BENCHMARK_TEST",
@@ -57,6 +58,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
+        test_df.declare_lttab_usage(True)
 
         if task == "cls":
             if grad_boost:
@@ -83,7 +85,7 @@ class Benchmark:
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.apl_accuracy = self.apl_model.score(test_df)
         print("APL accuracy: ", self.apl_accuracy)
-
+        clean()
         start_time = time.time()
         self.automl_model.fit(
             train,
@@ -97,6 +99,14 @@ class Benchmark:
             # optimizer='BayesianOptimizer'
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
+        test_df = create_dataframe_from_pandas(
+            self.connection_context,
+            table_name="BENCHMARK_TEST",
+            pandas_df=test,
+            force=True,
+            drop_exist_tab=True,
+        )
+        test_df.declare_lttab_usage(True)
         self.automl_accuracy = self.automl_model.get_model().score(
             test_df, label=label, key=id_column
         )

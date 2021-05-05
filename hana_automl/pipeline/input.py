@@ -91,6 +91,7 @@ class Input:
         if self.id_col is None:
             self.hana_df = self.hana_df.add_id()
             self.id_col = "ID"
+        self.hana_df.declare_lttab_usage(True)
         return
 
     def split_data(self) -> Data:

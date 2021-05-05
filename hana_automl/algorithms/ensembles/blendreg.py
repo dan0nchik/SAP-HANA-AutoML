@@ -1,3 +1,4 @@
+import hana_ml
 import pandas as pd
 from hana_ml.algorithms.pal import metrics
 from hana_ml.algorithms.pal.metrics import r2_score
@@ -9,15 +10,15 @@ from hana_automl.pipeline.leaderboard import Leaderboard
 
 class BlendingReg(Blending):
     def __init__(
-        self,
-        categorical_features,
-        id_col,
-        connection_context,
-        table_name,
-        model_list: list = None,
-        leaderboard: Leaderboard = None,
+            self,
+            categorical_features: list = None,
+            id_col: str = None,
+            connection_context: hana_ml.dataframe.ConnectionContext = None,
+            table_name: str = None,
+            model_list: list = [],
+            leaderboard: Leaderboard = None,
     ):
-        super(BlendingReg, self).__init__(
+        super().__init__(
             categorical_features,
             id_col,
             connection_context,

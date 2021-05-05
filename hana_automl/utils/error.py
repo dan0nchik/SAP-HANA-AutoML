@@ -20,3 +20,6 @@ class AutoMLError(Exception):
 
 class BlendingError(Exception):
     pass
+
+class StorageError(Exception):
+    pass

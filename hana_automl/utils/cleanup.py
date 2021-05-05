@@ -13,5 +13,5 @@ def clean():
     res = cursor.fetchall()
     for string in res:
         if table_exists(cursor, SCHEMA, string[1]):
-            cursor.execute(f'DROP TABLE "{string[1]}";')
+            cursor.execute(f'DROP TABLE "{string[1]}" CASCADE;')
     print(f"REMOVED ALL TABLES FROM {SCHEMA}")
