@@ -30,6 +30,10 @@ class BaseOptimizer(ABC):
         """Return tuned HANA PAL model"""
 
     @abstractmethod
+    def get_algorithm(self):
+        """Return tuned AutoML algorithm"""
+
+    @abstractmethod
     def get_preprocessor_settings(self):
         """Return a PreprocessorSettings object with preprocessor settings"""
 

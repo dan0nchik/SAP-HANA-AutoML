@@ -50,7 +50,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_list = algo_list
         self.iter = None
         if iterations is not None:
-            self.iter = iterations-1
+            self.iter = iterations - 1
         self.problem = problem
         self.tuned_params = {}
         self.algo_index = 0
@@ -61,6 +61,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.imputer: PreprocessorSettings = PreprocessorSettings()
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
+        self.algorithm = None
 
     def objective(self, algo_index_tuned, num_strategy_method):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -142,6 +143,11 @@ class BayesianOptimizer(BaseOptimizer):
 
         return self.model
 
+    def get_algorithm(self):
+        """Returns tuned AutoML algorithm"""
+
+        return self.algorithm
+
     def get_preprocessor_settings(self):
         """Returns tuned preprocessor settings."""
 
@@ -198,6 +204,7 @@ class BayesianOptimizer(BaseOptimizer):
             reverse=True,
         )
         self.model = self.leaderboard.board[0].algorithm.model
+        self.algorithm = self.leaderboard.board[0].algorithm
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

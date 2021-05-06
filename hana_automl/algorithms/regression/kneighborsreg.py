@@ -59,9 +59,9 @@ class KNeighborsReg(BaseAlgorithm):
         if features is None:
             features = cols
         prediction, a = self.model.predict(data=data, key=key, features=features)
-        prediction = prediction.select(key, 'TARGET').rename_columns(['ID_P', 'PREDICTION'])
-        actual = data.select(key, label).rename_columns(['ID_A', 'ACTUAL'])
-        joined = actual.join(prediction, 'ID_P=ID_A').select('ACTUAL', 'PREDICTION')
-        return metrics.r2_score(joined,
-                                      label_true='ACTUAL',
-                                      label_pred='PREDICTION')
+        prediction = prediction.select(key, "TARGET").rename_columns(
+            ["ID_P", "PREDICTION"]
+        )
+        actual = data.select(key, label).rename_columns(["ID_A", "ACTUAL"])
+        joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
+        return metrics.r2_score(joined, label_true="ACTUAL", label_pred="PREDICTION")

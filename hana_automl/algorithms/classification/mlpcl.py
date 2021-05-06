@@ -68,7 +68,9 @@ class MLPcls(BaseAlgorithm):
                 "variance-scale-uniform",
             ],
         )
-        learning_rate = trial.suggest_float("CLS_MLP_learning_rate", 1e-4, 0.5, log=True)
+        learning_rate = trial.suggest_float(
+            "CLS_MLP_learning_rate", 1e-4, 0.5, log=True
+        )
         model = MLPClassifier(
             activation=activation,
             output_activation=output_activation,

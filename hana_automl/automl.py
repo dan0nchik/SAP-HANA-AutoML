@@ -38,22 +38,23 @@ class AutoML:
         self.preprocessor_settings = None
         self.ensemble = False
         self.columns_to_remove = None
+        self.algorithm = None
 
     def fit(
-            self,
-            df: pd.DataFrame = None,
-            task: str = None,
-            steps: int = None,
-            target: str = None,
-            file_path: str = None,
-            table_name: str = None,
-            columns_to_remove: list = None,
-            categorical_features: list = None,
-            id_column=None,
-            optimizer: str = "OptunaSearch",
-            time_limit=None,
-            ensemble=False,
-            output_leaderboard=False,
+        self,
+        df: pd.DataFrame = None,
+        task: str = None,
+        steps: int = None,
+        target: str = None,
+        file_path: str = None,
+        table_name: str = None,
+        columns_to_remove: list = None,
+        categorical_features: list = None,
+        id_column=None,
+        optimizer: str = "OptunaSearch",
+        time_limit=None,
+        ensemble=False,
+        output_leaderboard=False,
     ):
         """Fits AutoML object
 
@@ -126,6 +127,7 @@ class AutoML:
         if output_leaderboard:
             self.opt.print_leaderboard()
         self.model = self.opt.get_model()
+        self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
@@ -164,12 +166,12 @@ class AutoML:
             print("\033[0m {}".format(""))
 
     def predict(
-            self,
-            df: pd.DataFrame = None,
-            file_path: str = None,
-            table_name: str = None,
-            id_column: str = None,
-            target_drop: str = None,
+        self,
+        df: pd.DataFrame = None,
+        file_path: str = None,
+        table_name: str = None,
+        id_column: str = None,
+        target_drop: str = None,
     ):
         """Makes predictions using fitted model.
 
@@ -251,6 +253,10 @@ class AutoML:
         """
         with open(file_path, "w+") as file:
             json.dump(self.opt.get_tuned_params(), file)
+
+    def get_algorithm(self):
+        """Returns fitted AutoML algorithm"""
+        return self.algorithm
 
     def get_model(self):
         """Returns fitted HANA PAL model"""

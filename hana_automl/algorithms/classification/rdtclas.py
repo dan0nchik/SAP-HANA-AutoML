@@ -6,6 +6,7 @@ from hana_automl.algorithms.base_algo import BaseAlgorithm
 class RDTCls(BaseAlgorithm):
     def __init__(self):
         super(RDTCls, self).__init__()
+        super().__init__()
         self.title = "Random Decision Tree"
         self.params_range = {
             "n_estimators": (50, 300),
@@ -25,8 +26,8 @@ class RDTCls(BaseAlgorithm):
         calculate_oob = trial.suggest_categorical(
             "CLS_RDT_calculate_oob", [True, False]
         )
-        n_estimators = trial.suggest_int("CLS_RDT_n_estimators", 10, 100, log=True)
-        max_depth = trial.suggest_int("CLS_RDT_max_depth", 2, 50)
+        n_estimators = trial.suggest_int("CLS_RDT_n_estimators", 100, 1000, log=True)
+        max_depth = trial.suggest_int("CLS_RDT_max_depth", 10, 50, log=True)
         min_samples_leaf = trial.suggest_int(
             "CLS_RDT_min_samples_leaf", 1, 20, log=True
         )

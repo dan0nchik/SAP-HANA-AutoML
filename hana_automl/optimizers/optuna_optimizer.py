@@ -61,6 +61,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
+        self.algorithm = None
 
     def tune(self):
         opt = optuna.create_study(direction="maximize")
@@ -106,6 +107,7 @@ class OptunaOptimizer(BaseOptimizer):
             reverse=True,
         )
         self.model = self.leaderboard.board[0].algorithm.model
+        self.algorithm = self.leaderboard.board[0].algorithm
 
     def objective(self, trial):
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -150,6 +152,10 @@ class OptunaOptimizer(BaseOptimizer):
     def get_model(self):
         """Returns tuned model."""
         return self.model
+
+    def get_algorithm(self):
+        """Returns tuned AutoML algorithm"""
+        return self.algorithm
 
     def get_preprocessor_settings(self):
         """Returns tuned preprocessor settings."""

@@ -16,6 +16,8 @@ class Blending:
         self.id_col = id_col
         self.categorical_features = categorical_features
         self.title = ""
+        self.name = "Untitled"  # for storage
+        self.version = 1  # for storage
         self.table_name = table_name
         self.connection_context = connection_context
         if model_list is None and leaderboard is None:
@@ -37,7 +39,9 @@ class Blending:
         pr = Preprocessor()
         for model in self.model_list:
             if df is not None:
-                df2 = pr.clean(data=df, num_strategy=model.preprocessor.tuned_num_strategy)
+                df2 = pr.clean(
+                    data=df, num_strategy=model.preprocessor.tuned_num_strategy
+                )
             else:
                 df2 = pr.clean(
                     data=data.valid.drop(data.target),
