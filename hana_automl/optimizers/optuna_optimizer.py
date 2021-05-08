@@ -62,21 +62,22 @@ class OptunaOptimizer(BaseOptimizer):
         self.accuracy = 0
         self.tuned_params = None
         self.algorithm = None
+        self.study = None
 
     def tune(self):
-        opt = optuna.create_study(direction="maximize")
+        self.study = optuna.create_study(direction="maximize")
         if self.iterations is not None and self.time_limit is not None:
-            opt.optimize(
+            self.study.optimize(
                 self.objective, n_trials=self.iterations, timeout=self.time_limit
             )
         elif self.iterations is None:
-            opt.optimize(self.objective, timeout=self.time_limit)
+            self.study.optimize(self.objective, timeout=self.time_limit)
         else:
-            opt.optimize(self.objective, n_trials=self.iterations)
+            self.study.optimize(self.objective, n_trials=self.iterations)
         time.sleep(2)
-        self.tuned_params = opt.best_params
-        self.imputer.tuned_num_strategy = opt.best_params.pop("imputer")
-        res = len(opt.trials)
+        self.tuned_params = self.study.best_params
+        self.imputer.tuned_num_strategy = self.study.best_params.pop("imputer")
+        res = len(self.study.trials)
         if self.iterations is None:
             print(
                 "There was a stop due to a time limit! Completed "
@@ -144,9 +145,8 @@ class OptunaOptimizer(BaseOptimizer):
     def get_tuned_params(self):
         """Returns tuned hyperparameters."""
         return {
-            "title": self.tuned_params.pop("algo"),
+            "algorithm": self.tuned_params,
             "accuracy": self.leaderboard.board[0].valid_accuracy,
-            "info": self.tuned_params,
         }
 
     def get_model(self):

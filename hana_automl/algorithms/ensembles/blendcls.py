@@ -1,8 +1,6 @@
 from hana_ml.algorithms.pal.metrics import accuracy_score
 from hana_ml.dataframe import create_dataframe_from_pandas
 
-from hana_automl.utils.connection import connection_context
-
 from hana_automl.algorithms.ensembles.blending import Blending
 from hana_automl.pipeline.leaderboard import Leaderboard
 
