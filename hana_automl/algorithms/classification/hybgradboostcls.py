@@ -1,4 +1,5 @@
 from hana_ml.algorithms.pal.trees import HybridGradientBoostingClassifier
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -10,8 +11,8 @@ class HGBCls(BaseAlgorithm):
         self.params_range = {
             "n_estimators": (10, 100),
             "split_method": (0, 2),
-            "max_depth": (6, 30),
-            "min_sample_weight_leaf": (1, 100),
+            "max_depth": (1, 50),
+            "min_sample_weight_leaf": (1, 20),
             "learning_rate": (0.01, 1),
         }
 
@@ -22,7 +23,7 @@ class HGBCls(BaseAlgorithm):
         params["split_method"] = ["exact", "sketch", "sampling"][
             round(params["split_method"])
         ]
-        self.model = HybridGradientBoostingClassifier(**params)
+        self.model = UnifiedClassification(func='HybridGradientBoostingTree', **params)
 
     def optunatune(self, trial):
         n_estimators = trial.suggest_int("CLS_HGB_n_estimators", 10, 100, log=True)
@@ -34,7 +35,8 @@ class HGBCls(BaseAlgorithm):
         split_method = trial.suggest_categorical(
             "CLS_HGB_split_method", ["exact", "sketch", "sampling"]
         )
-        model = HybridGradientBoostingClassifier(
+        model = UnifiedClassification(
+            func='HybridGradientBoostingTree',
             n_estimators=n_estimators,
             max_depth=max_depth,
             split_method=split_method,
