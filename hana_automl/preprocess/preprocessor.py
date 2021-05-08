@@ -102,7 +102,7 @@ class Preprocessor:
                 HGBCls(),
             ]
             clsdict = {
-                "KNeighborsClassifier": KNeighborsCls(),
+                # "KNeighborsClassifier": KNeighborsCls(),
                 "DecisionTreeClassifier": DecisionTreeCls(),
                 # "LogisticRegressionClassifier": LogRegressionCls(),
                 "NaiveBayesClassifier": NBayesCls(),

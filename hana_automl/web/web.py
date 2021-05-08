@@ -1,3 +1,4 @@
+import hdbcli
 import pandas as pd
 import streamlit as st
 from hana_ml.dataframe import ConnectionContext
@@ -9,6 +10,7 @@ from io import StringIO
 from streamlit.report_thread import REPORT_CONTEXT_ATTR_NAME
 from threading import current_thread
 import sys
+from hana_automl.web.session import session_state
 
 
 # from https://discuss.streamlit.io/t/cannot-print-the-terminal-output-in-streamlit/6602/2
@@ -54,20 +56,18 @@ password = st.sidebar.text_input(label='Password', type='password')
 host = st.sidebar.text_input(label='Host')
 port = st.sidebar.text_input(label='Port', value='39015')
 
+df = None
+automl = None
+
 
 @st.cache
 def get_database_connection():
     return host, int(port), user, password
 
 
-@st.cache
-def start_train(start: bool = None):
-    return start
-
-
-@st.cache
-def show_results(show: bool = None):
-    return show
+@st.cache(allow_output_mutation=True, hash_funcs={hdbcli.dbapi.Connection: lambda _: None})
+def cache_automl():
+    return automl
 
 
 if st.sidebar.button(label='Submit'):
@@ -83,12 +83,10 @@ table_name = st.sidebar.text_input(label='', value=None)
 if table_name == 'None' or table_name == '':
     table_name = None
 
-df = None
-automl = None
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.text('Here is the head of your dataset:')
-    st.write(df.head(10))
+    st.dataframe(df.head(10))
 
 st.sidebar.title('3. Choose task:')
 chosen_task = st.sidebar.selectbox('', ['Determine task for me', 'Classification', 'Regression'])
@@ -140,31 +138,29 @@ ensemble = st.sidebar.checkbox('Use ensemble')
 leaderboard = st.sidebar.checkbox('Show leaderboard', value=True)
 optimizer = st.sidebar.selectbox('Optimizer', ['OptunaSearch', 'BayesianOptimizer'])
 
-
+CONN = get_database_connection()
 if st.sidebar.button('Start training!'):
-    CONN = get_database_connection()
-    automl = AutoML(ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]))
     with st.spinner('Magic is happening (well, just tuning the models)...'):
         with st.beta_expander('Show output'):
             with st_stdout("text"):
-                automl.fit(df=df, task=task, steps=int(steps), target=target, table_name=table_name,
-                           columns_to_remove=columns_to_rm,
-                           categorical_features=categorical, id_column=id_col, optimizer=optimizer,
-                           time_limit=int(time),
-                           ensemble=ensemble,
-                           output_leaderboard=leaderboard)
-                show_results(True)
-else:
-    st.markdown("## 👈 Complete all steps to setup the AutoML process")
+                session_state.automl = AutoML(ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]))
+                session_state.automl.fit(df=df, task=task, steps=int(steps), target=target, table_name=table_name,
+                                         columns_to_remove=columns_to_rm,
+                                         categorical_features=categorical, id_column=id_col, optimizer=optimizer,
+                                         time_limit=int(time),
+                                         ensemble=ensemble,
+                                         output_leaderboard=leaderboard)
+                session_state.show_results = True
 
-
-if show_results():
+if session_state.show_results:
     st.markdown("## Success!, here is best model's params:")
-    st.write(automl.best_params)
+    print('AUTOML', session_state.automl.__dict__)
+
+    st.write(session_state.automl.opt.get_tuned_params())
     if optimizer == "OptunaSearch" and steps >= 2:
         st.markdown("## Some cool statistics")
-        plot1 = optuna_vs.plot_optimization_history(automl.opt.study)
-        plot2 = optuna_vs.plot_param_importances(automl.opt.study)
+        plot1 = optuna_vs.plot_optimization_history(session_state.automl.opt.study)
+        plot2 = optuna_vs.plot_param_importances(session_state.automl.opt.study)
         st.plotly_chart(plot1)
         st.plotly_chart(plot2)
 
@@ -175,10 +171,13 @@ if show_results():
     schema = left_column.text_input(label="Enter schema:")
     if left_column.button('Save'):
         if model_name != '' and schema != '':
-            storage = Storage(CONN[0], CONN[1], CONN[2], CONN[3], ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]),
+            storage = Storage(CONN[0], CONN[1], CONN[2], CONN[3],
+                              ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]),
                               schema)
-            storage.save_model(automl)
+            session_state.automl.model.name = model_name
+            storage.save_model(session_state.automl)
             left_column.success('Saved!')
-            left_column.write(storage.list_models())
+            left_column.dataframe(storage.list_models())
 
     right_column.markdown('## Test/predict with model')
+

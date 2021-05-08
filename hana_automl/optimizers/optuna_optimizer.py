@@ -145,9 +145,8 @@ class OptunaOptimizer(BaseOptimizer):
     def get_tuned_params(self):
         """Returns tuned hyperparameters."""
         return {
-            "title": self.tuned_params.pop("algo"),
+            "algorithm": self.tuned_params,
             "accuracy": self.leaderboard.board[0].valid_accuracy,
-            "info": self.tuned_params,
         }
 
     def get_model(self):
