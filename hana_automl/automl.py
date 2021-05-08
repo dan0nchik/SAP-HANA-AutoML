@@ -30,7 +30,7 @@ class AutoML:
         Preprocessor settings.
     """
 
-    def __init__(self, connection_context: hana_ml.dataframe.ConnectionContext):
+    def __init__(self, connection_context: hana_ml.dataframe.ConnectionContext = None):
         self.connection_context = connection_context
         self.opt = None
         self.model = None
