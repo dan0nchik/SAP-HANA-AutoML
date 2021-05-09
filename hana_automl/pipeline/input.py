@@ -37,14 +37,17 @@ class Input:
         path: str = None,
         id_col=None,
         table_name: str = None,
+        verbose: bool = True
     ):
         self.df = df
         self.id_col = id_col
         self.file_path = path
         self.target = target
         self.table_name = table_name
+        self.verbose = verbose
         self.hana_df = None
         self.connection_context = connection_context
+
 
     def load_data(self):
         """Loads data to HANA database."""
@@ -56,9 +59,11 @@ class Input:
         ) and self.table_name is None:
             if self.file_path is not None:
                 self.df = self.download_data(self.file_path)
-            print(f"Creating table with name: {name}")
+            if self.verbose:
+                print(f"Creating table with name: {name}")
             self.hana_df = create_dataframe_from_pandas(
-                self.connection_context, self.df, name
+                self.connection_context, self.df, name,
+                disable_progressbar=not self.verbose
             )
             self.table_name = name
         elif (
@@ -66,25 +71,30 @@ class Input:
             and self.file_path is None
             and self.df is None
         ):
-            print(f"Connecting to existing table {self.table_name}")
+            if self.verbose:
+                print(f"Connecting to existing table {self.table_name}")
             self.hana_df = self.connection_context.table(self.table_name)
         elif self.table_name is not None and self.file_path is not None:
-            print(f"Recreating table {self.table_name} with data from file")
+            if self.verbose:
+                print(f"Recreating table {self.table_name} with data from file")
             self.hana_df = create_dataframe_from_pandas(
                 self.connection_context,
                 self.download_data(self.file_path),
                 self.table_name,
                 force=True,
                 drop_exist_tab=True,
+                disable_progressbar=not self.verbose
             )
         elif self.table_name is not None and self.df is not None:
-            print(f"Recreating table {self.table_name} with data from dataframe")
+            if self.verbose:
+                print(f"Recreating table {self.table_name} with data from dataframe")
             self.hana_df = create_dataframe_from_pandas(
                 self.connection_context,
                 self.df,
                 self.table_name,
                 force=True,
                 drop_exist_tab=True,
+                disable_progressbar=not self.verbose
             )
         else:
             raise InputError("No data provided")

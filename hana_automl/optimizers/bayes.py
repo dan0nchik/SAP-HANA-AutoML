@@ -45,6 +45,7 @@ class BayesianOptimizer(BaseOptimizer):
         time_limit,
         problem,
         categorical_features=None,
+        verbosity=2
     ):
         self.data = data
         self.algo_list = algo_list
@@ -62,6 +63,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
+        self.verbosity = verbosity
 
     def objective(self, algo_index_tuned, num_strategy_method):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -97,7 +99,7 @@ class BayesianOptimizer(BaseOptimizer):
         opt = BayesianOptimization(
             f=self.child_objective,
             pbounds={**self.algo_list[self.algo_index].get_params()},
-            verbose=False,
+            verbose=self.verbosity > 2,
             random_state=17,
         )
         opt.maximize(n_iter=1, init_points=1)
@@ -163,6 +165,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "num_strategy_method": (0, len(self.imputer.num_strategy) - 1),
             },
             random_state=17,
+            verbose=self.verbosity > 2,
         )
         self.start_time = time.perf_counter()
         try:
@@ -171,24 +174,27 @@ class BayesianOptimizer(BaseOptimizer):
             else:
                 opt.maximize(n_iter=self.iter, init_points=1)
         except OptimizerError:
-            if self.iter is None:
-                print(
-                    "There was a stop due to a time limit! Completed "
-                    + str(len(opt.res))
-                    + " iterations"
-                )
-            else:
-                print(
-                    "There was a stop due to a time limit! Completed "
-                    + str(len(opt.res))
-                    + " iterations of "
-                    + str(self.iter)
-                )
+            if self.verbosity > 0:
+                if self.iter is None:
+                    print(
+                        "There was a stop due to a time limit! Completed "
+                        + str(len(opt.res))
+                        + " iterations"
+                    )
+                else:
+                    print(
+                        "There was a stop due to a time limit! Completed "
+                        + str(len(opt.res))
+                        + " iterations of "
+                        + str(self.iter)
+                    )
 
         else:
-            print("All iterations completed successfully!")
+            if self.verbosity > 0:
+                print("All iterations completed successfully!")
         self.tuned_params = opt.max
-        print("Starting model accuracy evaluation on the validation data!")
+        if self.verbosity > 0:
+            print("Starting model accuracy evaluation on the validation data!")
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
