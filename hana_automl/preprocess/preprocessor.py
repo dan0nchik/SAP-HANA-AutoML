@@ -90,10 +90,15 @@ class Preprocessor:
             else:
                 task = "reg"
         if task == "cls":
+            if data.binomial:
+                vals = data.train.select(data.target).collect()[data.target].unique()
+                log = LogRegressionCls(binominal=data.binomial, class_map0=vals[0], class_map1=vals[1])
+            else:
+                log = LogRegressionCls(binominal=data.binomial)
             clslist = [
                 DecisionTreeCls(),
                 KNeighborsCls(),
-                LogRegressionCls(binominal=data.binomial),
+                log,
                 NBayesCls(),
                 MLPcls(),
                 SVCls(),
@@ -104,7 +109,7 @@ class Preprocessor:
             clsdict = {
                 "KNeighborsClassifier": KNeighborsCls(),
                 "DecisionTreeClassifier": DecisionTreeCls(),
-                "LogisticRegressionClassifier":  LogRegressionCls(binominal=data.binomial),
+                "LogisticRegressionClassifier":  log,
                 "NaiveBayesClassifier": NBayesCls(),
                 "MLPClassifier": MLPcls(),
                 "SVClassifier": SVCls(),
