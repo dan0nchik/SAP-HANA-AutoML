@@ -1,5 +1,7 @@
-import pandas as pd
 import json
+
+import hana_ml
+import pandas as pd
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
@@ -8,8 +10,6 @@ from hana_automl.pipeline.pipeline import Pipeline
 from hana_automl.preprocess.preprocessor import Preprocessor
 from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import AutoMLError, BlendingError
-from hana_ml.model_storage import ModelStorage
-import hana_ml
 
 
 class AutoML:
@@ -216,6 +216,7 @@ class AutoML:
         if type(self.predicted) == tuple:
             res = res[0]
         print("Prediction results (first 20 rows): \n", res.head(20).collect())
+        return res.collect()
 
     def save_results_as_csv(self, file_path: str):
         """Saves prediciton results to .csv file

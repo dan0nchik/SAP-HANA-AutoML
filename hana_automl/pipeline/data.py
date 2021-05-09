@@ -5,7 +5,7 @@ from hana_automl.preprocess.preprocessor import Preprocessor
 
 class Data:
     def __init__(
-        self, train: DataFrame, test: DataFrame, valid: DataFrame, target, id_col
+        self, train: DataFrame = None, test: DataFrame = None, valid: DataFrame = None, target = None, id_col = None
     ):
         self.train = train
         self.test = test

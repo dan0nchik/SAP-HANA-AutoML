@@ -1,15 +1,17 @@
-import hdbcli
-import pandas as pd
-import streamlit as st
-from hana_ml.dataframe import ConnectionContext
-from hana_automl.storage import Storage
-from hana_automl.automl import AutoML
-import optuna.visualization as optuna_vs
+import sys
 from contextlib import contextmanager
 from io import StringIO
-from streamlit.report_thread import REPORT_CONTEXT_ATTR_NAME
 from threading import current_thread
-import sys
+
+import hdbcli
+import optuna.visualization as optuna_vs
+import pandas as pd
+import streamlit as st
+from hana_ml.dataframe import ConnectionContext, create_dataframe_from_pandas
+from streamlit.report_thread import REPORT_CONTEXT_ATTR_NAME
+
+from hana_automl.automl import AutoML
+from hana_automl.storage import Storage
 from hana_automl.web.session import session_state
 
 
@@ -131,15 +133,17 @@ st.sidebar.title('7. How many steps?')
 steps = st.sidebar.slider('', min_value=1, max_value=100, step=1)
 
 st.sidebar.title('8. How much time?')
-time = st.sidebar.number_input('In seconds', 1, 86400)
+time = st.sidebar.number_input('In seconds', 10, 86400)
 
 st.sidebar.title('9. Optional settings:')
 ensemble = st.sidebar.checkbox('Use ensemble')
 leaderboard = st.sidebar.checkbox('Show leaderboard', value=True)
 optimizer = st.sidebar.selectbox('Optimizer', ['OptunaSearch', 'BayesianOptimizer'])
 
+start_training = st.sidebar.button('Start training!')
 CONN = get_database_connection()
-if st.sidebar.button('Start training!'):
+
+if start_training:
     with st.spinner('Magic is happening (well, just tuning the models)...'):
         with st.beta_expander('Show output'):
             with st_stdout("text"):
@@ -154,10 +158,9 @@ if st.sidebar.button('Start training!'):
 
 if session_state.show_results:
     st.markdown("## Success!, here is best model's params:")
-    print('AUTOML', session_state.automl.__dict__)
 
     st.write(session_state.automl.opt.get_tuned_params())
-    if optimizer == "OptunaSearch" and steps >= 2:
+    if optimizer == "OptunaSearch" and session_state.automl.opt.study.trials_dataframe().shape[0] >= 2:
         st.markdown("## Some cool statistics")
         plot1 = optuna_vs.plot_optimization_history(session_state.automl.opt.study)
         plot2 = optuna_vs.plot_param_importances(session_state.automl.opt.study)
@@ -180,4 +183,26 @@ if session_state.show_results:
             left_column.dataframe(storage.list_models())
 
     right_column.markdown('## Test/predict with model')
+    predict_file = right_column.file_uploader(label='File to predict:', type=['csv', 'xlsx'])
+    if predict_file is not None:
+        predict_df = pd.read_csv(predict_file)
+    if predict_file is not None:
+        predict_id_column = right_column.selectbox('Select ID column', predict_df.columns, key='predict_id')
+        if right_column.button('Predict'):
+            right_column.write(session_state.automl.predict(df=predict_df, id_column=predict_id_column))
 
+    test_file = right_column.file_uploader(label='File to test:', type=['csv', 'xlsx'])
+    if test_file is not None:
+        test_df = pd.read_csv(test_file)
+    if test_file is not None:
+        test_target = right_column.selectbox('Select target column', test_df.columns, key='test_t')
+        test_id = right_column.selectbox('Select ID column', test_df.columns, key='id_test')
+        # test_results = right_column.empty()
+        # test_results.write('Testing...')
+        if right_column.button('Test'):
+            hana_test_df = create_dataframe_from_pandas(
+                ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]),
+                test_df,
+                'AUTOML_TEST', force=True, drop_exist_tab=True)
+            hana_test_df.declare_lttab_usage(True)
+            right_column.write(session_state.automl.model.score(data=hana_test_df,key=test_id, label=test_target))
