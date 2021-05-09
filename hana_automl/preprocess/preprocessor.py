@@ -89,13 +89,13 @@ class Preprocessor:
                 task = "cls"
             else:
                 task = "reg"
-
         if task == "cls":
             clslist = [
                 DecisionTreeCls(),
-                # LogRegressionCls(),
+                KNeighborsCls(),
+                LogRegressionCls(binominal=data.binomial),
                 NBayesCls(),
-                # MLPcls(),
+                MLPcls(),
                 SVCls(),
                 RDTCls(),
                 GBCls(),
@@ -104,7 +104,7 @@ class Preprocessor:
             clsdict = {
                 "KNeighborsClassifier": KNeighborsCls(),
                 "DecisionTreeClassifier": DecisionTreeCls(),
-                # "LogisticRegressionClassifier": LogRegressionCls(),
+                "LogisticRegressionClassifier":  LogRegressionCls(binominal=data.binomial),
                 "NaiveBayesClassifier": NBayesCls(),
                 "MLPClassifier": MLPcls(),
                 "SVClassifier": SVCls(),
