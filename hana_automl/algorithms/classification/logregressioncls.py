@@ -24,14 +24,15 @@ class LogRegressionCls(BaseAlgorithm):
             params["multi_class"] = False
         else:
             params["multi_class"] = True
-        self.model = UnifiedClassification(func='LogisticRegression', **params)
+        # self.model = UnifiedClassification(func='LogisticRegression', **params)
+        self.model = LogisticRegression(**params)
 
     def optunatune(self, trial):
 
         max_iter = trial.suggest_int("LGReg_max_iter", 100, 1000, log=True)
         if self.binominal:
             solver = trial.suggest_categorical("LGReg_solver",
-                                               ['auto', 'newton', 'cyclical', 'lbfgs', 'stochastic', 'proximal'] )
+                                               ['auto', 'newton', 'cyclical', 'lbfgs', 'stochastic', 'proximal'])
         else:
             solver = trial.suggest_categorical("LGReg_solver",
                                                ['auto', 'cyclical', 'lbfgs'])
@@ -39,6 +40,9 @@ class LogRegressionCls(BaseAlgorithm):
             multi_class = False
         else:
             multi_class = True
-        model = UnifiedClassification(func='LogisticRegression', max_iter=max_iter,
+        '''model = UnifiedClassification(func='LogisticRegression', max_iter=max_iter,
                                       multi_class=multi_class, solver=solver)
+        '''
+        model = LogisticRegression(max_iter=max_iter,
+                                   multi_class=multi_class, solver=solver)
         self.model = model

@@ -23,7 +23,8 @@ class HGBCls(BaseAlgorithm):
         params["split_method"] = ["exact", "sketch", "sampling"][
             round(params["split_method"])
         ]
-        self.model = UnifiedClassification(func='HybridGradientBoostingTree', **params)
+        #self.model = UnifiedClassification(func='HybridGradientBoostingTree', **params)
+        self.model = HybridGradientBoostingClassifier(**params)
 
     def optunatune(self, trial):
         n_estimators = trial.suggest_int("CLS_HGB_n_estimators", 10, 100, log=True)
@@ -35,8 +36,16 @@ class HGBCls(BaseAlgorithm):
         split_method = trial.suggest_categorical(
             "CLS_HGB_split_method", ["exact", "sketch", "sampling"]
         )
+        '''
         model = UnifiedClassification(
             func='HybridGradientBoostingTree',
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            split_method=split_method,
+            min_sample_weight_leaf=min_sample_weight_leaf,
+            learning_rate=learning_rate,
+        )'''
+        model = HybridGradientBoostingClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
             split_method=split_method,

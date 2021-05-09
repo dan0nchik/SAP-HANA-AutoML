@@ -21,7 +21,8 @@ class RDTCls(BaseAlgorithm):
         params["max_depth"] = round(params["max_depth"])
         params["min_samples_leaf"] = round(params["min_samples_leaf"])
         params["n_estimators"] = round(params["n_estimators"])
-        self.model = UnifiedClassification(func='RandomDecisionTree', **params)
+        #self.model = UnifiedClassification(func='RandomDecisionTree', **params)
+        self.model = RDTClassifier(**params)
 
     def optunatune(self, trial):
         calculate_oob = trial.suggest_categorical(
@@ -32,8 +33,15 @@ class RDTCls(BaseAlgorithm):
         min_samples_leaf = trial.suggest_int(
             "CLS_RDT_min_samples_leaf", 1, 20, log=True
         )
-        model = UnifiedClassification(
+        '''model = UnifiedClassification(
             func='RandomDecisionTree',
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            calculate_oob=calculate_oob,
+            min_samples_leaf=min_samples_leaf,
+        )
+        '''
+        model = RDTClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
             calculate_oob=calculate_oob,
