@@ -1,0 +1,12 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "hana_automl"
+author = "Daniel Khromov, Egor Pavlov"
+author-email = "dan0nchik@ya.ru"
+home-page = "https://github.com/dan0nchik/SAP-HANA-AutoML"
+classifiers = [ "License :: OSI Approved :: MIT License",]
+description-file = "README.md"
+
