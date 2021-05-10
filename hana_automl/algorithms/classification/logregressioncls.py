@@ -27,8 +27,9 @@ class LogRegressionCls(BaseAlgorithm):
         else:
             params["multi_class"] = True
         if self.class_map0 is not None:
-            params["class_map0"] = self.class_map0
-            params["class_map1"] = self.class_map1
+            if type(self.class_map0) is str and type(self.class_map1) is str:
+                params["class_map0"] = self.class_map0
+                params["class_map1"] = self.class_map1
         # self.model = UnifiedClassification(func='LogisticRegression', **params)
         self.model = LogisticRegression(**params)
 
@@ -46,7 +47,8 @@ class LogRegressionCls(BaseAlgorithm):
         else:
             multi_class = True
         if self.class_map0 is not None:
-            params = {"class_map0": self.class_map0, "class_map1": self.class_map1}
+            if type(self.class_map0) is str and type(self.class_map1) is str:
+                params = {"class_map0": self.class_map0, "class_map1": self.class_map1}
         else:
             params = {}
         '''model = UnifiedClassification(func='LogisticRegression', max_iter=max_iter,
