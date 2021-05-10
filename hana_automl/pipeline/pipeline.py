@@ -60,7 +60,7 @@ class Pipeline:
                 time_limit=self.time_limit,
                 categorical_features=categorical_features,
                 problem=self.task,
-                verbosity=self.verbosity
+                verbosity=self.verbosity,
             )
         elif optimizer == "OptunaSearch":
             self.opt = OptunaOptimizer(

@@ -29,7 +29,10 @@ class BaseAlgorithm:
     def set_categ(self, cat):
         self.categorical_features = cat
 
-    def bayes_tune(self, f, ):
+    def bayes_tune(
+        self,
+        f,
+    ):
         if self.bayes_opt is None:
             self.bayes_opt = BayesianOptimization(
                 f=f,

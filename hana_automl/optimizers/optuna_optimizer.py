@@ -45,7 +45,7 @@ class OptunaOptimizer(BaseOptimizer):
         algo_dict,
         categorical_features=None,
         droplist_columns=None,
-        verbosity=2
+        verbosity=2,
     ):
         self.algo_list = algo_list
         self.data = data

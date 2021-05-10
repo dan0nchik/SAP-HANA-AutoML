@@ -108,7 +108,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            verbose=verbosity > 0
+            verbose=verbosity > 0,
         )
         inputted.load_data()
         if table_name is None:
@@ -122,7 +122,13 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
-        pipe = Pipeline(data=data, steps=steps, task=task, time_limit=time_limit, verbosity=verbosity)
+        pipe = Pipeline(
+            data=data,
+            steps=steps,
+            task=task,
+            time_limit=time_limit,
+            verbosity=verbosity,
+        )
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
@@ -175,7 +181,7 @@ class AutoML:
         table_name: str = None,
         id_column: str = None,
         target_drop: str = None,
-        verbosity = 1
+        verbosity=1,
     ):
         """Makes predictions using fitted model.
 
@@ -198,7 +204,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            verbose=verbosity > 0
+            verbose=verbosity > 0,
         )
         data.load_data()
         if target_drop is not None:

@@ -26,7 +26,7 @@ class SVCls(BaseAlgorithm):
         params1["scale_info"] = ["no", "standardization", "rescale"][
             round(params["scale_info"])
         ]
-        #self.model = UnifiedClassification(func='SVM', **params1)
+        # self.model = UnifiedClassification(func='SVM', **params1)
         self.model = SVC(**params1)
 
     def optunatune(self, trial):
@@ -39,6 +39,6 @@ class SVCls(BaseAlgorithm):
         scale_info = trial.suggest_categorical(
             "CLS_SV_scale_info", ["no", "standardization", "rescale"]
         )
-        #model = UnifiedClassification(func='SVM', c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
+        # model = UnifiedClassification(func='SVM', c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
         model = SVC(c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
         self.model = model

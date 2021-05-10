@@ -21,7 +21,7 @@ class LogRegressionCls(BaseAlgorithm):
 
     def set_params(self, **params):
         params["max_iter"] = round(params["max_iter"])
-        params["solver"] = ['auto'][round(params["solver"])]
+        params["solver"] = ["auto"][round(params["solver"])]
         if self.binominal:
             params["multi_class"] = False
         else:
@@ -37,11 +37,9 @@ class LogRegressionCls(BaseAlgorithm):
 
         max_iter = trial.suggest_int("LGReg_max_iter", 100, 1000, log=True)
         if self.binominal:
-            solver = trial.suggest_categorical("LGReg_solver",
-                                               ['auto'])
+            solver = trial.suggest_categorical("LGReg_solver", ["auto"])
         else:
-            solver = trial.suggest_categorical("LGReg_solver",
-                                               ['auto'])
+            solver = trial.suggest_categorical("LGReg_solver", ["auto"])
         if self.binominal:
             multi_class = False
         else:
@@ -51,9 +49,10 @@ class LogRegressionCls(BaseAlgorithm):
                 params = {"class_map0": self.class_map0, "class_map1": self.class_map1}
         else:
             params = {}
-        '''model = UnifiedClassification(func='LogisticRegression', max_iter=max_iter,
+        """model = UnifiedClassification(func='LogisticRegression', max_iter=max_iter,
                                       multi_class=multi_class, solver=solver)
-        '''
-        model = LogisticRegression(max_iter=max_iter,
-                                   multi_class=multi_class, solver=solver, **params)
+        """
+        model = LogisticRegression(
+            max_iter=max_iter, multi_class=multi_class, solver=solver, **params
+        )
         self.model = model

@@ -48,9 +48,8 @@ class MLPcls(BaseAlgorithm):
             round(params["normalization"])
         ]
         params["weight_init"] = self.weight_init[round(params["weight_init"])]
-        #self.model = UnifiedClassification(func='MLP', **params)
+        # self.model = UnifiedClassification(func='MLP', **params)
         self.model = MLPClassifier(**params)
-
 
     def optunatune(self, trial):
         activation = trial.suggest_categorical("CLS_MLP_activation", self.actv)
@@ -69,7 +68,7 @@ class MLPcls(BaseAlgorithm):
         learning_rate = trial.suggest_float(
             "CLS_MLP_learning_rate", 1e-4, 0.5, log=True
         )
-        '''
+        """
         model = UnifiedClassification(
             func='MLP',
             activation=activation,
@@ -79,7 +78,7 @@ class MLPcls(BaseAlgorithm):
             training_style="batch",
             weight_init=weight_init,
             learning_rate=learning_rate,
-        )'''
+        )"""
         model = MLPClassifier(
             activation=activation,
             output_activation=output_activation,
