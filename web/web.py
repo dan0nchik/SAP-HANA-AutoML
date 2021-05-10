@@ -12,7 +12,7 @@ from streamlit.report_thread import REPORT_CONTEXT_ATTR_NAME
 
 from hana_automl.automl import AutoML
 from hana_automl.storage import Storage
-from hana_automl.web.session import session_state
+from session import session_state
 
 
 # from https://discuss.streamlit.io/t/cannot-print-the-terminal-output-in-streamlit/6602/2
