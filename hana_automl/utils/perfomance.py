@@ -94,9 +94,7 @@ class Benchmark:
             table_name="BENCHMARK_AUTOML",
             categorical_features=categorical,
             id_column=id_column,
-            task=task,
-            # output_leaderboard=True
-            # optimizer='BayesianOptimizer'
+            task=task,verbosity=1
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         test_df = create_dataframe_from_pandas(

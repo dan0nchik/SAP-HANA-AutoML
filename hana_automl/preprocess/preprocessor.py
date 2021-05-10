@@ -100,7 +100,7 @@ class Preprocessor:
             clslist = [
                 DecisionTreeCls(),
                 KNeighborsCls(),
-                log,
+                # log,
                 NBayesCls(),
                 MLPcls(),
                 SVCls(),
@@ -111,7 +111,7 @@ class Preprocessor:
             clsdict = {
                 "KNeighborsClassifier": KNeighborsCls(),
                 "DecisionTreeClassifier": DecisionTreeCls(),
-                "LogisticRegressionClassifier": log,
+                # "LogisticRegressionClassifier": log,
                 "NaiveBayesClassifier": NBayesCls(),
                 "MLPClassifier": MLPcls(),
                 "SVClassifier": SVCls(),
@@ -139,7 +139,7 @@ class Preprocessor:
             ]
             regdict = {
                 "DecisionTreeRegressor": DecisionTreeReg(),
-                "GLMRegressor": GLMReg(),
+                # "GLMRegressor": GLMReg(),
                 # "MLPRegressor": MLPreg(),
                 "KNeighborsRegressor": KNeighborsReg(),
                 "SupportVectorRegressor": SVReg(),

@@ -1,5 +1,5 @@
 from hdbcli import dbapi
-from hana_automl.utils.credentials import port, host, user, password
+from tests.credentials import port, host, user, password
 from hana_automl.storage import table_exists
 
 """For developers only. Cleanup database by deleting all test tables. Be careful!"""

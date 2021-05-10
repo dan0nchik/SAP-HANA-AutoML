@@ -24,10 +24,10 @@ class DecisionTreeReg(BaseAlgorithm):
         algorithm = "cart"
         max_depth = trial.suggest_int("DTR_max_depth", 2, 56, log=True)
         min_records_of_leaf = trial.suggest_int(
-            "DTR_min_records_of_leaf", 2, 100, log=True
+            "DTR_min_records_of_leaf", 1, 20, log=True
         )
         min_records_of_parent = trial.suggest_int(
-            "DTR_min_records_of_parent", 2, 100, log=True
+            "DTR_min_records_of_parent", 2, 20, log=True
         )
         model = DecisionTreeRegressor(
             algorithm=algorithm,

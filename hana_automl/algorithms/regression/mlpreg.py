@@ -53,7 +53,7 @@ class MLPreg(BaseAlgorithm):
             "REG_MLP_output_activation", self.actv
         )
         hidden_layer_size = trial.suggest_int(
-            "REG_MLP_hidden_layer_size", 10, 100, log=True
+            "REG_MLP_hidden_layer_size", 1, 3, log=True
         )
         normalization = trial.suggest_categorical(
             "REG_MLP_normalization",
@@ -69,7 +69,7 @@ class MLPreg(BaseAlgorithm):
                 "variance-scale-uniform",
             ],
         )
-        learning_rate = trial.suggest_float("REG_MLP_learning_rate", 0.01, 1, log=True)
+        learning_rate = trial.suggest_float("REG_MLP_learning_rate", 1e-4, 0.5, log=True)
         model = MLPRegressor(
             activation=activation,
             output_activation=output_activation,
