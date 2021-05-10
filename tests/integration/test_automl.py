@@ -14,6 +14,7 @@ def test_regression(optimizer):
         steps=5,
         optimizer=optimizer,
         output_leaderboard=True,
+        task='reg'
     )
     assert m.best_params["accuracy"] > 0.50
 
@@ -21,23 +22,14 @@ def test_regression(optimizer):
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
 def test_classification(optimizer):
     m.fit(
-        file_path="data/bank.csv",
-        target="y",
-        id_column="ID",
+        file_path="data/cleaned_train.csv",
+        target="Survived",
+        id_column="PassengerId",
         categorical_features=[
-            "job",
-            "marital",
-            "education",
-            "default",
-            "housing",
-            "loan",
-            "contact",
-            "month",
-            "y",
+            "Survived"
         ],
-        columns_to_remove=["poutcome"],
         steps=5,
-        output_leaderboard=True,
         optimizer=optimizer,
+        task='cls'
     )
     assert m.best_params["accuracy"] > 0.50
