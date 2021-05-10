@@ -1,5 +1,5 @@
 from hana_ml import ConnectionContext
-from hana_automl.utils.credentials import port, host, user, password, dbname
+from .credentials import port, host, user, password, dbname
 
 params = {"DATABASENAME": dbname}
 

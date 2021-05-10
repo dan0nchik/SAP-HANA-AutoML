@@ -10,7 +10,7 @@ class Blending:
         id_col,
         connection_context,
         table_name,
-        model_list: dict = None,
+        model_list: list = None,
         leaderboard: Leaderboard = None,
     ):
         self.id_col = id_col

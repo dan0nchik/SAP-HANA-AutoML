@@ -1,4 +1,5 @@
 from hana_ml.algorithms.pal.neural_network import MLPClassifier
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -10,9 +11,9 @@ class MLPcls(BaseAlgorithm):
         self.params_range = {
             "activation": (0, 12),
             "output_activation": (0, 12),
-            "hidden_layer_size": (10, 100),
+            "hidden_layer_size": (1, 3),
             "normalization": (0, 2),
-            "learning_rate": (0.01, 1),
+            "learning_rate": (1e-4, 0.5),
             "weight_init": (0, 4),
         }
         self.actv = [
@@ -30,6 +31,13 @@ class MLPcls(BaseAlgorithm):
             "cos_symmetric",
             "relu",
         ]
+        self.weight_init = [
+            "all-zeros",
+            "normal",
+            "uniform",
+            "variance-scale-normal",
+            "variance-scale-uniform",
+        ]
 
     def set_params(self, **params):
         params["output_activation"] = self.actv[round(params["output_activation"])]
@@ -39,13 +47,8 @@ class MLPcls(BaseAlgorithm):
         params["normalization"] = ["no", "z-transform", "scalar"][
             round(params["normalization"])
         ]
-        params["weight_init"] = [
-            "all-zeros",
-            "normal",
-            "uniform",
-            "variance-scale-normal",
-            "variance-scale-uniform",
-        ][round(params["weight_init"])]
+        params["weight_init"] = self.weight_init[round(params["weight_init"])]
+        # self.model = UnifiedClassification(func='MLP', **params)
         self.model = MLPClassifier(**params)
 
     def optunatune(self, trial):
@@ -60,17 +63,22 @@ class MLPcls(BaseAlgorithm):
         )
         weight_init = trial.suggest_categorical(
             "CLS_MLP_weight_init",
-            [
-                "all-zeros",
-                "normal",
-                "uniform",
-                "variance-scale-normal",
-                "variance-scale-uniform",
-            ],
+            self.weight_init,
         )
         learning_rate = trial.suggest_float(
             "CLS_MLP_learning_rate", 1e-4, 0.5, log=True
         )
+        """
+        model = UnifiedClassification(
+            func='MLP',
+            activation=activation,
+            output_activation=output_activation,
+            hidden_layer_size=(hidden_layer_size, hidden_layer_size),
+            normalization=normalization,
+            training_style="batch",
+            weight_init=weight_init,
+            learning_rate=learning_rate,
+        )"""
         model = MLPClassifier(
             activation=activation,
             output_activation=output_activation,

@@ -1,4 +1,5 @@
 from hana_ml.algorithms.pal.trees import DecisionTreeClassifier
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -9,9 +10,9 @@ class DecisionTreeCls(BaseAlgorithm):
         self.title = "DecisionTreeClassifier"
         self.params_range = {
             "algorithm": (0, 2),
-            "max_depth": (2, 80),
-            "min_records_of_leaf": (1, 100),
-            "min_records_of_parent": (2, 100),
+            "max_depth": (2, 50),
+            "min_records_of_leaf": (1, 20),
+            "min_records_of_parent": (2, 20),
         }
 
     def set_params(self, **params):
@@ -19,21 +20,21 @@ class DecisionTreeCls(BaseAlgorithm):
         params["min_records_of_leaf"] = round(params["min_records_of_leaf"])
         params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
+        # self.model = UnifiedClassification(func='DecisionTree', **params)
         self.model = DecisionTreeClassifier(**params)
 
     def optunatune(self, trial):
-        algorithm = trial.suggest_categorical("DTC_algorithm", ["c45", "chaid", "cart"])
-        max_depth = trial.suggest_int("DTC_max_depth", 2, 50, log=True)
-        min_records_of_leaf = trial.suggest_int(
+        params = dict()
+        params["algorithm"] = trial.suggest_categorical(
+            "DTC_algorithm", ["c45", "chaid", "cart"]
+        )
+        params["max_depth"] = trial.suggest_int("DTC_max_depth", 2, 50, log=True)
+        params["min_records_of_leaf"] = trial.suggest_int(
             "DTC_min_records_of_leaf", 1, 20, log=True
         )
-        min_records_of_parent = trial.suggest_int(
+        params["min_records_of_leaf"] = trial.suggest_int(
             "DTC_min_records_of_parent", 2, 20, log=True
         )
-        model = DecisionTreeClassifier(
-            algorithm=algorithm,
-            max_depth=max_depth,
-            min_records_of_leaf=min_records_of_leaf,
-            min_records_of_parent=min_records_of_parent,
-        )
+        # model = UnifiedClassification(func='DecisionTree', **params)
+        model = DecisionTreeClassifier(**params)
         self.model = model

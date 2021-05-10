@@ -9,6 +9,10 @@ from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import OptimizerError
 
+import numpy as np
+
+np.seterr(divide="ignore", invalid="ignore")
+
 
 class BayesianOptimizer(BaseOptimizer):
     """Bayesian hyperparameters optimizer. (https://github.com/fmfn/BayesianOptimization)
@@ -45,6 +49,7 @@ class BayesianOptimizer(BaseOptimizer):
         time_limit,
         problem,
         categorical_features=None,
+        verbosity=2,
     ):
         self.data = data
         self.algo_list = algo_list
@@ -62,6 +67,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
+        self.verbosity = verbosity
 
     def objective(self, algo_index_tuned, num_strategy_method):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -94,21 +100,17 @@ class BayesianOptimizer(BaseOptimizer):
             dropempty=False,
             categorical_list=None,
         )
-        opt = BayesianOptimization(
-            f=self.child_objective,
-            pbounds={**self.algo_list[self.algo_index].get_params()},
-            verbose=False,
-            random_state=17,
+        target, params = self.algo_list[self.algo_index].bayes_tune(
+            f=self.child_objective
         )
-        opt.maximize(n_iter=1, init_points=1)
-
+        print(target)
         algo = self.algo_list[self.algo_index]
-        algo.set_params(**opt.max["params"])
+        algo.set_params(**params)
         self.fit(algo, self.inner_data)
 
-        self.leaderboard.addmodel(ModelBoard(algo, opt.max["target"], self.imputer))
+        self.leaderboard.addmodel(ModelBoard(algo, target, self.imputer))
 
-        return opt.max["target"]
+        return target
 
     def child_objective(self, **hyperparameters):
         """Mini objective function. It is used to tune hyperparameters of algorithm that was chosen in main objective.
@@ -126,7 +128,8 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
         acc = algorithm.score(self.inner_data, self.inner_data.test)
-        print("Child Iteration accuracy: " + str(acc))
+        if self.verbosity > 1:
+            print("Child Iteration accuracy: " + str(acc))
         return acc
 
     def get_tuned_params(self):
@@ -163,6 +166,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "num_strategy_method": (0, len(self.imputer.num_strategy) - 1),
             },
             random_state=17,
+            verbose=self.verbosity > 1,
         )
         self.start_time = time.perf_counter()
         try:
@@ -171,24 +175,26 @@ class BayesianOptimizer(BaseOptimizer):
             else:
                 opt.maximize(n_iter=self.iter, init_points=1)
         except OptimizerError:
-            if self.iter is None:
-                print(
-                    "There was a stop due to a time limit! Completed "
-                    + str(len(opt.res))
-                    + " iterations"
-                )
-            else:
-                print(
-                    "There was a stop due to a time limit! Completed "
-                    + str(len(opt.res))
-                    + " iterations of "
-                    + str(self.iter)
-                )
-
+            if self.verbosity > 0:
+                if self.iter is None:
+                    print(
+                        "There was a stop due to a time limit! Completed "
+                        + str(len(opt.res))
+                        + " iterations"
+                    )
+                else:
+                    print(
+                        "There was a stop due to a time limit! Completed "
+                        + str(len(opt.res))
+                        + " iterations of "
+                        + str(self.iter)
+                    )
         else:
-            print("All iterations completed successfully!")
+            if self.verbosity > 0:
+                print("All iterations completed successfully!")
         self.tuned_params = opt.max
-        print("Starting model accuracy evaluation on the validation data!")
+        if self.verbosity > 0:
+            print("Starting model accuracy evaluation on the validation data!")
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,

@@ -1,7 +1,7 @@
 from hana_automl.pipeline.input import Input
 from hana_automl.preprocess.preprocessor import Preprocessor
 import pandas as pd
-from hana_automl.utils.connection import connection_context
+from ..connection import connection_context
 import pytest
 
 

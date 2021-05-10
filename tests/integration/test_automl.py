@@ -1,6 +1,6 @@
 import pytest
 from hana_automl.automl import AutoML
-from hana_automl.utils.connection import connection_context
+from ..connection import connection_context
 
 m = AutoML(connection_context)
 
@@ -11,9 +11,10 @@ def test_regression(optimizer):
         file_path="data/boston_data.csv",
         target="medv",
         id_column="ID",
-        steps=15,
+        steps=5,
         optimizer=optimizer,
         output_leaderboard=True,
+        task="reg",
     )
     assert m.best_params["accuracy"] > 0.50
 
@@ -21,23 +22,12 @@ def test_regression(optimizer):
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
 def test_classification(optimizer):
     m.fit(
-        file_path="data/bank.csv",
-        target="y",
-        id_column="ID",
-        categorical_features=[
-            "job",
-            "marital",
-            "education",
-            "default",
-            "housing",
-            "loan",
-            "contact",
-            "month",
-            "y",
-        ],
-        columns_to_remove=["poutcome"],
-        steps=15,
-        output_leaderboard=True,
+        file_path="data/cleaned_train.csv",
+        target="Survived",
+        id_column="PassengerId",
+        categorical_features=["Survived"],
+        steps=5,
         optimizer=optimizer,
+        task="cls",
     )
     assert m.best_params["accuracy"] > 0.50

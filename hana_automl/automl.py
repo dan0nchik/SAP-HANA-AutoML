@@ -54,6 +54,7 @@ class AutoML:
         optimizer: str = "OptunaSearch",
         time_limit=None,
         ensemble=False,
+        verbosity=2,
         output_leaderboard=False,
     ):
         """Fits AutoML object
@@ -86,7 +87,7 @@ class AutoML:
             Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
         time_limit: int
             Amount of time(in seconds) to tune model
-        ensemble: str
+        ensemble: bool
             Specify if you want to get a blending or stacking ensemble
             Currently supported: "blending", "stacking"
         output_leaderboard : bool
@@ -107,6 +108,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
+            verbose=verbosity > 0,
         )
         inputted.load_data()
         if table_name is None:
@@ -120,7 +122,13 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
-        pipe = Pipeline(data=data, steps=steps, task=task, time_limit=time_limit)
+        pipe = Pipeline(
+            data=data,
+            steps=steps,
+            task=task,
+            time_limit=time_limit,
+            verbosity=verbosity,
+        )
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
@@ -138,7 +146,8 @@ class AutoML:
                 raise BlendingError(
                     "Sorry, not enough fitted models for ensembling! Restart the process"
                 )
-            print("Starting ensemble accuracy evaluation on the validation data!")
+            if verbosity > 0:
+                print("Starting ensemble accuracy evaluation on the validation data!")
             self.ensemble = ensemble
             if pipe.task == "cls":
                 self.model = BlendingCls(
@@ -172,6 +181,7 @@ class AutoML:
         table_name: str = None,
         id_column: str = None,
         target_drop: str = None,
+        verbosity=1,
     ):
         """Makes predictions using fitted model.
 
@@ -194,18 +204,21 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
+            verbose=verbosity > 0,
         )
         data.load_data()
         if target_drop is not None:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
             data.hana_df = data.hana_df.drop(self.columns_to_remove)
-            print("Columns removed")
+            if verbosity > 0:
+                print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
             self.predicted = self.model.predict(df=data.hana_df, id_colm=id_column)
         else:
-            print("Preprocessor settings:", self.preprocessor_settings)
+            if verbosity > 0:
+                print("Preprocessor settings:", self.preprocessor_settings)
             pr = Preprocessor()
             data.hana_df = pr.clean(
                 data=data.hana_df,
@@ -215,7 +228,8 @@ class AutoML:
         res = self.predicted
         if type(self.predicted) == tuple:
             res = res[0]
-        print("Prediction results (first 20 rows): \n", res.head(20).collect())
+        if verbosity > 0:
+            print("Prediction results (first 20 rows): \n", res.head(20).collect())
         return res.collect()
 
     def save_results_as_csv(self, file_path: str):

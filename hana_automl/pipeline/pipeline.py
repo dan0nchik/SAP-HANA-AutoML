@@ -21,12 +21,13 @@ class Pipeline:
         Optimizer.
     """
 
-    def __init__(self, data: Data, steps: int, task: str, time_limit=None):
+    def __init__(self, data: Data, steps: int, task: str, time_limit=None, verbosity=2):
         self.data = data
         self.iter = steps
         self.task = task
         self.time_limit = time_limit
         self.opt = None
+        self.verbosity = verbosity
 
     def train(self, categorical_features: list = None, optimizer: str = None):
         """Preprocesses data and starts optimizer.
@@ -49,7 +50,8 @@ class Pipeline:
         algo_list, self.task, algo_dict = pr.set_task(
             self.data, target=self.data.target, task=self.task
         )
-        print("Task:", self.task)
+        if self.verbosity > 0:
+            print("Task:", self.task)
         if optimizer == "BayesianOptimizer":
             self.opt = BayesianOptimizer(
                 algo_list=algo_list,
@@ -58,6 +60,7 @@ class Pipeline:
                 time_limit=self.time_limit,
                 categorical_features=categorical_features,
                 problem=self.task,
+                verbosity=self.verbosity,
             )
         elif optimizer == "OptunaSearch":
             self.opt = OptunaOptimizer(
@@ -68,6 +71,7 @@ class Pipeline:
                 time_limit=self.time_limit,
                 algo_dict=algo_dict,
                 categorical_features=categorical_features,
+                verbosity=self.verbosity,
             )
         else:
             raise PipelineError("Optimizer not found!")

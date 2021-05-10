@@ -3,8 +3,6 @@ import time
 
 import optuna
 
-# TODO: turn off optuna logging if verbose set to False
-optuna.logging.set_verbosity(optuna.logging.WARNING)
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard
@@ -47,6 +45,7 @@ class OptunaOptimizer(BaseOptimizer):
         algo_dict,
         categorical_features=None,
         droplist_columns=None,
+        verbosity=2,
     ):
         self.algo_list = algo_list
         self.data = data
@@ -56,6 +55,9 @@ class OptunaOptimizer(BaseOptimizer):
         self.algo_dict = algo_dict
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
+        self.verbosity = verbosity
+        if self.verbosity < 2:
+            optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
         self.imputer: PreprocessorSettings = PreprocessorSettings()
         self.leaderboard: Leaderboard = Leaderboard()
@@ -77,23 +79,24 @@ class OptunaOptimizer(BaseOptimizer):
         time.sleep(2)
         self.tuned_params = self.study.best_params
         self.imputer.tuned_num_strategy = self.study.best_params.pop("imputer")
-        res = len(self.study.trials)
-        if self.iterations is None:
-            print(
-                "There was a stop due to a time limit! Completed "
-                + str(res)
-                + " iterations"
-            )
-        elif res == self.iterations:
-            print("All iterations completed successfully!")
-        else:
-            print(
-                "There was a stop due to a time limit! Completed "
-                + str(res)
-                + " iterations of "
-                + str(self.iterations)
-            )
-        print("Starting model accuracy evaluation on the validation data!")
+        if self.verbosity > 0:
+            res = len(self.study.trials)
+            if self.iterations is None:
+                print(
+                    "There was a stop due to a time limit! Completed "
+                    + str(res)
+                    + " iterations"
+                )
+            elif res == self.iterations:
+                print("All iterations completed successfully!")
+            else:
+                print(
+                    "There was a stop due to a time limit! Completed "
+                    + str(res)
+                    + " iterations of "
+                    + str(self.iterations)
+                )
+            print("Starting model accuracy evaluation on the validation data!")
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
