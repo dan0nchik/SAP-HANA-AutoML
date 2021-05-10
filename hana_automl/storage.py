@@ -55,10 +55,14 @@ class Storage(ModelStorage):
     def load_model(self, name, version=None, **kwargs):
         automl = AutoML(self.connection_context)
         automl.model = super().load_model(name, version, **kwargs)
-        self.cursor.execute(f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{name}' "
-                            f"AND VERSION = {self.__extract_version(name)}")
+        self.cursor.execute(
+            f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{name}' "
+            f"AND VERSION = {self.__extract_version(name)}"
+        )
         data = self.cursor.fetchall()[0][2]  # JSON column
-        settings_namespace = json.loads(str(data), object_hook=lambda d: SimpleNamespace(**d))
+        settings_namespace = json.loads(
+            str(data), object_hook=lambda d: SimpleNamespace(**d)
+        )
         automl.preprocessor_settings = settings_namespace
         return automl
 
@@ -67,7 +71,9 @@ class Storage(ModelStorage):
         self.cursor.execute(f"DROP TABLE {self.schema}.{PREPROCESSORS}")
 
     def __extract_version(self, name):
-        self.cursor.execute(f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{name}'")
+        self.cursor.execute(
+            f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{name}'"
+        )
         res = self.cursor.fetchall()
         versions = []
         for string in res:

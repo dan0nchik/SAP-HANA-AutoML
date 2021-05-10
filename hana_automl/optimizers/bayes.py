@@ -10,7 +10,9 @@ from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import OptimizerError
 
 import numpy as np
-np.seterr(divide='ignore', invalid='ignore')
+
+np.seterr(divide="ignore", invalid="ignore")
+
 
 class BayesianOptimizer(BaseOptimizer):
     """Bayesian hyperparameters optimizer. (https://github.com/fmfn/BayesianOptimization)
@@ -47,7 +49,7 @@ class BayesianOptimizer(BaseOptimizer):
         time_limit,
         problem,
         categorical_features=None,
-        verbosity=2
+        verbosity=2,
     ):
         self.data = data
         self.algo_list = algo_list
@@ -98,7 +100,9 @@ class BayesianOptimizer(BaseOptimizer):
             dropempty=False,
             categorical_list=None,
         )
-        target, params = self.algo_list[self.algo_index].bayes_tune(f=self.child_objective)
+        target, params = self.algo_list[self.algo_index].bayes_tune(
+            f=self.child_objective
+        )
         print(target)
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
@@ -162,7 +166,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "num_strategy_method": (0, len(self.imputer.num_strategy) - 1),
             },
             random_state=17,
-            verbose=self.verbosity > 1
+            verbose=self.verbosity > 1,
         )
         self.start_time = time.perf_counter()
         try:

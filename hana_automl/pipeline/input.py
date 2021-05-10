@@ -37,7 +37,7 @@ class Input:
         path: str = None,
         id_col=None,
         table_name: str = None,
-        verbose: bool = True
+        verbose: bool = True,
     ):
         self.df = df
         self.id_col = id_col
@@ -47,7 +47,6 @@ class Input:
         self.verbose = verbose
         self.hana_df = None
         self.connection_context = connection_context
-
 
     def load_data(self):
         """Loads data to HANA database."""
@@ -62,8 +61,10 @@ class Input:
             if self.verbose:
                 print(f"Creating table with name: {name}")
             self.hana_df = create_dataframe_from_pandas(
-                self.connection_context, self.df, name,
-                disable_progressbar=not self.verbose
+                self.connection_context,
+                self.df,
+                name,
+                disable_progressbar=not self.verbose,
             )
             self.table_name = name
         elif (
@@ -83,7 +84,7 @@ class Input:
                 self.table_name,
                 force=True,
                 drop_exist_tab=True,
-                disable_progressbar=not self.verbose
+                disable_progressbar=not self.verbose,
             )
         elif self.table_name is not None and self.df is not None:
             if self.verbose:
@@ -94,7 +95,7 @@ class Input:
                 self.table_name,
                 force=True,
                 drop_exist_tab=True,
-                disable_progressbar=not self.verbose
+                disable_progressbar=not self.verbose,
             )
         else:
             raise InputError("No data provided")
