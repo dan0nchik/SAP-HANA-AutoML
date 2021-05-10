@@ -1,7 +1,7 @@
 import os
 
 from hana_automl.automl import AutoML
-from hana_automl.utils.connection import connection_context
+from ..connection import connection_context
 import pytest
 
 
@@ -13,7 +13,7 @@ def test_main(optimizer, tmpdir):
         file_path="data/cleaned_train.csv",
         target="Survived",
         id_column="PassengerId",
-        steps=15,
+        steps=5,
         categorical_features=["Survived"],
         optimizer=optimizer,
     )

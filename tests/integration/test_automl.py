@@ -1,6 +1,6 @@
 import pytest
 from hana_automl.automl import AutoML
-from hana_automl.utils.connection import connection_context
+from ..connection import connection_context
 
 m = AutoML(connection_context)
 
@@ -11,7 +11,7 @@ def test_regression(optimizer):
         file_path="data/boston_data.csv",
         target="medv",
         id_column="ID",
-        steps=15,
+        steps=5,
         optimizer=optimizer,
         output_leaderboard=True,
     )
@@ -36,7 +36,7 @@ def test_classification(optimizer):
             "y",
         ],
         columns_to_remove=["poutcome"],
-        steps=15,
+        steps=5,
         output_leaderboard=True,
         optimizer=optimizer,
     )
