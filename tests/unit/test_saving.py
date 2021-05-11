@@ -1,6 +1,6 @@
-from hana_automl.automl import AutoML
 from unittest import mock
-import os
+
+from hana_automl.automl import AutoML
 
 
 @mock.patch("hana_automl.automl.hana_ml.dataframe.DataFrame")
