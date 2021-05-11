@@ -151,5 +151,5 @@ hana_automl/utils/tables.txt
 #general
 .DS_Store
 
-#Prediction results
-results.csv
+# pycharm
+.idea/
