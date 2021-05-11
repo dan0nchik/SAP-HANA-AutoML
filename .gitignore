@@ -141,9 +141,15 @@ cython_debug/
 .vscode/
 
 # Login info
-utils/credentials.py
+hana_automl/utils/credentials.py
 credentials.py
 
 #Hydra
 outputs/
-utils/tables.txt
+hana_automl/utils/tables.txt
+
+#general
+.DS_Store
+
+#Prediction results
+results.csv

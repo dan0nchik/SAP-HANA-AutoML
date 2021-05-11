@@ -11,3 +11,7 @@ hana-ml
 hydra-core
 omegaconf
 scikit-learn==0.22
+numpydoc
+furo
+streamlit
+plotly
