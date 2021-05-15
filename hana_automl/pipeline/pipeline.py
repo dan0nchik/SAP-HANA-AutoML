@@ -28,8 +28,6 @@ class Pipeline:
         self.time_limit = time_limit
         self.opt = None
         self.verbosity = verbosity
-        if task != 'reg' and task != 'cls':
-            raise PipelineError('Invalid task')
 
     def train(self, categorical_features: list = None, optimizer: str = None):
         """Preprocesses data and starts optimizer.

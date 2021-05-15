@@ -11,6 +11,7 @@ from hana_ml.dataframe import ConnectionContext, create_dataframe_from_pandas
 from streamlit.report_thread import REPORT_CONTEXT_ATTR_NAME
 
 from hana_automl.automl import AutoML
+from hana_automl.pipeline.data import Data
 from hana_automl.storage import Storage
 from web.session import session_state
 
@@ -53,13 +54,18 @@ def st_stderr(dst):
 st.title('Welcome to SAP HANA AutoML!')
 
 st.sidebar.title('1. Enter your HANA database credentials:')
-user = st.sidebar.text_input(label='Username')
-password = st.sidebar.text_input(label='Password', type='password')
-host = st.sidebar.text_input(label='Host')
+user = st.sidebar.text_input(label='Username', value='DEVELOPER')
+password = st.sidebar.text_input(label='Password', type='password', value='8wGGdQhjwxJtKCYhO5cI3')
+host = st.sidebar.text_input(label='Host', value='localhost')
 port = st.sidebar.text_input(label='Port', value='39015')
 
 df = None
 automl = None
+columns = []
+id_col = None
+test_id_col = None
+test_df = None
+no_id_msg = "I don't have it"
 
 
 @st.cache
@@ -125,7 +131,9 @@ else:
 
 st.sidebar.title('(Optional) Select ID column:')
 if df is not None:
-    id_col = st.sidebar.selectbox('', df.columns, key='id')
+    columns = list(df.columns)
+    columns.append(no_id_msg)
+    id_col = st.sidebar.selectbox('', columns, key='id')
 else:
     st.sidebar.write('Load dataset first')
 
@@ -139,11 +147,15 @@ st.sidebar.title('9. Optional settings:')
 ensemble = st.sidebar.checkbox('Use ensemble')
 leaderboard = st.sidebar.checkbox('Show leaderboard', value=True)
 optimizer = st.sidebar.selectbox('Optimizer', ['OptunaSearch', 'BayesianOptimizer'])
+verbosity = st.sidebar.selectbox('Verbosity level', [1, 2], key='verbose')
 
 start_training = st.sidebar.button('Start training!')
 CONN = get_database_connection()
 
 if start_training:
+    session_state.show_results = False
+    if id_col == no_id_msg:
+        id_col = None
     with st.spinner('Magic is happening (well, just tuning the models)...'):
         with st.beta_expander('Show output'):
             with st_stdout("text"):
@@ -153,7 +165,8 @@ if start_training:
                                          categorical_features=categorical, id_column=id_col, optimizer=optimizer,
                                          time_limit=int(time),
                                          ensemble=ensemble,
-                                         output_leaderboard=leaderboard)
+                                         output_leaderboard=leaderboard,
+                                         verbosity=verbosity)
                 session_state.show_results = True
 
 if session_state.show_results:
@@ -196,13 +209,18 @@ if session_state.show_results:
         test_df = pd.read_csv(test_file)
     if test_file is not None:
         test_target = right_column.selectbox('Select target column', test_df.columns, key='test_t')
-        test_id = right_column.selectbox('Select ID column', test_df.columns, key='id_test')
-        # test_results = right_column.empty()
-        # test_results.write('Testing...')
+        test_columns = list(test_df.columns)
+        test_columns.append(no_id_msg)
+        test_id = right_column.selectbox('Select ID column', test_columns, key='id_test')
+
         if right_column.button('Test'):
             hana_test_df = create_dataframe_from_pandas(
                 ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]),
                 test_df,
                 'AUTOML_TEST', force=True, drop_exist_tab=True)
-            hana_test_df.declare_lttab_usage(True)
-            right_column.write(session_state.automl.model.score(data=hana_test_df,key=test_id, label=test_target))
+            if test_id == no_id_msg:
+                hana_test_df = hana_test_df.add_id()
+                test_id = 'ID'
+            print(hana_test_df.columns)
+            # hana_test_df.declare_lttab_usage(True)
+            right_column.write(session_state.automl.algorithm.score(data=Data(id_col=test_id, target=test_target, train=None, test=None, valid=None), df=hana_test_df))

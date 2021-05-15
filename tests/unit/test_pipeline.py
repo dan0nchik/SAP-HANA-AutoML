@@ -20,8 +20,6 @@ def test_input():
 
 @mock.patch("hana_automl.pipeline.data.Data")
 def test_pipe(data):
-    with pytest.raises(PipelineError, match='Invalid task'):
-        pipe = Pipeline(data, 0, 'some task')
     with pytest.raises(PipelineError, match='Optimizer not found!'):
         pipe = Pipeline(data, 0, 'reg')
         pipe.train()
