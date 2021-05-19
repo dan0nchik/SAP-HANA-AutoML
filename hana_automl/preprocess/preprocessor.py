@@ -14,6 +14,7 @@ from hana_automl.algorithms.regression.glmreg import GLMReg
 from hana_automl.algorithms.regression.gradboostreg import GBReg
 from hana_automl.algorithms.regression.hybgradboostreg import HGBReg
 from hana_automl.algorithms.regression.kneighborsreg import KNeighborsReg
+from hana_automl.algorithms.regression.mlpreg import MLPreg
 from hana_automl.algorithms.regression.rdtreg import RDTReg
 from hana_automl.algorithms.regression.svr import SVReg
 from hana_automl.utils.error import PreprocessError
@@ -129,9 +130,9 @@ class Preprocessor:
         else:
             reglist = [
                 DecisionTreeReg(),
-                GLMReg(),
+                # GLMReg(),
                 KNeighborsReg(),
-                # MLPreg(),
+                MLPreg(),
                 SVReg(),
                 RDTReg(),
                 GBReg(),
@@ -140,7 +141,7 @@ class Preprocessor:
             regdict = {
                 "DecisionTreeRegressor": DecisionTreeReg(),
                 # "GLMRegressor": GLMReg(),
-                # "MLPRegressor": MLPreg(),
+                "MLPRegressor": MLPreg(),
                 "KNeighborsRegressor": KNeighborsReg(),
                 "SupportVectorRegressor": SVReg(),
                 "RDTRegressor": RDTReg(),

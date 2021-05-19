@@ -20,9 +20,11 @@ Fill your database credentials there.
 
     connection_context = ConnectionContext(address='localhost',
                                        user='DEVELOPER',
-                                       password='8wGGdQhjwxJtKCYhO5cI3',
+                                       password='password',
                                        port=9999)
 
+.. tip::
+    Store the database credentials securely! For example, put the passwords in a separate config/ini file that is not deployed with the project. 
 
 Now create the AutoML object. This will be our model.
 
@@ -30,20 +32,16 @@ Now create the AutoML object. This will be our model.
 
     model = AutoML(connection_context)
     m.fit(
-        table_name="AUTOML505f62ca-1c99-405b-b9d5-8912920038ec",
         df = df,
         target="y",
         id_column='ID',
         categorical_features=["y", 'marital', 'education', 'housing', 'loan'],
         columns_to_remove=['default', 'contact', 'month', 'poutcome'],
-        steps=3,
-        output_leaderboard=True,
-        optimizer="OptunaSearch"
+        steps=10,
     )
-
-For more information about this, head to :doc:`./automl`.
 
 .. note::
     Pass the **whole** dataframe as *df* parameter. We will automatically divide it in X_train, y_train, etc.
 
 
+This is a minimal example. For more advanced usage, head to :doc:`./automl`.

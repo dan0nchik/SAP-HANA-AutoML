@@ -81,7 +81,7 @@ class AutoML:
         categorical_features: list
             List of categorical columns. Details here: https://en.wikipedia.org/wiki/Categorical_variable
         id_column: str
-            ID column in table. Needed for HANA.
+            ID column in table. Needed for HANA. If no column passed, it will be created in dataset automatically
         optimizer: str
             Optimizer to tune hyperparameters.
             Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
@@ -90,8 +90,40 @@ class AutoML:
         ensemble: bool
             Specify if you want to get a blending or stacking ensemble
             Currently supported: "blending", "stacking"
+        verbosity: int
+            Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
-            Print algorithms leaderboard or not
+            Print algorithms leaderboard or not.
+
+
+        Notes
+        -----
+        There are multiple options to load data in HANA database via the library. Here are some parameter combinations: \n
+        **1)** df/file_path + table_name -> dataset from dataframe will be loaded to table with your custom name \n
+        **2)** df/file_path -> dataset from dataframe or file will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **3)** only table_name -> the data will be fetched and analyzed from exisiting table with provided name \n
+
+        Examples
+        --------
+        Passing connection info:
+
+        >>> from hana_ml.dataframe import ConnectionContext
+        >>> cc = ConnectionContext(address='host',
+        ...                        user='user',
+        ...                        password='password',
+        ...                        port=9999)
+
+        Creating and fitting the model:
+
+        >>> automl = AutoML(cc)
+        >>> m.fit(
+        ...     df = df,
+        ...     target="y",
+        ...     id_column='ID',
+        ...     categorical_features=["y", 'marital', 'education', 'housing', 'loan'],
+        ...     columns_to_remove=['default', 'contact', 'month', 'poutcome'],
+        ...     steps=10,
+        ... )
         """
         if time_limit is None and steps is None:
             raise AutoMLError("Specify time limit or number of iterations!")
@@ -194,9 +226,23 @@ class AutoML:
         table_name: str
             Name of table in HANA database
         id_column: str
-            ID column in table. Needed for HANA.
+            ID column in table. Needed for HANA. If no column passed, it will be created in dataset automatically
         target_drop: str
             Target to drop, if it exists in inputted data
+        verbosity: int
+            Level of output. 1 - minimal, 2 - all output.
+
+        Returns
+        -------
+        Pandas dataframe with predictions.
+
+        Examples
+        --------
+        >>> automl.predict(file_path='data/predict.csv',
+        ...                table_name='PREDICTION',
+        ...                id_column='ID',
+        ...                target_drop='target',
+        ...                verbosity=1)
         """
         data = Input(
             connection_context=self.connection_context,

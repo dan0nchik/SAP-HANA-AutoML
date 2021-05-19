@@ -11,9 +11,23 @@ PREPROCESSORS = "PREPROCESSOR_STORAGE"
 
 
 class Storage(ModelStorage):
-    """Save your HANA PAL model easily.
-    Details here:
-    https://help.sap.com/doc/1d0ebfe5e8dd44d09606814d83308d4b/2.0.04/en-US/hana_ml.model_storage.html"""
+    """Storage for models and more. 
+
+    Attributes
+    ----------
+    address : str
+        Host of the database. Example: 'localhost'
+    port : int
+        Port to connect. Example: 39015
+    user: str
+        Username of database user.
+    password: str
+        Well, just user's password.
+    connection_context: hana_ml.dataframe.ConnectionContext
+        Connection info for HANA database.
+    schema : str
+        Database schema.
+    """
 
     def __init__(self, address, port, user, password, connection_context, schema):
         super().__init__(connection_context, schema)
@@ -28,6 +42,16 @@ class Storage(ModelStorage):
             )
 
     def save_model(self, automl: AutoML, if_exists="upgrade"):
+        """
+        Saves a model to database.
+
+        Parameters
+        ----------
+        automl: AutoML
+            The model.
+        if_exists: str
+            Defaults to "upgrade". Not recommended to change.
+        """
         super().save_model(automl.model, if_exists)
         json_settings = json.dumps(automl.preprocessor_settings.__dict__)
         self.cursor.execute(
@@ -35,6 +59,14 @@ class Storage(ModelStorage):
         )
 
     def list_preprocessors(self):
+        """
+        Show preprocessors in database.
+
+        Returns
+        -------
+        res: pd.DataFrame
+            DataFrame containing all preprocessors in database.
+        """
         self.cursor.execute(f"SELECT * FROM {self.schema}.{PREPROCESSORS}")
         res = self.cursor.fetchall()
 

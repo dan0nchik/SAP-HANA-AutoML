@@ -1,9 +1,9 @@
-Step-by-Step guide
+Quickstart guide
 ==================
 
 .. toctree::
    :maxdepth: 4
-
+   
    install
    fitting
    predicting

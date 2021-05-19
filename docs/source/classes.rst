@@ -5,3 +5,4 @@ Class descriptions
    :maxdepth: 4
 
    automl
+   storage

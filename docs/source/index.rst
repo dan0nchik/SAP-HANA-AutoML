@@ -13,11 +13,12 @@ Welcome to hana_automl's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   quickstart
    guide
-   advanced
-   examples
    classes
+   examples
+   advanced
+   
+   
 
 
 
