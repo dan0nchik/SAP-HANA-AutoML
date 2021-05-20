@@ -1,17 +1,17 @@
+from hana_automl.preprocess.settings import PreprocessorSettings
 import json
 from types import SimpleNamespace
 from hana_ml.model_storage import ModelStorage
 import hdbcli
 import pandas as pd
-
+from hana_ml.dataframe import ConnectionContext
 from hana_automl.automl import AutoML
-from hana_automl.preprocess.settings import PreprocessorSettings
 
 PREPROCESSORS = "PREPROCESSOR_STORAGE"
 
 
 class Storage(ModelStorage):
-    """Storage for models and more. 
+    """Storage for models and more.
 
     Attributes
     ----------
@@ -29,12 +29,9 @@ class Storage(ModelStorage):
         Database schema.
     """
 
-    def __init__(self, address, port, user, password, connection_context, schema):
+    def __init__(self, connection_context: ConnectionContext, schema: str):
         super().__init__(connection_context, schema)
-        CONN = hdbcli.dbapi.connect(
-            address=address, port=port, user=user, password=password
-        )
-        self.cursor = CONN.cursor()
+        self.cursor = connection_context.connection.cursor()
         if not table_exists(self.cursor, self.schema, PREPROCESSORS):
             self.cursor.execute(
                 f"CREATE TABLE {self.schema}.{PREPROCESSORS} (MODEL NVARCHAR(256), VERSION INT, JSON NVARCHAR("
@@ -95,7 +92,10 @@ class Storage(ModelStorage):
         settings_namespace = json.loads(
             str(data), object_hook=lambda d: SimpleNamespace(**d)
         )
-        automl.preprocessor_settings = settings_namespace
+        automl.preprocessor_settings = PreprocessorSettings()
+        automl.preprocessor_settings.tuned_num_strategy = (
+            settings_namespace.tuned_num_strategy
+        )
         return automl
 
     def clean_up(self):

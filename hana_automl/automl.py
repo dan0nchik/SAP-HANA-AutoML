@@ -6,9 +6,7 @@ from hana_automl.algorithms.ensembles.blendreg import BlendingReg
 from hana_automl.pipeline.input import Input
 from hana_automl.pipeline.pipeline import Pipeline
 from hana_automl.preprocess.preprocessor import Preprocessor
-from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import AutoMLError, BlendingError
-from hana_ml.model_storage import ModelStorage
 import hana_ml
 
 
@@ -261,7 +259,7 @@ class AutoML:
                 print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
-            self.predicted = self.model.predict(df=data.hana_df, id_colm=id_column)
+            self.predicted = self.model.predict(df=data.hana_df, id_colm=data.id_col)
         else:
             if verbosity > 0:
                 print("Preprocessor settings:", self.preprocessor_settings)
@@ -270,7 +268,7 @@ class AutoML:
                 data=data.hana_df,
                 num_strategy=self.preprocessor_settings.tuned_num_strategy,
             )
-            self.predicted = self.model.predict(data.hana_df, id_column)
+            self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted
         if type(self.predicted) == tuple:
             res = res[0]
