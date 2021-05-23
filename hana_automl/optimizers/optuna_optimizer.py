@@ -133,11 +133,17 @@ class OptunaOptimizer(BaseOptimizer):
         algo.set_categ(self.categorical_features)
         imputer = trial.suggest_categorical("imputer", self.prepset.num_strategy)
         self.prepset.tuned_num_strategy = imputer
-        normalizer_strategy = trial.suggest_categorical("normalizer_strategy", self.prepset.normalizer_strategy)
+        normalizer_strategy = trial.suggest_categorical(
+            "normalizer_strategy", self.prepset.normalizer_strategy
+        )
         self.prepset.tuned_normalizer_strategy = normalizer_strategy
-        z_score_method = trial.suggest_categorical("z_score_method", self.prepset.z_score_method)
+        z_score_method = trial.suggest_categorical(
+            "z_score_method", self.prepset.z_score_method
+        )
         self.prepset.tuned_z_score_method = z_score_method
-        normalize_int = trial.suggest_categorical("normalize_int", self.prepset.normalize_int)
+        normalize_int = trial.suggest_categorical(
+            "normalize_int", self.prepset.normalize_int
+        )
         self.prepset.tuned_normalize_int = normalize_int
         data = self.data.clear(
             num_strategy=imputer,
@@ -146,7 +152,7 @@ class OptunaOptimizer(BaseOptimizer):
             categorical_list=None,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=z_score_method,
-            normalize_int=normalize_int
+            normalize_int=normalize_int,
         )
         algo.optunatune(trial)
         self.fit(algo, data)

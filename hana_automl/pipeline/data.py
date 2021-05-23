@@ -5,7 +5,12 @@ from hana_automl.preprocess.preprocessor import Preprocessor
 
 class Data:
     def __init__(
-            self, train: DataFrame = None, test: DataFrame = None, valid: DataFrame = None, target=None, id_col=None
+        self,
+        train: DataFrame = None,
+        test: DataFrame = None,
+        valid: DataFrame = None,
+        target=None,
+        id_col=None,
     ):
         self.train = train
         self.test = test
@@ -28,14 +33,14 @@ class Data:
         self.test = pr.removecolumns(droplist_columns, df=self.test)
 
     def clear(
-            self,
-            num_strategy="mean",
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
-            normalizer_strategy="min-max",
-            normalizer_z_score_method=False,
-            normalize_int=False
+        self,
+        num_strategy="mean",
+        cat_strategy=None,
+        dropempty=False,
+        categorical_list=None,
+        normalizer_strategy="min-max",
+        normalizer_z_score_method=False,
+        normalize_int=False,
     ):
         """Clears data using methods defined in parameters.
 
@@ -67,7 +72,7 @@ class Data:
             categorical_list=categorical_list,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int
+            normalize_int=normalize_int,
         )
         train = pr.autoimput(
             df=self.train,
@@ -79,7 +84,7 @@ class Data:
             categorical_list=categorical_list,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int
+            normalize_int=normalize_int,
         )
         test = pr.autoimput(
             df=self.test,
@@ -91,7 +96,7 @@ class Data:
             categorical_list=categorical_list,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int
+            normalize_int=normalize_int,
         )
         return Data(
             train=train, test=test, valid=valid, target=self.target, id_col=self.id_colm

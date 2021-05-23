@@ -69,7 +69,14 @@ class BayesianOptimizer(BaseOptimizer):
         self.algorithm = None
         self.verbosity = verbosity
 
-    def objective(self, algo_index_tuned, num_strategy_method, normalizer_strategy, z_score_method, normalize_int):
+    def objective(
+        self,
+        algo_index_tuned,
+        num_strategy_method,
+        normalizer_strategy,
+        z_score_method,
+        normalize_int,
+    ):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
         Parameters
@@ -94,7 +101,9 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = round(algo_index_tuned)
         imputer = self.prepset.num_strategy[round(num_strategy_method)]
         self.prepset.tuned_num_strategy = imputer
-        normalizer_strategy = self.prepset.normalizer_strategy[round(normalizer_strategy)]
+        normalizer_strategy = self.prepset.normalizer_strategy[
+            round(normalizer_strategy)
+        ]
         self.prepset.tuned_normalizer_strategy = normalizer_strategy
         z_score_method = self.prepset.z_score_method[round(z_score_method)]
         self.prepset.tuned_z_score_method = z_score_method
@@ -107,7 +116,7 @@ class BayesianOptimizer(BaseOptimizer):
             categorical_list=None,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=z_score_method,
-            normalize_int=normalize_int
+            normalize_int=normalize_int,
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective

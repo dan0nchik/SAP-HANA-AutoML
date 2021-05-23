@@ -67,7 +67,12 @@ class Input:
                 disable_progressbar=not self.verbose,
             )
             self.table_name = name
-        elif self.table_name is not None and self.table_name != "" and self.file_path is None and self.df is None:
+        elif (
+            self.table_name is not None
+            and self.table_name != ""
+            and self.file_path is None
+            and self.df is None
+        ):
             if self.verbose:
                 print(f"Connecting to existing table {self.table_name}")
             self.hana_df = self.connection_context.table(self.table_name)
