@@ -27,8 +27,8 @@ class OptunaOptimizer(BaseOptimizer):
         Final tuned hyperparameters of best algorithm.
     categorical_features : list
         List of categorical features in dataframe.
-    imputer
-        Imputer for preprocessing.
+    prepset
+        prepset for preprocessing.
     model
         Tuned HANA ML model in algorithm.
     droplist_columns
@@ -59,7 +59,7 @@ class OptunaOptimizer(BaseOptimizer):
         if self.verbosity < 2:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
-        self.imputer: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings()
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
@@ -78,7 +78,7 @@ class OptunaOptimizer(BaseOptimizer):
             self.study.optimize(self.objective, n_trials=self.iterations)
         time.sleep(2)
         self.tuned_params = self.study.best_params
-        self.imputer.tuned_num_strategy = self.study.best_params.pop("imputer")
+        self.prepset.tuned_num_strategy = self.study.best_params.pop("imputer")
         if self.verbosity > 0:
             res = len(self.study.trials)
             if self.iterations is None:
@@ -131,18 +131,27 @@ class OptunaOptimizer(BaseOptimizer):
             trial.suggest_categorical("algo", self.algo_dict.keys())
         )
         algo.set_categ(self.categorical_features)
-        imputer = trial.suggest_categorical("imputer", self.imputer.num_strategy)
-        self.imputer.tuned_num_strategy = imputer
+        imputer = trial.suggest_categorical("imputer", self.prepset.num_strategy)
+        self.prepset.tuned_num_strategy = imputer
+        normalizer_strategy = trial.suggest_categorical("normalizer_strategy", self.prepset.normalizer_strategy)
+        self.prepset.tuned_normalizer_strategy = normalizer_strategy
+        z_score_method = trial.suggest_categorical("z_score_method", self.prepset.z_score_method)
+        self.prepset.tuned_z_score_method = z_score_method
+        normalize_int = trial.suggest_categorical("normalize_int", self.prepset.normalize_int)
+        self.prepset.tuned_normalize_int = normalize_int
         data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
+            normalizer_strategy=normalizer_strategy,
+            normalizer_z_score_method=z_score_method,
+            normalize_int=normalize_int
         )
         algo.optunatune(trial)
         self.fit(algo, data)
         acc = algo.score(data=data, df=data.test)
-        self.leaderboard.addmodel(ModelBoard(algo, acc, self.imputer))
+        self.leaderboard.addmodel(ModelBoard(algo, acc, self.prepset))
         return acc
 
     def get_tuned_params(self):
@@ -162,7 +171,7 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_preprocessor_settings(self):
         """Returns tuned preprocessor settings."""
-        return self.imputer
+        return self.prepset
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

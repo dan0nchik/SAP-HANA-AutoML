@@ -33,6 +33,9 @@ class Data:
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
+            normalizer_strategy="min-max",
+            normalizer_z_score_method=False,
+            normalize_int=False
     ):
         """Clears data using methods defined in parameters.
 
@@ -56,24 +59,39 @@ class Data:
         pr = Preprocessor()
         valid = pr.autoimput(
             df=self.valid,
-            num_strategy=num_strategy,
+            id=self.id_colm,
+            target=self.target,
+            imputer_num_strategy=num_strategy,
             cat_strategy=cat_strategy,
             dropempty=dropempty,
             categorical_list=categorical_list,
+            normalizer_strategy=normalizer_strategy,
+            normalizer_z_score_method=normalizer_z_score_method,
+            normalize_int=normalize_int
         )
         train = pr.autoimput(
             df=self.train,
-            num_strategy=num_strategy,
+            id=self.id_colm,
+            target=self.target,
+            imputer_num_strategy=num_strategy,
             cat_strategy=cat_strategy,
             dropempty=dropempty,
             categorical_list=categorical_list,
+            normalizer_strategy=normalizer_strategy,
+            normalizer_z_score_method=normalizer_z_score_method,
+            normalize_int=normalize_int
         )
         test = pr.autoimput(
             df=self.test,
-            num_strategy=num_strategy,
+            id=self.id_colm,
+            target=self.target,
+            imputer_num_strategy=num_strategy,
             cat_strategy=cat_strategy,
             dropempty=dropempty,
             categorical_list=categorical_list,
+            normalizer_strategy=normalizer_strategy,
+            normalizer_z_score_method=normalizer_z_score_method,
+            normalize_int=normalize_int
         )
         return Data(
             train=train, test=test, valid=valid, target=self.target, id_col=self.id_colm

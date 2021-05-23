@@ -251,6 +251,8 @@ class AutoML:
             verbose=verbosity > 0,
         )
         data.load_data()
+        if id_column is None:
+            id_column = data.id_col
         if target_drop is not None:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
@@ -262,11 +264,17 @@ class AutoML:
             self.predicted = self.model.predict(df=data.hana_df, id_colm=data.id_col)
         else:
             if verbosity > 0:
-                print("Preprocessor settings:", self.preprocessor_settings)
+                print(
+                    "Preprocessor settings:",
+                    self.preprocessor_settings.tuned_num_strategy,
+                )
             pr = Preprocessor()
             data.hana_df = pr.clean(
                 data=data.hana_df,
-                num_strategy=self.preprocessor_settings.tuned_num_strategy,
+                imputer_num_strategy=self.preprocessor_settings.tuned_num_strategy,
+                normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
+                normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
+                normalize_int=self.preprocessor_settings.tuned_normalize_int,
             )
             self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted

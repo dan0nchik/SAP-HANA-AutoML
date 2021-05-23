@@ -35,7 +35,7 @@ class BayesianOptimizer(BaseOptimizer):
         List of categorical features in dataframe.
     inner_data : Data
         Copy of Data object to prevent from preprocessing data object multiple times while optimizing.
-    imputer
+    prepset
         Imputer for preprocessing
     model
         Tuned HANA ML model in algorithm.
@@ -63,13 +63,13 @@ class BayesianOptimizer(BaseOptimizer):
         self.start_time = None
         self.categorical_features = categorical_features
         self.inner_data = None
-        self.imputer: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings()
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
         self.verbosity = verbosity
 
-    def objective(self, algo_index_tuned, num_strategy_method):
+    def objective(self, algo_index_tuned, num_strategy_method, normalizer_strategy, z_score_method, normalize_int):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
         Parameters
@@ -92,13 +92,22 @@ class BayesianOptimizer(BaseOptimizer):
             if time.perf_counter() - self.start_time > self.time_limit:
                 raise OptimizerError()
         self.algo_index = round(algo_index_tuned)
-        imputer = self.imputer.num_strategy[round(num_strategy_method)]
-        self.imputer.tuned_num_strategy = imputer
+        imputer = self.prepset.num_strategy[round(num_strategy_method)]
+        self.prepset.tuned_num_strategy = imputer
+        normalizer_strategy = self.prepset.normalizer_strategy[round(normalizer_strategy)]
+        self.prepset.tuned_normalizer_strategy = normalizer_strategy
+        z_score_method = self.prepset.z_score_method[round(z_score_method)]
+        self.prepset.tuned_z_score_method = z_score_method
+        normalize_int = self.prepset.normalize_int[round(normalize_int)]
+        self.prepset.tuned_normalize_int = normalize_int
         self.inner_data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
+            normalizer_strategy=normalizer_strategy,
+            normalizer_z_score_method=z_score_method,
+            normalize_int=normalize_int
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
@@ -108,7 +117,7 @@ class BayesianOptimizer(BaseOptimizer):
         algo.set_params(**params)
         self.fit(algo, self.inner_data)
 
-        self.leaderboard.addmodel(ModelBoard(algo, target, self.imputer))
+        self.leaderboard.addmodel(ModelBoard(algo, target, self.prepset))
 
         return target
 
@@ -154,7 +163,7 @@ class BayesianOptimizer(BaseOptimizer):
     def get_preprocessor_settings(self):
         """Returns tuned preprocessor settings."""
 
-        return self.imputer
+        return self.prepset
 
     def tune(self):
         """Starts hyperparameter searching."""
@@ -163,7 +172,7 @@ class BayesianOptimizer(BaseOptimizer):
             f=self.objective,
             pbounds={
                 "algo_index_tuned": (0, len(self.algo_list) - 1),
-                "num_strategy_method": (0, len(self.imputer.num_strategy) - 1),
+                "num_strategy_method": (0, len(self.prepset.num_strategy) - 1),
             },
             random_state=17,
             verbose=self.verbosity > 1,
