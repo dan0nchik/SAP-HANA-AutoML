@@ -4,6 +4,8 @@ import uuid
 from hana_automl.pipeline.data import Data
 from hana_ml.algorithms.pal.partition import train_test_val_split
 from hana_ml.dataframe import create_dataframe_from_pandas
+
+from hana_automl.preprocess.preprocessor import Preprocessor
 from hana_automl.utils.error import InputError
 from pandas import DataFrame
 
@@ -106,7 +108,7 @@ class Input:
         self.hana_df.declare_lttab_usage(True)
         return
 
-    def split_data(self) -> Data:
+    def split_data(self, cat_list, perform_drop) -> Data:
         """Splits single dataframe into multiple dataframes and passes them to Data.
 
         Returns
@@ -114,6 +116,11 @@ class Input:
         Data
             Data with changes.
         """
+        pr = Preprocessor()
+        if perform_drop:
+            col = self.hana_df.count()
+            self.hana_df = pr.drop_outers(self.hana_df, id=self.id_col, target=self.target, cat_list=cat_list)
+            print('Removed '+str(col-self.hana_df.count())+' predicted outer columns')
         train, test, valid = train_test_val_split(
             data=self.hana_df, id_column=self.id_col, random_seed=17
         )

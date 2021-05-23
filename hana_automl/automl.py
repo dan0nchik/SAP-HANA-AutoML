@@ -1,6 +1,8 @@
 import pandas as pd
 import json
 
+from hana_ml.algorithms.pal.preprocessing import variance_test
+
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
 from hana_automl.pipeline.input import Input
@@ -54,6 +56,7 @@ class AutoML:
         ensemble=False,
         verbosity=2,
         output_leaderboard=False,
+        drop_outers=False,
     ):
         """Fits AutoML object
 
@@ -92,6 +95,8 @@ class AutoML:
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
             Print algorithms leaderboard or not.
+        drop_outers: bool
+            Try to drop columns outside the base dataset boundaries
 
 
         Notes
@@ -145,7 +150,7 @@ class AutoML:
             table_name = inputted.table_name
         if id_column is None:
             id_column = inputted.id_col
-        data = inputted.split_data()
+        data = inputted.split_data(categorical_features, drop_outers)
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target
         )

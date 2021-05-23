@@ -1,4 +1,4 @@
-from hana_ml.algorithms.pal.preprocessing import Imputer, FeatureNormalizer
+from hana_ml.algorithms.pal.preprocessing import Imputer, FeatureNormalizer, variance_test
 
 from hana_automl.algorithms.classification.decisiontreecls import DecisionTreeCls
 from hana_automl.algorithms.classification.gradboostcls import GBCls
@@ -150,6 +150,23 @@ class Preprocessor:
             ) or (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
                 df = df.drop([cl], axis=1)
         return df
+
+    def drop_outers(self, df, id, target, cat_list):
+
+        col_list = df.columns
+        col_list.remove(id)
+        col_list.remove(target)
+        for i in cat_list:
+            col_list.remove(i)
+        data_types = df.dtypes()
+        for i in data_types:
+            if i[0] in col_list:
+                if i[1] == "CHAR" or i[1] == "VARCHAR":
+                    col_list.remove(i[0])
+        for i in col_list:
+            df = variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0].rename_columns(["ID_TEMP", "DROP"]).join(df, "ID_TEMP="+id).deselect("ID_TEMP").filter('DROP = 0').deselect("DROP")
+        return df
+
 
     def set_task(self, data, target, task: str, algo_exceptions=None):
         if algo_exceptions is None:
