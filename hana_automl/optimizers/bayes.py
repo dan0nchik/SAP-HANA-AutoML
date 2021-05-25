@@ -101,27 +101,27 @@ class BayesianOptimizer(BaseOptimizer):
         self.algo_index = round(algo_index_tuned)
         imputer = self.prepset.num_strategy[round(num_strategy_method)]
         self.prepset.tuned_num_strategy = imputer
-        normalizer_strategy = self.prepset.normalizer_strategy[
+        normalizer_strategy_2 = self.prepset.normalizer_strategy[
             round(normalizer_strategy)
         ]
-        self.prepset.tuned_normalizer_strategy = normalizer_strategy
-        z_score_method = self.prepset.z_score_method[round(z_score_method)]
-        self.prepset.tuned_z_score_method = z_score_method
-        normalize_int = self.prepset.normalize_int[round(normalize_int)]
-        self.prepset.tuned_normalize_int = normalize_int
+        self.prepset.tuned_normalizer_strategy = normalizer_strategy_2
+        z_score_method_2 = self.prepset.z_score_method[round(z_score_method)]
+        self.prepset.tuned_z_score_method = z_score_method_2
+        normalize_int_2 = self.prepset.normalize_int[round(normalize_int)]
+        self.prepset.tuned_normalize_int = normalize_int_2
         self.inner_data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
-            normalizer_strategy=normalizer_strategy,
-            normalizer_z_score_method=z_score_method,
-            normalize_int=normalize_int,
+            normalizer_strategy=normalizer_strategy_2,
+            normalizer_z_score_method=z_score_method_2,
+            normalize_int=normalize_int_2,
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
         )
-        print(target)
+        print('Best child Iteration cycle score: '+str(target))
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
         self.fit(algo, self.inner_data)
@@ -182,6 +182,9 @@ class BayesianOptimizer(BaseOptimizer):
             pbounds={
                 "algo_index_tuned": (0, len(self.algo_list) - 1),
                 "num_strategy_method": (0, len(self.prepset.num_strategy) - 1),
+                "normalizer_strategy": (0, len(self.prepset.normalizer_strategy) - 1),
+                "z_score_method": (0, len(self.prepset.z_score_method) - 1),
+                "normalize_int": (0, len(self.prepset.normalize_int) - 1),
             },
             random_state=17,
             verbose=self.verbosity > 1,
