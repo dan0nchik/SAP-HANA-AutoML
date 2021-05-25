@@ -1,4 +1,8 @@
-from hana_ml.algorithms.pal.preprocessing import Imputer, FeatureNormalizer, variance_test
+from hana_ml.algorithms.pal.preprocessing import (
+    Imputer,
+    FeatureNormalizer,
+    variance_test,
+)
 
 from hana_automl.algorithms.classification.decisiontreecls import DecisionTreeCls
 from hana_automl.algorithms.classification.gradboostcls import GBCls
@@ -164,9 +168,15 @@ class Preprocessor:
                 if i[1] == "CHAR" or i[1] == "VARCHAR":
                     col_list.remove(i[0])
         for i in col_list:
-            df = variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0].rename_columns(["ID_TEMP", "DROP"]).join(df, "ID_TEMP="+id).deselect("ID_TEMP").filter('DROP = 0').deselect("DROP")
+            df = (
+                variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0]
+                .rename_columns(["ID_TEMP", "DROP"])
+                .join(df, "ID_TEMP=" + id)
+                .deselect("ID_TEMP")
+                .filter("DROP = 0")
+                .deselect("DROP")
+            )
         return df
-
 
     def set_task(self, data, target, task: str, algo_exceptions=None):
         if algo_exceptions is None:

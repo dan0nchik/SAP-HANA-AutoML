@@ -121,7 +121,7 @@ class BayesianOptimizer(BaseOptimizer):
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
         )
-        print('Best child Iteration cycle score: '+str(target))
+        print("Best child Iteration cycle score: " + str(target))
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
         self.fit(algo, self.inner_data)

@@ -119,8 +119,14 @@ class Input:
         pr = Preprocessor()
         if perform_drop:
             col = self.hana_df.count()
-            self.hana_df = pr.drop_outers(self.hana_df, id=self.id_col, target=self.target, cat_list=cat_list)
-            print('Removed '+str(col-self.hana_df.count())+' predicted outer columns')
+            self.hana_df = pr.drop_outers(
+                self.hana_df, id=self.id_col, target=self.target, cat_list=cat_list
+            )
+            print(
+                "Removed "
+                + str(col - self.hana_df.count())
+                + " predicted outer columns"
+            )
         train, test, valid = train_test_val_split(
             data=self.hana_df, id_column=self.id_col, random_seed=17
         )
