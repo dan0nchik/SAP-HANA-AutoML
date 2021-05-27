@@ -43,22 +43,22 @@ class AutoML:
         self.algorithm = None
 
     def fit(
-            self,
-            df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
-            file_path: str = None,
-            table_name: str = None,
-            task: str = None,
-            steps: int = None,
-            target: str = None,
-            columns_to_remove: list = None,
-            categorical_features: list = None,
-            id_column=None,
-            optimizer: str = "OptunaSearch",
-            time_limit=None,
-            ensemble=False,
-            verbosity=2,
-            output_leaderboard=False,
-            drop_outers=False,
+        self,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
+        file_path: str = None,
+        table_name: str = None,
+        task: str = None,
+        steps: int = None,
+        target: str = None,
+        columns_to_remove: list = None,
+        categorical_features: list = None,
+        id_column=None,
+        optimizer: str = "OptunaSearch",
+        time_limit=None,
+        ensemble=False,
+        verbosity=2,
+        output_leaderboard=False,
+        drop_outers=False,
     ):
         """Fits AutoML object
 
@@ -218,13 +218,13 @@ class AutoML:
             print("\033[0m {}".format(""))
 
     def predict(
-            self,
-            df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
-            file_path: str = None,
-            table_name: str = None,
-            id_column: str = None,
-            target_drop: str = None,
-            verbosity=1,
+        self,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
+        file_path: str = None,
+        table_name: str = None,
+        id_column: str = None,
+        target_drop: str = None,
+        verbosity=1,
     ):
         """Makes predictions using fitted model.
 
@@ -310,18 +310,21 @@ class AutoML:
             print("Prediction results (first 20 rows): \n", res.head(20).collect())
         return res.collect()
 
-    def score(self, df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
-              file_path: str = None,
-              table_name: str = None,
-              target: str = None,
-              id_column: str = None):
+    def score(
+        self,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
+        file_path: str = None,
+        table_name: str = None,
+        target: str = None,
+        id_column: str = None,
+    ):
         inp = Input(
             connection_context=self.connection_context,
             df=df,
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            target=target
+            target=target,
         )
         inp.load_data()
         data = Data()

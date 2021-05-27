@@ -57,9 +57,17 @@ class Input:
 
         name = f"AUTOML{str(uuid.uuid4())}"
 
-        if isinstance(self.df, hana_ml.dataframe.DataFrame) and self.file_path is None and self.table_name is None:
+        if (
+            isinstance(self.df, hana_ml.dataframe.DataFrame)
+            and self.file_path is None
+            and self.table_name is None
+        ):
             self.hana_df = self.df
-        elif isinstance(self.df, str) and self.file_path is None and self.table_name is None:
+        elif (
+            isinstance(self.df, str)
+            and self.file_path is None
+            and self.table_name is None
+        ):
             if self.verbose:
                 print(f"Connecting to existing table {self.df}")
             self.hana_df = self.connection_context.table(self.df)
@@ -100,7 +108,9 @@ class Input:
                 )
             elif self.table_name is not None and self.df is not None:
                 if self.verbose:
-                    print(f"Recreating table {self.table_name} with data from dataframe")
+                    print(
+                        f"Recreating table {self.table_name} with data from dataframe"
+                    )
                 self.hana_df = create_dataframe_from_pandas(
                     self.connection_context,
                     self.df,

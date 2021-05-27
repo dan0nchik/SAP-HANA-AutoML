@@ -5,13 +5,13 @@ from hana_automl.utils.error import BlendingError
 
 class Blending:
     def __init__(
-            self,
-            categorical_features,
-            id_col,
-            connection_context,
-            table_name,
-            model_list: list = None,
-            leaderboard: Leaderboard = None,
+        self,
+        categorical_features,
+        id_col,
+        connection_context,
+        table_name,
+        model_list: list = None,
+        leaderboard: Leaderboard = None,
     ):
         self.id_col = id_col
         self.categorical_features = categorical_features

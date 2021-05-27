@@ -13,10 +13,10 @@ def test_tasks(name):
 def multiple_tasks(name):
     if name == "cls":
         df = pd.read_csv("data/train.csv")
-        id_col = 'PassengerId'
+        id_col = "PassengerId"
     if name == "reg":
         df = pd.read_csv("data/reg.csv")
-        id_col = 'ID'
+        id_col = "ID"
 
     inputted = Input(connection_context, df, table_name="test", id_col=id_col)
     inputted.load_data()
