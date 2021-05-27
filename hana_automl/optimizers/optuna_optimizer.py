@@ -72,7 +72,7 @@ class OptunaOptimizer(BaseOptimizer):
     def inner_params(self, study, trial):
         time.sleep(1)
         print(
-            "\033[4m\033[31m {}\033[0m".format(
+            "\033[31m {}\033[0m".format(
                 self.leaderboard.board[len(self.leaderboard.board) - 1].algorithm.title
                 + " trial params :"
                 + str(

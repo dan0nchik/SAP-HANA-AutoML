@@ -15,7 +15,7 @@ class BlendingReg(Blending):
         id_col: str = None,
         connection_context: hana_ml.dataframe.ConnectionContext = None,
         table_name: str = None,
-        model_list: list = [],
+        model_list: list = None,
         leaderboard: Leaderboard = None,
     ):
         super().__init__(
