@@ -13,12 +13,14 @@ def test_tasks(name):
 def multiple_tasks(name):
     if name == "cls":
         df = pd.read_csv("data/train.csv")
+        id_col = 'PassengerId'
     if name == "reg":
         df = pd.read_csv("data/reg.csv")
+        id_col = 'ID'
 
-    inputted = Input(connection_context, df, table_name="test")
+    inputted = Input(connection_context, df, table_name="test", id_col=id_col)
     inputted.load_data()
-    data = inputted.split_data()
+    data = inputted.split_data(cat_list=None, perform_drop=False)
     pr = Preprocessor()
 
     for i in ["zero", "mean", "median"]:

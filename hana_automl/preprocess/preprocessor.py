@@ -59,14 +59,14 @@ class Preprocessor:
 
     def autoimput(
         self,
-        df,
-        target,
-        id,
-        imputer_num_strategy,
-        cat_strategy,
-        normalizer_strategy,
-        normalizer_z_score_method,
-        normalize_int,
+        df=None,
+        target=None,
+        id=None,
+        imputer_num_strategy=None,
+        cat_strategy=None,
+        normalizer_strategy=None,
+        normalizer_z_score_method=None,
+        normalize_int=None,
         dropempty=False,
         categorical_list=None,
     ):
