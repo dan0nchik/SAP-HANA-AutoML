@@ -8,7 +8,7 @@ class PreprocessorSettings:
     """
 
     def __init__(self):
-        self.num_strategy = ["mean", "median", "zero"]
+        self.num_strategy = ["mean", "median"]
         self.tuned_num_strategy: str = ""
         self.normalizer_strategy = ["min-max", "z-score", "decimal"]
         self.tuned_normalizer_strategy: str = ""

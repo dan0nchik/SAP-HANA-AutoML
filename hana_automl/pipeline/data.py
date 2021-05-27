@@ -39,7 +39,7 @@ class Data:
         dropempty=False,
         categorical_list=None,
         normalizer_strategy="min-max",
-        normalizer_z_score_method=False,
+        normalizer_z_score_method="",
         normalize_int=False,
     ):
         """Clears data using methods defined in parameters.

@@ -222,6 +222,9 @@ class BayesianOptimizer(BaseOptimizer):
                 cat_strategy=None,
                 dropempty=False,
                 categorical_list=None,
+                normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
+                normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
+                normalize_int=member.preprocessor.tuned_normalize_int,
             )
             acc = member.algorithm.score(data=data, df=data.valid)
             member.add_valid_acc(acc)

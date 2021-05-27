@@ -82,7 +82,7 @@ class Preprocessor:
                 )
             else:
                 result = impute.fit_transform(df)
-            result = self.normalize(
+            """result = self.normalize(
                 result,
                 normalizer_strategy,
                 id,
@@ -90,7 +90,7 @@ class Preprocessor:
                 categorical_list=categorical_list,
                 norm_int=normalize_int,
                 z_score_method=normalizer_z_score_method,
-            )
+            )"""
             return result
         else:
             return df.dropna()
