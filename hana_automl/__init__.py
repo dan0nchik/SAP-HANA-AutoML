@@ -4,4 +4,4 @@
     2. pip3 install --extra-index-url https://test.pypi.org/simple/ hana_automl
 """
 
-__version__ = "1.2"
+__version__ = "1.3"
