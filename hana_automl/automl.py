@@ -355,6 +355,8 @@ class AutoML:
         score: float
             Model score.
         """
+        if target is None:
+            raise AutoMLError("Specify target for model evaluation!")
         inp = Input(
             connection_context=self.connection_context,
             df=df,

@@ -52,8 +52,12 @@ class Blending:
                     normalize_int=model.preprocessor.tuned_normalize_int,
                 )
             else:
+                if data.target is None:
+                    dt = data.valid
+                else:
+                    dt = data.valid.drop(data.target)
                 df2 = pr.autoimput(
-                    df=data.valid.drop(data.target),
+                    df=dt,
                     id=data.id_colm,
                     target=data.target,
                     imputer_num_strategy=model.preprocessor.tuned_num_strategy,

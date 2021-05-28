@@ -257,5 +257,7 @@ if session_state.show_results:
             print(hana_test_df.columns)
             # hana_test_df.declare_lttab_usage(True)
             right_column.write(
-                session_state.automl.score(hana_test_df, target=test_target, id_column=test_id)
+                session_state.automl.score(
+                    hana_test_df, target=test_target, id_column=test_id
+                )
             )
