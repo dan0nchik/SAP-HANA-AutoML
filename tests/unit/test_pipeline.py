@@ -13,15 +13,13 @@ def test_input():
     with pytest.raises(InputError, match="No data provided"):
         input.load_data()
     with pytest.raises(InputError, match="Please provide valid file path or url"):
-        input.download_data('')
+        input.download_data("")
     with pytest.raises(InputError, match="The file format is missing or not supported"):
-        input.download_data('/home/user/downloads/data.lalalala')
+        input.download_data("/home/user/downloads/data.lalalala")
 
 
 @mock.patch("hana_automl.pipeline.data.Data")
 def test_pipe(data):
-    with pytest.raises(PipelineError, match='Invalid task'):
-        pipe = Pipeline(data, 0, 'some task')
-    with pytest.raises(PipelineError, match='Optimizer not found!'):
-        pipe = Pipeline(data, 0, 'reg')
+    with pytest.raises(PipelineError, match="Optimizer not found!"):
+        pipe = Pipeline(data, 0, "reg")
         pipe.train()

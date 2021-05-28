@@ -1,22 +1,26 @@
 import os
+
+import hana_ml.dataframe
 import pandas as pd
 import uuid
 from hana_automl.pipeline.data import Data
 from hana_ml.algorithms.pal.partition import train_test_val_split
 from hana_ml.dataframe import create_dataframe_from_pandas
+from typing import Union
+from hana_automl.preprocess.preprocessor import Preprocessor
 from hana_automl.utils.error import InputError
-from pandas import DataFrame
+import pandas
 
 
 class Input:
-    """Handles input data.
+    """Handles input data. You can use it aside pipeline to load data to database.
 
     Attributes
     ----------
     connection_context : hana_ml.dataframe.ConnectionContext
         Connection info to HANA database.
-    df : DataFrame
-        Pandas dataframe with data.
+    df : pandas.DataFrame or hana_ml.dataframe.DataFrame or str
+        Pandas dataframe with data, or hana_ml dataframe, or string containing existing table name.
     id_col : str
         ID column for HANA table.
     file_path : str
@@ -27,15 +31,17 @@ class Input:
         Table's name in HANA database.
     hana_df : hana_ml.dataframe
         Converted HANA dataframe.
+    verbose
+        Level of output
     """
 
     def __init__(
         self,
-        connection_context=None,
-        df: pd.DataFrame = None,
-        target=None,
+        connection_context: hana_ml.ConnectionContext = None,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
+        target: str = None,
         path: str = None,
-        id_col=None,
+        id_col: str = None,
         table_name: str = None,
         verbose: bool = True,
     ):
@@ -54,54 +60,76 @@ class Input:
         name = f"AUTOML{str(uuid.uuid4())}"
 
         if (
-            self.df is not None or self.file_path is not None
-        ) and self.table_name is None:
-            if self.file_path is not None:
-                self.df = self.download_data(self.file_path)
+            isinstance(self.df, hana_ml.dataframe.DataFrame)
+            and self.file_path is None
+            and self.table_name is None
+        ):
+            self.hana_df = self.df
+        elif (
+            isinstance(self.df, str)
+            and self.file_path is None
+            and self.table_name is None
+        ):
             if self.verbose:
-                print(f"Creating table with name: {name}")
-            self.hana_df = create_dataframe_from_pandas(
-                self.connection_context,
-                self.df,
-                name,
-                disable_progressbar=not self.verbose,
-            )
-            self.table_name = name
-        elif self.table_name is not None and self.table_name != "" and self.file_path is None and self.df is None:
-            if self.verbose:
-                print(f"Connecting to existing table {self.table_name}")
-            self.hana_df = self.connection_context.table(self.table_name)
-        elif self.table_name is not None and self.file_path is not None:
-            if self.verbose:
-                print(f"Recreating table {self.table_name} with data from file")
-            self.hana_df = create_dataframe_from_pandas(
-                self.connection_context,
-                self.download_data(self.file_path),
-                self.table_name,
-                force=True,
-                drop_exist_tab=True,
-                disable_progressbar=not self.verbose,
-            )
-        elif self.table_name is not None and self.df is not None:
-            if self.verbose:
-                print(f"Recreating table {self.table_name} with data from dataframe")
-            self.hana_df = create_dataframe_from_pandas(
-                self.connection_context,
-                self.df,
-                self.table_name,
-                force=True,
-                drop_exist_tab=True,
-                disable_progressbar=not self.verbose,
-            )
+                print(f"Connecting to existing table {self.df}")
+            self.hana_df = self.connection_context.table(self.df)
         else:
+            if (
+                self.df is not None or self.file_path is not None
+            ) and self.table_name is None:
+                if self.file_path is not None:
+                    self.df = self.download_data(self.file_path)
+                if self.verbose:
+                    print(f"Creating table with name: {name}")
+                self.hana_df = create_dataframe_from_pandas(
+                    self.connection_context,
+                    self.df,
+                    name,
+                    disable_progressbar=not self.verbose,
+                )
+                self.table_name = name
+            elif (
+                self.table_name is not None
+                and self.table_name != ""
+                and self.file_path is None
+                and self.df is None
+            ):
+                if self.verbose:
+                    print(f"Connecting to existing table {self.table_name}")
+                self.hana_df = self.connection_context.table(self.table_name)
+            elif self.table_name is not None and self.file_path is not None:
+                if self.verbose:
+                    print(f"Recreating table {self.table_name} with data from file")
+                self.hana_df = create_dataframe_from_pandas(
+                    self.connection_context,
+                    self.download_data(self.file_path),
+                    self.table_name,
+                    force=True,
+                    drop_exist_tab=True,
+                    disable_progressbar=not self.verbose,
+                )
+            elif self.table_name is not None and self.df is not None:
+                if self.verbose:
+                    print(
+                        f"Recreating table {self.table_name} with data from dataframe"
+                    )
+                self.hana_df = create_dataframe_from_pandas(
+                    self.connection_context,
+                    self.df,
+                    self.table_name,
+                    force=True,
+                    drop_exist_tab=True,
+                    disable_progressbar=not self.verbose,
+                )
+        if self.df is None and self.file_path is None and self.table_name is None:
             raise InputError("No data provided")
+        self.hana_df.declare_lttab_usage(True)
         if self.id_col is None:
             self.hana_df = self.hana_df.add_id()
             self.id_col = "ID"
-        self.hana_df.declare_lttab_usage(True)
         return
 
-    def split_data(self) -> Data:
+    def split_data(self, cat_list: list, perform_drop: bool) -> Data:
         """Splits single dataframe into multiple dataframes and passes them to Data.
 
         Returns
@@ -109,13 +137,24 @@ class Input:
         Data
             Data with changes.
         """
+        pr = Preprocessor()
+        if perform_drop:
+            col = self.hana_df.count()
+            self.hana_df = pr.drop_outers(
+                self.hana_df, id=self.id_col, target=self.target, cat_list=cat_list
+            )
+            print(
+                "Removed "
+                + str(col - self.hana_df.count())
+                + " predicted outer columns"
+            )
         train, test, valid = train_test_val_split(
             data=self.hana_df, id_column=self.id_col, random_seed=17
         )
         return Data(train, test, valid, self.target, id_col=self.id_col)
 
     @staticmethod
-    def download_data(path):
+    def download_data(path: str):
         """Downloads data from path
 
         Parameters

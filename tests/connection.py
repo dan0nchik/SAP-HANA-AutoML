@@ -1,5 +1,5 @@
 from hana_ml import ConnectionContext
-from .credentials import port, host, user, password, dbname
+from .credentials import host, user, password, port, dbname
 
 params = {"DATABASENAME": dbname}
 

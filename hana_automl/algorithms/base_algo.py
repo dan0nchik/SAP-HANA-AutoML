@@ -1,3 +1,6 @@
+from time import sleep
+
+import optuna
 from bayes_opt import BayesianOptimization
 
 
@@ -10,6 +13,8 @@ class BaseAlgorithm:
         self.categorical_features = None
         self.params_range = {}
         self.bayes_opt = None
+        self.optuna_opt = None
+        self.temp_data = None
         if custom_params is not None:
             # self.params_range[custom_params.keys()] = custom_params.values()
             pass
@@ -42,6 +47,31 @@ class BaseAlgorithm:
             )
         self.bayes_opt.maximize(n_iter=1, init_points=1)
         return self.bayes_opt.max["target"], self.bayes_opt.max["params"]
+
+    def optuna_tune(self, data):
+        if self.optuna_opt is None:
+            v = optuna.logging.get_verbosity()
+            optuna.logging.set_verbosity(optuna.logging.WARNING)
+            self.optuna_opt = optuna.create_study(
+                direction="maximize",
+                study_name="hana_automl optimization process(" + self.title + ")",
+            )
+            optuna.logging.set_verbosity(v)
+        self.temp_data = data
+        v = optuna.logging.get_verbosity()
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        self.optuna_opt.optimize(self.inner_opt_tune, n_trials=1)
+        optuna.logging.set_verbosity(v)
+        return self.optuna_opt.trials[len(self.optuna_opt.trials) - 1].value.real
+
+    def inner_opt_tune(self, trial):
+        self.optunatune(trial)
+        ftr: list = self.temp_data.train.columns
+        ftr.remove(self.temp_data.target)
+        ftr.remove(self.temp_data.id_colm)
+        self.fit(self.temp_data, ftr, self.categorical_features)
+        acc = self.score(data=self.temp_data, df=self.temp_data.test)
+        return acc
 
     def fit(self, data, features, categorical_features):
         self.model.fit(

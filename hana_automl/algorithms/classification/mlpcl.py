@@ -1,5 +1,4 @@
 from hana_ml.algorithms.pal.neural_network import MLPClassifier
-from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 

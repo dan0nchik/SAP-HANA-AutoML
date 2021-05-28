@@ -1,3 +1,10 @@
+import copy
+import uuid
+
+import hana_ml
+
+import hana_automl.algorithms.base_algo
+from hana_automl.pipeline.data import Data
 from hana_automl.preprocess.settings import PreprocessorSettings
 import time
 
@@ -27,8 +34,8 @@ class OptunaOptimizer(BaseOptimizer):
         Final tuned hyperparameters of best algorithm.
     categorical_features : list
         List of categorical features in dataframe.
-    imputer
-        Imputer for preprocessing.
+    prepset
+        prepset for preprocessing.
     model
         Tuned HANA ML model in algorithm.
     droplist_columns
@@ -37,14 +44,14 @@ class OptunaOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        algo_list,
-        data,
-        problem,
-        iterations,
-        time_limit,
-        algo_dict,
-        categorical_features=None,
-        droplist_columns=None,
+        algo_list: list,
+        data: Data,
+        problem: str,
+        iterations: int,
+        time_limit: int,
+        algo_dict: dict,
+        categorical_features: list = None,
+        droplist_columns: list = None,
         verbosity=2,
     ):
         self.algo_list = algo_list
@@ -59,26 +66,57 @@ class OptunaOptimizer(BaseOptimizer):
         if self.verbosity < 2:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
-        self.imputer: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings()
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
         self.algorithm = None
         self.study = None
 
+    def inner_params(self, study, trial):
+        time.sleep(1)
+        print(
+            "\033[31m {}\033[0m".format(
+                self.leaderboard.board[len(self.leaderboard.board) - 1].algorithm.title
+                + " trial params :"
+                + str(
+                    self.leaderboard.board[len(self.leaderboard.board) - 1]
+                    .algorithm.optuna_opt.trials[
+                        len(
+                            self.leaderboard.board[
+                                len(self.leaderboard.board) - 1
+                            ].algorithm.optuna_opt.trials
+                        )
+                        - 1
+                    ]
+                    .params
+                )
+            )
+        )
+
     def tune(self):
-        self.study = optuna.create_study(direction="maximize")
+        self.study = optuna.create_study(
+            direction="maximize",
+            study_name="hana_automl optimization process(" + str(uuid.uuid4()) + ")",
+        )
         if self.iterations is not None and self.time_limit is not None:
             self.study.optimize(
-                self.objective, n_trials=self.iterations, timeout=self.time_limit
+                self.objective,
+                n_trials=self.iterations,
+                timeout=self.time_limit,
+                callbacks=[self.inner_params],
             )
         elif self.iterations is None:
-            self.study.optimize(self.objective, timeout=self.time_limit)
+            self.study.optimize(
+                self.objective, timeout=self.time_limit, callbacks=[self.inner_params]
+            )
         else:
-            self.study.optimize(self.objective, n_trials=self.iterations)
+            self.study.optimize(
+                self.objective, n_trials=self.iterations, callbacks=[self.inner_params]
+            )
         time.sleep(2)
         self.tuned_params = self.study.best_params
-        self.imputer.tuned_num_strategy = self.study.best_params.pop("imputer")
+        self.prepset.tuned_num_strategy = self.study.best_params.pop("imputer")
         if self.verbosity > 0:
             res = len(self.study.trials)
             if self.iterations is None:
@@ -102,7 +140,10 @@ class OptunaOptimizer(BaseOptimizer):
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 cat_strategy=None,
                 dropempty=False,
-                categorical_list=self.categorical_features,
+                categorical_list=None,
+                normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
+                normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
+                normalize_int=member.preprocessor.normalize_int,
             )
             acc = member.algorithm.score(data=data, df=data.valid)
             member.add_valid_acc(acc)
@@ -113,56 +154,73 @@ class OptunaOptimizer(BaseOptimizer):
         self.model = self.leaderboard.board[0].algorithm.model
         self.algorithm = self.leaderboard.board[0].algorithm
 
-    def objective(self, trial):
+    def objective(self, trial: optuna.trial.Trial) -> int:
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
         Parameters
         ----------
-        trial
+        trial: optuna.trial.Trial
             Optuna trial. Details here: https://optuna.readthedocs.io/en/stable/reference/trial.html
 
         Returns
         -------
-        Score
-            Model perfomance.
+        acc: float
+            Model's accuracy.
 
         """
         algo = self.algo_dict.get(
             trial.suggest_categorical("algo", self.algo_dict.keys())
         )
         algo.set_categ(self.categorical_features)
-        imputer = trial.suggest_categorical("imputer", self.imputer.num_strategy)
-        self.imputer.tuned_num_strategy = imputer
+        imputer = trial.suggest_categorical("imputer", self.prepset.num_strategy)
+        self.prepset.tuned_num_strategy = imputer
+        normalizer_strategy = trial.suggest_categorical(
+            "normalizer_strategy", self.prepset.normalizer_strategy
+        )
+        self.prepset.tuned_normalizer_strategy = normalizer_strategy
+        z_score_method = ""
+        if normalizer_strategy == "z-score":
+            z_score_method = trial.suggest_categorical(
+                "z_score_method", self.prepset.z_score_method
+            )
+            self.prepset.tuned_z_score_method = z_score_method
+        normalize_int = trial.suggest_categorical(
+            "normalize_int", self.prepset.normalize_int
+        )
+        self.prepset.tuned_normalize_int = normalize_int
         data = self.data.clear(
             num_strategy=imputer,
             cat_strategy=None,
             dropempty=False,
             categorical_list=None,
+            normalizer_strategy=normalizer_strategy,
+            normalizer_z_score_method=z_score_method,
+            normalize_int=normalize_int,
         )
-        algo.optunatune(trial)
-        self.fit(algo, data)
-        acc = algo.score(data=data, df=data.test)
-        self.leaderboard.addmodel(ModelBoard(algo, acc, self.imputer))
+        acc = algo.optuna_tune(data)
+        self.leaderboard.addmodel(
+            ModelBoard(copy.copy(algo), acc, copy.copy(self.prepset))
+        )
         return acc
 
-    def get_tuned_params(self):
+    def get_tuned_params(self) -> dict:
         """Returns tuned hyperparameters."""
         return {
             "algorithm": self.tuned_params,
             "accuracy": self.leaderboard.board[0].valid_accuracy,
         }
 
-    def get_model(self):
+    def get_model(self) -> hana_ml.algorithms.pal.pal_base:
         """Returns tuned model."""
         return self.model
 
-    def get_algorithm(self):
+    def get_algorithm(self) -> hana_automl.algorithms.base_algo.BaseAlgorithm:
         """Returns tuned AutoML algorithm"""
         return self.algorithm
 
-    def get_preprocessor_settings(self):
+    def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
-        return self.imputer
+        return self.prepset
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

@@ -28,13 +28,13 @@ class Benchmark:
         self.automl_accuracy = 0
 
     def run(
-            self,
-            dataset: str,
-            task: str,
-            grad_boost: bool,
-            label: str,
-            id_column: str = None,
-            categorical: list = None,
+        self,
+        dataset: str,
+        task: str,
+        grad_boost: bool,
+        label: str,
+        id_column: str = None,
+        categorical: list = None,
     ):
         df = pd.read_csv(dataset)
         if id_column is None:
@@ -50,7 +50,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
-        train_df.declare_lttab_usage(True)
+        # train_df.declare_lttab_usage(True)
         test_df = create_dataframe_from_pandas(
             self.connection_context,
             table_name="BENCHMARK_TEST",
@@ -58,7 +58,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
-        test_df.declare_lttab_usage(True)
+        # test_df.declare_lttab_usage(True)
 
         if task == "cls":
             if grad_boost:
@@ -89,12 +89,13 @@ class Benchmark:
         start_time = time.time()
         self.automl_model.fit(
             train,
-            steps=45,
+            steps=15,
             target=label,
             table_name="BENCHMARK_AUTOML",
             categorical_features=categorical,
             id_column=id_column,
-            task=task, verbosity=1
+            task=task,
+            verbosity=1,
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         test_df = create_dataframe_from_pandas(
@@ -104,7 +105,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
-        test_df.declare_lttab_usage(True)
+        # test_df.declare_lttab_usage(True)
         self.automl_accuracy = self.automl_model.get_model().score(
             test_df, label=label, key=id_column
         )

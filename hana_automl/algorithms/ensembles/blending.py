@@ -39,13 +39,30 @@ class Blending:
         pr = Preprocessor()
         for model in self.model_list:
             if df is not None:
-                df2 = pr.clean(
-                    data=df, num_strategy=model.preprocessor.tuned_num_strategy
+                df2 = pr.autoimput(
+                    df=df,
+                    id=self.id_col,
+                    target=data.target,
+                    imputer_num_strategy=model.preprocessor.tuned_num_strategy,
+                    cat_strategy=None,
+                    dropempty=None,
+                    categorical_list=self.categorical_features,
+                    normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
+                    normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
+                    normalize_int=model.preprocessor.tuned_normalize_int,
                 )
             else:
-                df2 = pr.clean(
-                    data=data.valid.drop(data.target),
-                    num_strategy=model.preprocessor.tuned_num_strategy,
+                df2 = pr.autoimput(
+                    df=data.valid.drop(data.target),
+                    id=data.id_colm,
+                    target=data.target,
+                    imputer_num_strategy=model.preprocessor.tuned_num_strategy,
+                    cat_strategy=None,
+                    dropempty=None,
+                    categorical_list=self.categorical_features,
+                    normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
+                    normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
+                    normalize_int=model.preprocessor.tuned_normalize_int,
                 )
             pred = model.algorithm.model.predict(df2, self.id_col)
             if type(pred) == tuple:

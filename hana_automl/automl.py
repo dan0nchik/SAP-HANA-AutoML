@@ -1,17 +1,20 @@
-import pandas as pd
 import json
+from typing import Union
+
+import hana_ml
+import pandas
+import pandas as pd
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
+from hana_automl.pipeline.data import Data
 from hana_automl.pipeline.input import Input
 from hana_automl.pipeline.pipeline import Pipeline
 from hana_automl.preprocess.preprocessor import Preprocessor
-from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import AutoMLError, BlendingError
-from hana_ml.model_storage import ModelStorage
-import hana_ml
 
 
+# pylint: disable=line-too-long
 class AutoML:
     """Main class. Control the whole Automated Machine Learning process here.
        What is AutoML? Read here: https://www.automl.org/automl/
@@ -42,28 +45,34 @@ class AutoML:
 
     def fit(
         self,
-        df: pd.DataFrame = None,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
+        file_path: str = None,
+        table_name: str = None,
         task: str = None,
         steps: int = None,
         target: str = None,
-        file_path: str = None,
-        table_name: str = None,
         columns_to_remove: list = None,
         categorical_features: list = None,
-        id_column=None,
+        id_column: str = None,
         optimizer: str = "OptunaSearch",
-        time_limit=None,
-        ensemble=False,
+        time_limit: int = None,
+        ensemble: bool = False,
         verbosity=2,
-        output_leaderboard=False,
+        output_leaderboard: bool = False,
+        drop_outers: bool = False,
     ):
         """Fits AutoML object
 
         Parameters
         ----------
-        df : pd.DataFrame
-            Input dataframe.
-            **NOTE**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+        df : pandas.DataFrame or hana_ml.dataframe.DataFrame or str
+            **Attention**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+            See *Notes* for extra information
+        file_path : str
+            Path/url to dataframe. Accepts .csv and .xlsx. See *Notes* for extra information
+            **Examples:** 'https://website/dataframe.csv' or 'users/dev/file.csv'
+        table_name: str
+            Name of table in HANA database. See *Notes* for extra information
         task: str
             Machine Learning task. 'reg'(regression) and 'cls'(classification) are currently supported.
         steps : int
@@ -71,27 +80,65 @@ class AutoML:
         target : str
             The column we want to predict. For multiple columns pass a list.
             **Example:** ['feature1', 'feature2'].
-        file_path : str
-            Path/url to dataframe. Accepts .csv and .xlsx
-            **Examples:** 'https://website/dataframe.csv' or 'users/dev/file.csv'
-        table_name: str
-            Name of table in HANA database
         columns_to_remove: list
-            List of columns to delete.
+            List of columns to delete. **Example:** ['column1', 'column2'].
         categorical_features: list
-            List of categorical columns. Details here: https://en.wikipedia.org/wiki/Categorical_variable
+            Categorical features are columns that generally take a limited number of possible values. For example,
+            if our target variable contains only 1 and 0, it is concerned as categorical. Another example: column 'gender' contains
+            'male', 'female' and 'other' values. As it (generally) can't contain any other values, it is categorical.
+            Details here: https://towardsdatascience.com/understanding-feature-engineering-part-2-categorical-data-f54324193e63
+            **Example:** ['column1', 'column2'].
         id_column: str
-            ID column in table. Needed for HANA.
+            ID column in table. **Example:** 'ID'
+            Needed for HANA. If None, it will be created in dataset automatically
         optimizer: str
             Optimizer to tune hyperparameters.
             Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
         time_limit: int
-            Amount of time(in seconds) to tune model
+            Amount of time(in seconds) to tune the model
         ensemble: bool
-            Specify if you want to get a blending or stacking ensemble
-            Currently supported: "blending", "stacking"
+            Specify if you want to get an ensemble. :doc:`./examples` What is that?
+            Currently supported: "blending"
+        verbosity: int
+            Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
-            Print algorithms leaderboard or not
+            Print algorithms leaderboard or not.
+        drop_outers: bool
+            Try to drop columns outside the base dataset boundaries
+
+
+        Notes
+        -----
+        There are multiple options to load data in HANA database. Here are all available parameter combinations: \n
+        **1)** df: pandas.DataFrame -> dataframe will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **2)** df: pandas.DataFrame + table_name -> dataframe will be loaded to existing table \n
+        **3)** df: hana_ml.dataframe.DataFrame -> existing Dataframe will be used \n
+        **4)** table_name -> we'll connect to existing table \n
+        **5)** file_path -> data from file/url will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **6)** file_path + table_name -> data from file/url will be loaded to existing table \n
+        **7)** df: str -> we'll connect to existing table \n
+
+        Examples
+        --------
+        Passing connection info:
+
+        >>> from hana_ml.dataframe import ConnectionContext
+        >>> cc = ConnectionContext(address='database address',
+        ...                        user='your username',
+        ...                        password='your password',
+        ...                        port=9999) #your port
+
+        Creating and fitting the model:
+
+        >>> automl = AutoML(cc)
+        >>> m.fit(
+        ...     df = df,
+        ...     target="y",
+        ...     id_column='ID',
+        ...     categorical_features=["y", 'marital', 'education', 'housing', 'loan'],
+        ...     columns_to_remove=['default', 'contact', 'month', 'poutcome'],
+        ...     steps=10,
+        ... )
         """
         if time_limit is None and steps is None:
             raise AutoMLError("Specify time limit or number of iterations!")
@@ -115,7 +162,7 @@ class AutoML:
             table_name = inputted.table_name
         if id_column is None:
             id_column = inputted.id_col
-        data = inputted.split_data()
+        data = inputted.split_data(categorical_features, drop_outers)
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target
         )
@@ -176,7 +223,7 @@ class AutoML:
 
     def predict(
         self,
-        df: pd.DataFrame = None,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
         file_path: str = None,
         table_name: str = None,
         id_column: str = None,
@@ -187,16 +234,43 @@ class AutoML:
 
         Parameters
         ----------
-        df : pd.DataFrame
-            Dataframe. **Note**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+        df : pandas.DataFrame or hana_ml.dataframe.DataFrame or str
+            **Attention**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+            See *Notes* for extra information
         file_path : str
-            Path/url to dataframe. Accepts .csv and .xlsx
+            Path/url to dataframe. Accepts .csv and .xlsx. See *Notes* for extra information
+            **Examples:** 'https://website/dataframe.csv' or 'users/dev/file.csv'
         table_name: str
-            Name of table in HANA database
+            Name of table in HANA database. See *Notes* for extra information
         id_column: str
-            ID column in table. Needed for HANA.
+            ID column in table. Needed for HANA. If None, it will be created in dataset automatically
         target_drop: str
             Target to drop, if it exists in inputted data
+        verbosity: int
+            Level of output. 1 - minimal, 2 - all output.
+
+        Notes
+        -----
+        There are multiple options to load data in HANA database. Here are all available parameter combinations: \n
+        **1)** df: pandas.DataFrame -> dataframe will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **2)** df: pandas.DataFrame + table_name -> dataframe will be loaded to existing table \n
+        **3)** df: hana_ml.dataframe.DataFrame -> existing Dataframe will be used \n
+        **4)** table_name -> we'll connect to existing table \n
+        **5)** file_path -> data from file/url will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **6)** file_path + table_name -> data from file/url will be loaded to existing table \n
+        **7)** df: str -> we'll connect to existing table \n
+
+        Returns
+        -------
+        Pandas dataframe with predictions.
+
+        Examples
+        --------
+        >>> automl.predict(file_path='data/predict.csv',
+        ...                table_name='PREDICTION',
+        ...                id_column='ID',
+        ...                target_drop='target',
+        ...                verbosity=1)
         """
         data = Input(
             connection_context=self.connection_context,
@@ -207,6 +281,8 @@ class AutoML:
             verbose=verbosity > 0,
         )
         data.load_data()
+        if id_column is None:
+            id_column = data.id_col
         if target_drop is not None:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
@@ -215,22 +291,86 @@ class AutoML:
                 print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
-            self.predicted = self.model.predict(df=data.hana_df, id_colm=id_column)
+            self.predicted = self.model.predict(df=data.hana_df, id_colm=data.id_col)
         else:
             if verbosity > 0:
-                print("Preprocessor settings:", self.preprocessor_settings)
+                print(
+                    "Preprocessor settings:",
+                    self.preprocessor_settings.tuned_num_strategy,
+                )
             pr = Preprocessor()
             data.hana_df = pr.clean(
                 data=data.hana_df,
-                num_strategy=self.preprocessor_settings.tuned_num_strategy,
+                imputer_num_strategy=self.preprocessor_settings.tuned_num_strategy,
+                normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
+                normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
+                normalize_int=self.preprocessor_settings.tuned_normalize_int,
             )
-            self.predicted = self.model.predict(data.hana_df, id_column)
+            self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted
         if type(self.predicted) == tuple:
             res = res[0]
         if verbosity > 0:
             print("Prediction results (first 20 rows): \n", res.head(20).collect())
         return res.collect()
+
+    def score(
+        self,
+        df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
+        file_path: str = None,
+        table_name: str = None,
+        target: str = None,
+        id_column: str = None,
+    ) -> float:
+        """Returns model score.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame or hana_ml.dataframe.DataFrame or str
+            **Attention**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+            See *Notes* for extra information
+        file_path : str
+            Path/url to dataframe. Accepts .csv and .xlsx. See *Notes* for extra information
+            **Examples:** 'https://website/dataframe.csv' or 'users/dev/file.csv'
+        table_name: str
+            Name of table in HANA database. See *Notes* for extra information
+        target: str
+            Variable to predict. It will be dropped.
+        id_column: str
+            ID column. If None, it'll be generated automatically.
+
+        Notes
+        -----
+        There are multiple options to load data in HANA database. Here are all available parameter combinations: \n
+        **1)** df: pandas.DataFrame -> dataframe will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **2)** df: pandas.DataFrame + table_name -> dataframe will be loaded to existing table \n
+        **3)** df: hana_ml.dataframe.DataFrame -> existing Dataframe will be used \n
+        **4)** table_name -> we'll connect to existing table \n
+        **5)** file_path -> data from file/url will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **6)** file_path + table_name -> data from file/url will be loaded to existing table \n
+        **7)** df: str -> we'll connect to existing table \n
+
+        Returns
+        -------
+        score: float
+            Model score.
+        """
+        inp = Input(
+            connection_context=self.connection_context,
+            df=df,
+            path=file_path,
+            table_name=table_name,
+            id_col=id_column,
+            target=target,
+        )
+        inp.load_data()
+        data = Data()
+        data.target = inp.target
+        data.id_colm = inp.id_col
+        if self.ensemble:
+            return self.algorithm.score(data)
+        else:
+            return self.algorithm.score(data, inp.hana_df)
 
     def save_results_as_csv(self, file_path: str):
         """Saves prediciton results to .csv file
@@ -270,7 +410,9 @@ class AutoML:
             json.dump(self.opt.get_tuned_params(), file)
 
     def get_algorithm(self):
-        """Returns fitted AutoML algorithm"""
+        """Returns fitted AutoML algorithm. If 'ensemble' parameter is True, returns ensemble algorithm."""
+        if self.ensemble:
+            return self.model
         return self.algorithm
 
     def get_model(self):
