@@ -6,11 +6,11 @@
         
         pip3 install Cython
 
-3. Install the library::
+3. Install the library from `pypi <https://pypi.org>`_::
     
         pip3 install --extra-index-url https://test.pypi.org/simple/ hana_automl
    
-   or:: 
+   or `GitHub repository <https://github.com/dan0nchik/SAP-HANA-AutoML>`_::
 
         pip3 install https://github.com/dan0nchik/SAP-HANA-AutoML/archive/main.zip
 

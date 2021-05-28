@@ -3,11 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-**hana_automl**
-***************
+**Welcome to hana_automl!**
+***************************
 **AutoML. Simplified.**
 
 Hana_automl is a simple but accurate Automated Machine Learning library. Based on SAP HANA powerful in-memory algorithms, it provides high accuracy in multiple machine learning tasks. Our library also uses numerous data preprocessing functions to automate routine data cleaning tasks. So, hana_automl goes through all AutoML steps and makes Data Science work easier.
+
+**Features:**
 
 .. list-table::
    
@@ -45,6 +47,7 @@ Hana_automl is a simple but accurate Automated Machine Learning library. Based o
    classes
    examples
    advanced
+   core
    
    
 

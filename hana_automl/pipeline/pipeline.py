@@ -19,9 +19,15 @@ class Pipeline:
         Number of iterations.
     opt
         Optimizer.
+    time_limit: int
+        In seconds
+    verbosity
+        Level of output.
     """
 
-    def __init__(self, data: Data, steps: int, task: str, time_limit=None, verbosity=2):
+    def __init__(
+        self, data: Data, steps: int, task: str, time_limit: str = None, verbosity=2
+    ):
         self.data = data
         self.iter = steps
         self.task = task
@@ -30,7 +36,7 @@ class Pipeline:
         self.verbosity = verbosity
 
     def train(self, categorical_features: list = None, optimizer: str = None):
-        """Preprocesses data and starts optimizer.
+        """Preprocesses data and starts optimization.
 
         Parameters
         ----------

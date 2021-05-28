@@ -13,7 +13,7 @@ import pandas
 
 
 class Input:
-    """Handles input data.
+    """Handles input data. You can use it aside pipeline to load data to database.
 
     Attributes
     ----------
@@ -31,15 +31,17 @@ class Input:
         Table's name in HANA database.
     hana_df : hana_ml.dataframe
         Converted HANA dataframe.
+    verbose
+        Level of output
     """
 
     def __init__(
         self,
-        connection_context=None,
+        connection_context: hana_ml.ConnectionContext = None,
         df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
-        target=None,
+        target: str = None,
         path: str = None,
-        id_col=None,
+        id_col: str = None,
         table_name: str = None,
         verbose: bool = True,
     ):
@@ -127,7 +129,7 @@ class Input:
             self.id_col = "ID"
         return
 
-    def split_data(self, cat_list, perform_drop) -> Data:
+    def split_data(self, cat_list: list, perform_drop: bool) -> Data:
         """Splits single dataframe into multiple dataframes and passes them to Data.
 
         Returns
@@ -152,7 +154,7 @@ class Input:
         return Data(train, test, valid, self.target, id_col=self.id_col)
 
     @staticmethod
-    def download_data(path):
+    def download_data(path: str):
         """Downloads data from path
 
         Parameters

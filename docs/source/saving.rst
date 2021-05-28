@@ -17,5 +17,6 @@ As predictions are stored in Pandas dataframe, we have to load it to HANA manual
                 pandas_df=predictions,
                 table_name='SAVED_PREDICITONS',
             )
+
 Now they are stored in table SAVED_PREDICTIONS
 

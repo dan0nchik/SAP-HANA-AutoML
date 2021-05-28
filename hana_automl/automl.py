@@ -14,6 +14,7 @@ from hana_automl.preprocess.preprocessor import Preprocessor
 from hana_automl.utils.error import AutoMLError, BlendingError
 
 
+# pylint: disable=line-too-long
 class AutoML:
     """Main class. Control the whole Automated Machine Learning process here.
        What is AutoML? Read here: https://www.automl.org/automl/
@@ -52,13 +53,13 @@ class AutoML:
         target: str = None,
         columns_to_remove: list = None,
         categorical_features: list = None,
-        id_column=None,
+        id_column: str = None,
         optimizer: str = "OptunaSearch",
-        time_limit=None,
-        ensemble=False,
+        time_limit: int = None,
+        ensemble: bool = False,
         verbosity=2,
-        output_leaderboard=False,
-        drop_outers=False,
+        output_leaderboard: bool = False,
+        drop_outers: bool = False,
     ):
         """Fits AutoML object
 
@@ -82,19 +83,22 @@ class AutoML:
         columns_to_remove: list
             List of columns to delete. **Example:** ['column1', 'column2'].
         categorical_features: list
-            List of categorical columns. **Example:** ['column1', 'column2'].
-            Details here: https://en.wikipedia.org/wiki/Categorical_variable
+            Categorical features are columns that generally take a limited number of possible values. For example,
+            if our target variable contains only 1 and 0, it is concerned as categorical. Another example: column 'gender' contains
+            'male', 'female' and 'other' values. As it (generally) can't contain any other values, it is categorical.
+            Details here: https://towardsdatascience.com/understanding-feature-engineering-part-2-categorical-data-f54324193e63
+            **Example:** ['column1', 'column2'].
         id_column: str
             ID column in table. **Example:** 'ID'
-            Needed for HANA. If no column passed, it will be created in dataset automatically
+            Needed for HANA. If None, it will be created in dataset automatically
         optimizer: str
             Optimizer to tune hyperparameters.
             Currently supported: "OptunaSearch" (default), "BayesianOptimizer" (unstable)
         time_limit: int
             Amount of time(in seconds) to tune the model
         ensemble: bool
-            Specify if you want to get a blending or stacking ensemble
-            Currently supported: "blending", "stacking"
+            Specify if you want to get an ensemble. :doc:`./examples` What is that?
+            Currently supported: "blending"
         verbosity: int
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
@@ -119,10 +123,10 @@ class AutoML:
         Passing connection info:
 
         >>> from hana_ml.dataframe import ConnectionContext
-        >>> cc = ConnectionContext(address='host',
-        ...                        user='user',
-        ...                        password='password',
-        ...                        port=9999)
+        >>> cc = ConnectionContext(address='database address',
+        ...                        user='your username',
+        ...                        password='your password',
+        ...                        port=9999) #your port
 
         Creating and fitting the model:
 
@@ -317,7 +321,40 @@ class AutoML:
         table_name: str = None,
         target: str = None,
         id_column: str = None,
-    ):
+    ) -> float:
+        """Returns model score.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame or hana_ml.dataframe.DataFrame or str
+            **Attention**: You must pass whole dataframe, without dividing it in X_train, y_train, etc.
+            See *Notes* for extra information
+        file_path : str
+            Path/url to dataframe. Accepts .csv and .xlsx. See *Notes* for extra information
+            **Examples:** 'https://website/dataframe.csv' or 'users/dev/file.csv'
+        table_name: str
+            Name of table in HANA database. See *Notes* for extra information
+        target: str
+            Variable to predict. It will be dropped.
+        id_column: str
+            ID column. If None, it'll be generated automatically.
+
+        Notes
+        -----
+        There are multiple options to load data in HANA database. Here are all available parameter combinations: \n
+        **1)** df: pandas.DataFrame -> dataframe will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **2)** df: pandas.DataFrame + table_name -> dataframe will be loaded to existing table \n
+        **3)** df: hana_ml.dataframe.DataFrame -> existing Dataframe will be used \n
+        **4)** table_name -> we'll connect to existing table \n
+        **5)** file_path -> data from file/url will be loaded to a new table with random name, like 'AUTOML-9082-842408-12' \n
+        **6)** file_path + table_name -> data from file/url will be loaded to existing table \n
+        **7)** df: str -> we'll connect to existing table \n
+
+        Returns
+        -------
+        score: float
+            Model score.
+        """
         inp = Input(
             connection_context=self.connection_context,
             df=df,
@@ -373,7 +410,9 @@ class AutoML:
             json.dump(self.opt.get_tuned_params(), file)
 
     def get_algorithm(self):
-        """Returns fitted AutoML algorithm"""
+        """Returns fitted AutoML algorithm. If 'ensemble' parameter is True, returns ensemble algorithm."""
+        if self.ensemble:
+            return self.model
         return self.algorithm
 
     def get_model(self):

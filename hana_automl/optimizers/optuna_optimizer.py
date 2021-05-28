@@ -1,6 +1,10 @@
 import copy
 import uuid
 
+import hana_ml
+
+import hana_automl.algorithms.base_algo
+from hana_automl.pipeline.data import Data
 from hana_automl.preprocess.settings import PreprocessorSettings
 import time
 
@@ -40,14 +44,14 @@ class OptunaOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        algo_list,
-        data,
-        problem,
-        iterations,
-        time_limit,
-        algo_dict,
-        categorical_features=None,
-        droplist_columns=None,
+        algo_list: list,
+        data: Data,
+        problem: str,
+        iterations: int,
+        time_limit: int,
+        algo_dict: dict,
+        categorical_features: list = None,
+        droplist_columns: list = None,
         verbosity=2,
     ):
         self.algo_list = algo_list
@@ -150,18 +154,18 @@ class OptunaOptimizer(BaseOptimizer):
         self.model = self.leaderboard.board[0].algorithm.model
         self.algorithm = self.leaderboard.board[0].algorithm
 
-    def objective(self, trial):
+    def objective(self, trial: optuna.trial.Trial) -> int:
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
         Parameters
         ----------
-        trial
+        trial: optuna.trial.Trial
             Optuna trial. Details here: https://optuna.readthedocs.io/en/stable/reference/trial.html
 
         Returns
         -------
-        Score
-            Model perfomance.
+        acc: float
+            Model's accuracy.
 
         """
         algo = self.algo_dict.get(
@@ -199,22 +203,22 @@ class OptunaOptimizer(BaseOptimizer):
         )
         return acc
 
-    def get_tuned_params(self):
+    def get_tuned_params(self) -> dict:
         """Returns tuned hyperparameters."""
         return {
             "algorithm": self.tuned_params,
             "accuracy": self.leaderboard.board[0].valid_accuracy,
         }
 
-    def get_model(self):
+    def get_model(self) -> hana_ml.algorithms.pal.pal_base:
         """Returns tuned model."""
         return self.model
 
-    def get_algorithm(self):
+    def get_algorithm(self) -> hana_automl.algorithms.base_algo.BaseAlgorithm:
         """Returns tuned AutoML algorithm"""
         return self.algorithm
 
-    def get_preprocessor_settings(self):
+    def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
         return self.prepset
 

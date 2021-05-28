@@ -6,9 +6,9 @@ Let's load the dataframe:
 
 .. code-block:: python
 
-    from automl import dataset
-    df = dataset.load_bank()
-
+    import pandas as pd #pip install pandas
+    df = pd.read_csv('https://raw.githubusercontent.com/dan0nchik/SAP-HANA-AutoML/main/data/bank.csv')
+    df.head()
 .. image:: images/bank.png
 
 To connect to HANA database, we need ConnectionContext.
@@ -18,10 +18,10 @@ Fill your database credentials there.
 
     from hana_ml.dataframe import ConnectionContext
 
-    connection_context = ConnectionContext(address='localhost',
-                                       user='DEVELOPER',
-                                       password='password',
-                                       port=9999)
+    connection_context = ConnectionContext(address='database address',
+                                           user='your username',
+                                           password='your password',
+                                           port=9999)
 
 .. tip::
     Store the database credentials securely! For example, put the passwords in a separate config/ini file that is not deployed with the project. 
@@ -32,16 +32,18 @@ Now create the AutoML object. This will be our model.
 
     model = AutoML(connection_context)
     m.fit(
-        df = df,
-        target="y",
-        id_column='ID',
+        df = df, # dataframe
+        target="y", # column to predict
+        id_column='ID', # id column (optional)
         categorical_features=["y", 'marital', 'education', 'housing', 'loan'],
         columns_to_remove=['default', 'contact', 'month', 'poutcome'],
         steps=10,
     )
 
+Confused about categorical features? Read about them here. :meth:`hana_automl.automl.AutoML.fit`
+
 .. note::
     Pass the **whole** dataframe as *df* parameter. We will automatically divide it in X_train, y_train, etc.
 
 
-This is a minimal example. For more advanced usage, head to :doc:`./automl`.
+This is a minimal example. For more advanced usage, head to :meth:`hana_automl.automl.AutoML`

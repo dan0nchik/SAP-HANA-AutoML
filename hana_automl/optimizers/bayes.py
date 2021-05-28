@@ -1,8 +1,11 @@
 import time
 
+import hana_ml
 from bayes_opt.bayesian_optimization import BayesianOptimization
 
+import hana_automl.algorithms.base_algo
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
+from hana_automl.pipeline.data import Data
 from hana_automl.pipeline.leaderboard import Leaderboard
 
 from hana_automl.pipeline.modelres import ModelBoard
@@ -26,11 +29,13 @@ class BayesianOptimizer(BaseOptimizer):
     iter : int
         Number of iterations.
     problem : str
-        Machine learning problem.
+        Machine learning problem. Currently supported: 'cls', 'reg'
     tuned_params : str
         Final tuned hyperparameters of best algorithm.
     algo_index : int
         Index of algorithm in algorithms list.
+    time_limit : int
+        Time in seconds.
     categorical_features : list
         List of categorical features in dataframe.
     inner_data : Data
@@ -44,11 +49,11 @@ class BayesianOptimizer(BaseOptimizer):
     def __init__(
         self,
         algo_list: list,
-        data,
-        iterations,
-        time_limit,
-        problem,
-        categorical_features=None,
+        data: Data,
+        iterations: int,
+        time_limit: int,
+        problem: str,
+        categorical_features: list = None,
         verbosity=2,
     ):
         self.data = data
@@ -71,11 +76,11 @@ class BayesianOptimizer(BaseOptimizer):
 
     def objective(
         self,
-        algo_index_tuned,
-        num_strategy_method,
-        normalizer_strategy,
-        z_score_method,
-        normalize_int,
+        algo_index_tuned: int,
+        num_strategy_method: int,
+        normalizer_strategy: int,
+        z_score_method: int,
+        normalize_int: int,
     ):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
@@ -85,6 +90,12 @@ class BayesianOptimizer(BaseOptimizer):
             Index of algorithm in algo_list.
         num_strategy_method : int
             Strategy to decode categorical variables.
+        normalizer_strategy: int
+            Strategy for normalization
+        z_score_method : int
+            A z-score (also called a standard score) gives you an idea of how far from the mean a data point is
+        normalize_int : int
+            How to normalize integers
 
         Returns
         -------
@@ -130,7 +141,7 @@ class BayesianOptimizer(BaseOptimizer):
 
         return target
 
-    def child_objective(self, **hyperparameters):
+    def child_objective(self, **hyperparameters) -> int:
         """Mini objective function. It is used to tune hyperparameters of algorithm that was chosen in main objective.
 
         Parameters
@@ -139,7 +150,7 @@ class BayesianOptimizer(BaseOptimizer):
             Parameters of algorithm's model.
         Returns
         -------
-        acc
+        acc: float
             Accuracy score of a model.
         """
         algorithm = self.algo_list[self.algo_index]
@@ -150,7 +161,7 @@ class BayesianOptimizer(BaseOptimizer):
             print("Child Iteration accuracy: " + str(acc))
         return acc
 
-    def get_tuned_params(self):
+    def get_tuned_params(self) -> dict:
         """Returns tuned hyperparameters."""
 
         return {
@@ -159,17 +170,17 @@ class BayesianOptimizer(BaseOptimizer):
             "info": self.tuned_params,
         }
 
-    def get_model(self):
+    def get_model(self) -> hana_ml.algorithms.pal.pal_base:
         """Returns tuned model."""
 
         return self.model
 
-    def get_algorithm(self):
+    def get_algorithm(self) -> hana_automl.algorithms.base_algo.BaseAlgorithm:
         """Returns tuned AutoML algorithm"""
 
         return self.algorithm
 
-    def get_preprocessor_settings(self):
+    def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
 
         return self.prepset
