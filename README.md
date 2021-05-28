@@ -57,6 +57,9 @@
 ## Docs
 https://sap-hana-automl.readthedocs.io/en/latest/index.html
 
+## Benchmarks
+https://github.com/dan0nchik/SAP-HANA-AutoML/tree/main/benchmarks
+
 ## ML tasks:
 -   [x] Binary classification
 -   [x] Regression
@@ -72,13 +75,16 @@ https://sap-hana-automl.readthedocs.io/en/latest/index.html
 - [x] Hyperparameter tuning
 
 👇 By the end of summer 2021, blue part will be fully automated by our library
-<img src="images/process.png" alt="Logo" width="1000" height="100">
+<img src="images/process.png" alt="Logo" width="100%">
 
 ## Clients
 
-* GUI
+* GUI (Streamlit app)
 * Python library
 * CLI (coming soon)
+
+Streamlit client
+<img src="images/gui.jpg" alt="Streamlit client" width="100%">
 
 
 ## Built With
@@ -87,6 +93,7 @@ https://sap-hana-automl.readthedocs.io/en/latest/index.html
 * [hana_ml](https://pypi.org/project/hana-ml/)
 * [Optuna](https://optuna.org)
 * [BayesianOptimization](https://github.com/fmfn/BayesianOptimization)
+* [Streamlit](https://streamlit.io)
 
 
 
@@ -151,9 +158,10 @@ Create AutoML model and fit it.
   
   model = AutoML(cc)
   model.fit(
-      file_path='path to training dataset',
+      file_path='path to training dataset', # it may be HANA table/view, or pandas DataFrame
       steps=10, # number of iterations
       target='target', # column to predict
+      time_limit=120 # time limit in seconds
   )
 ```
 Predict.

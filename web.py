@@ -205,10 +205,6 @@ if session_state.show_results:
     if left_column.button("Save"):
         if model_name != "" and schema != "":
             storage = Storage(
-                CONN[0],
-                CONN[1],
-                CONN[2],
-                CONN[3],
                 ConnectionContext(CONN[0], CONN[1], CONN[2], CONN[3]),
                 schema,
             )
@@ -236,13 +232,13 @@ if session_state.show_results:
     if test_file is not None:
         test_df = pd.read_csv(test_file)
     if test_file is not None:
-        test_target = right_column.selectbox(
-            "Select target column", test_df.columns, key="test_t"
-        )
         test_columns = list(test_df.columns)
         test_columns.append(no_id_msg)
         test_id = right_column.selectbox(
             "Select ID column", test_columns, key="id_test"
+        )
+        test_target = right_column.selectbox(
+            "Select target column", test_columns, key="test_t"
         )
 
         if right_column.button("Test"):
@@ -256,17 +252,10 @@ if session_state.show_results:
             if test_id == no_id_msg:
                 hana_test_df = hana_test_df.add_id()
                 test_id = "ID"
+            if test_target == no_id_msg:
+                test_target = None
             print(hana_test_df.columns)
             # hana_test_df.declare_lttab_usage(True)
             right_column.write(
-                session_state.automl.algorithm.score(
-                    data=Data(
-                        id_col=test_id,
-                        target=test_target,
-                        train=None,
-                        test=None,
-                        valid=None,
-                    ),
-                    df=hana_test_df,
-                )
+                session_state.automl.score(hana_test_df, target=test_target, id_column=test_id)
             )

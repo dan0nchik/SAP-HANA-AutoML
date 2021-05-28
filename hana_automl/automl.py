@@ -367,8 +367,9 @@ class AutoML:
         data = Data()
         data.target = inp.target
         data.id_colm = inp.id_col
+        data.valid = inp.hana_df
         if self.ensemble:
-            return self.algorithm.score(data)
+            return self.model.score(data)
         else:
             return self.algorithm.score(data, inp.hana_df)
 

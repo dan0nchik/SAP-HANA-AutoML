@@ -31,7 +31,8 @@ class BlendingCls(Blending):
     def inner_score(self, data, key, label=None):
         cols = data.valid.columns
         cols.remove(key)
-        cols.remove(label)
+        if label is not None:
+            cols.remove(label)
         prediction = self.predict(data=data)
         prediction = prediction.select("ID", "PREDICTION").rename_columns(
             ["ID_P", "PREDICTION"]
