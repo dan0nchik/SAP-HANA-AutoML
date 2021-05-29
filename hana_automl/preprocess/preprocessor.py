@@ -1,9 +1,15 @@
+import copy
+
+from hana_ml import DataFrame
 from hana_ml.algorithms.pal.preprocessing import (
     Imputer,
     FeatureNormalizer,
     variance_test,
 )
+import pandas as pd
 
+pd.options.display.max_columns = None
+pd.options.display.max_rows = None
 from hana_automl.algorithms.classification.decisiontreecls import DecisionTreeCls
 from hana_automl.algorithms.classification.gradboostcls import GBCls
 from hana_automl.algorithms.classification.hybgradboostcls import HGBCls
@@ -25,75 +31,57 @@ from hana_automl.utils.error import PreprocessError
 
 
 class Preprocessor:
-    def clean(
-        self,
-        data,
-        droplist_columns=None,
-        categorical_list=None,
-        predict_column_importance=False,
-        dropempty=False,
-        imputer_num_strategy="mean",
-        cat_strategy=None,
-        normalizer_strategy=None,
-        normalizer_z_score_method=None,
-        normalize_int=None,
-    ):
-        if cat_strategy is None:
-            cat_strategy = []
-        if data is None:
-            raise PreprocessError("Enter not null data!")
-        if predict_column_importance:
-            None
-            # TODO: AutoRemove
-        df = self.autoimput(
-            data,
-            imputer_num_strategy=imputer_num_strategy,
-            cat_strategy=cat_strategy,
-            dropempty=dropempty,
-            normalizer_strategy=normalizer_strategy,
-            normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int,
-        )
-
-        return df
-
     def autoimput(
         self,
         df=None,
         target=None,
         id=None,
         imputer_num_strategy=None,
-        cat_strategy=None,
+        strategy_by_col=None,
         normalizer_strategy=None,
         normalizer_z_score_method=None,
         normalize_int=None,
-        dropempty=False,
         categorical_list=None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
-        if not dropempty:
-            impute = Imputer(strategy=imputer_num_strategy)
-            if categorical_list is not None:
+        impute = Imputer(strategy=imputer_num_strategy)
+        if categorical_list is not None:
+            if target is None:
+                cols = df.columns
+                cols.remove(id)
+                drop = None
+                for i in categorical_list:
+                    if i not in cols:
+                        drop = i
+                if drop is not None:
+                    categorical_list.remove(drop)
+            if strategy_by_col is not None:
                 result = impute.fit_transform(
                     df,
                     categorical_variable=categorical_list,
-                    strategy_by_col=cat_strategy,
+                    strategy_by_col=strategy_by_col,
                 )
             else:
-                result = impute.fit_transform(df)
-            """result = self.normalize(
-                result,
-                normalizer_strategy,
-                id,
-                target,
-                categorical_list=categorical_list,
-                norm_int=normalize_int,
-                z_score_method=normalizer_z_score_method,
-            )"""
-            return result
+                result = impute.fit_transform(
+                    df,
+                    categorical_variable=categorical_list,
+                )
         else:
-            return df.dropna()
+            if strategy_by_col is not None:
+                result = impute.fit_transform(df, strategy_by_col=strategy_by_col)
+            else:
+                result = impute.fit_transform(df)
+        result = self.normalize(
+            result,
+            normalizer_strategy,
+            id,
+            target,
+            categorical_list=categorical_list,
+            norm_int=normalize_int,
+            z_score_method=normalizer_z_score_method,
+        )
+        return result
 
     def removecolumns(self, columns: list, df):
         if df is None:
@@ -127,9 +115,13 @@ class Preprocessor:
                 remove_list.append(i)
         dt = df.dtypes()
         for i in dt:
+            if target is None:
+                targ_variant = False
+            else:
+                targ_variant = i[0] == target
             if (
                 i[0] == id
-                or i[0] == target
+                or targ_variant
                 or (not norm_int and i[1] == "INT")
                 or i[1] == "CHAR"
                 or i[1] == "VARCHAR"
@@ -139,11 +131,49 @@ class Preprocessor:
         if len(remove_list) > 0:
             for i in remove_list:
                 col_list.remove(i)
-            trn = fn.fit_transform(df, key=id, features=col_list)
-            new_df = df.select(*tuple(remove_list))
-            df = new_df.join(
-                trn.rename_columns(["ID_TEMPR", *col_list]), "ID_TEMPR=" + id
-            ).deselect("ID_TEMPR")
+        if len(col_list) > 0:
+            trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
+            cols: list = df.columns
+            norm_cols = trn.columns
+            norm_cols.remove(id)
+            i = 0
+            while i <= len(norm_cols) - 1:
+                indx = cols.index(norm_cols[i])
+                right = cols[:indx]
+                left = [id]
+                cur = cols[indx]
+                left.extend(cols[indx + 1 :])
+                left_normd = [id]
+                rng = copy.copy(i)
+                for o in range(rng + 1, len(norm_cols)):
+                    if cols.index(norm_cols[o]) - indx == 1:
+                        i = i + 1
+                        left_normd.append(norm_cols[o])
+                        left = [id]
+                        indx = cols.index(norm_cols[i])
+                        left.extend(cols[indx + 1 :])
+                    else:
+                        break
+                temp_joined = (
+                    df.select(*tuple(right))
+                    .join(
+                        trn.select(*tuple([id, cur])).rename_columns(["ID_TEMPR", cur]),
+                        "ID_TEMPR=" + id,
+                    )
+                    .deselect("ID_TEMPR")
+                )
+                if len(left_normd) > 1:
+                    temp_joined = temp_joined.join(
+                        trn.select(*tuple(left_normd)).rename_columns(
+                            ["ID_TEMPR", *left_normd[1:]]
+                        ),
+                        "ID_TEMPR=" + id,
+                    ).deselect("ID_TEMPR")
+                df = temp_joined.join(
+                    df.select(*tuple(left)).rename_columns(["ID_TEMPR", *left[1:]]),
+                    "ID_TEMPR=" + id,
+                ).deselect("ID_TEMPR")
+                i = i + 1
         return df
 
     def autoremovecolumns(self, df):
