@@ -58,7 +58,8 @@ class Input:
         """Loads data to HANA database."""
 
         name = f"AUTOML{str(uuid.uuid4())}"
-
+        if self.df is None and self.file_path is None and self.table_name is None:
+            raise InputError("No data provided")
         if (
             isinstance(self.df, hana_ml.dataframe.DataFrame)
             and self.file_path is None
@@ -122,12 +123,12 @@ class Input:
                     disable_progressbar=not self.verbose,
                 )
             self.hana_df.declare_lttab_usage(True)
-
-        if self.df is None and self.file_path is None and self.table_name is None:
-            raise InputError("No data provided")
         if self.id_col is None:
             self.hana_df = self.hana_df.add_id()
             self.id_col = "ID"
+
+        # make id column UPPER
+        self.hana_df = self.hana_df.rename_columns([self.hana_df.columns[0].upper(), *self.hana_df.columns[1:]])
         return
 
     def split_data(self) -> Data:
