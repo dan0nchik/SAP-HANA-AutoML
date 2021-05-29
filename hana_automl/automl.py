@@ -59,7 +59,6 @@ class AutoML:
         ensemble: bool = False,
         verbosity=2,
         output_leaderboard: bool = False,
-        drop_outers: bool = False,
         strategy_by_col: list = None,
     ):
         """Fits AutoML object
@@ -104,8 +103,6 @@ class AutoML:
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
             Print algorithms leaderboard or not.
-        drop_outers: bool
-            Try to drop columns outside the base dataset boundaries
         strategy_by_col: ListOfTuples
             Specifies the imputation strategy for a set of columns, which overrides the overall strategy for data imputation.
             Each tuple in the list should contain at least two elements, such that: the 1st element is the name of a column;
@@ -168,7 +165,7 @@ class AutoML:
             table_name = inputted.table_name
         if id_column is None:
             id_column = inputted.id_col
-        data = inputted.split_data(categorical_features, drop_outers)
+        data = inputted.split_data()
         data.strategy_by_col = strategy_by_col
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target

@@ -43,16 +43,16 @@ class OptunaOptimizer(BaseOptimizer):
     """
 
     def __init__(
-        self,
-        algo_list: list,
-        data: Data,
-        problem: str,
-        iterations: int,
-        time_limit: int,
-        algo_dict: dict,
-        categorical_features: list = None,
-        droplist_columns: list = None,
-        verbosity=2,
+            self,
+            algo_list: list,
+            data: Data,
+            problem: str,
+            iterations: int,
+            time_limit: int,
+            algo_dict: dict,
+            categorical_features: list = None,
+            droplist_columns: list = None,
+            verbosity=2,
     ):
         self.algo_list = algo_list
         self.data = data
@@ -74,25 +74,26 @@ class OptunaOptimizer(BaseOptimizer):
         self.study = None
 
     def inner_params(self, study, trial):
-        time.sleep(1)
-        print(
-            "\033[31m {}\033[0m".format(
-                self.leaderboard.board[len(self.leaderboard.board) - 1].algorithm.title
-                + " trial params :"
-                + str(
-                    self.leaderboard.board[len(self.leaderboard.board) - 1]
-                    .algorithm.optuna_opt.trials[
-                        len(
-                            self.leaderboard.board[
-                                len(self.leaderboard.board) - 1
-                            ].algorithm.optuna_opt.trials
-                        )
-                        - 1
-                    ]
-                    .params
+        if self.verbosity > 1:
+            time.sleep(1)
+            print(
+                "\033[31m {}\033[0m".format(
+                    self.leaderboard.board[len(self.leaderboard.board) - 1].algorithm.title
+                    + " trial params :"
+                    + str(
+                        self.leaderboard.board[len(self.leaderboard.board) - 1]
+                            .algorithm.optuna_opt.trials[
+                            len(
+                                self.leaderboard.board[
+                                    len(self.leaderboard.board) - 1
+                                    ].algorithm.optuna_opt.trials
+                            )
+                            - 1
+                            ]
+                            .params
+                    )
                 )
             )
-        )
 
     def tune(self):
         self.study = optuna.create_study(
@@ -187,6 +188,10 @@ class OptunaOptimizer(BaseOptimizer):
             "normalize_int", self.prepset.normalize_int
         )
         self.prepset.tuned_normalize_int = normalize_int
+        drop_outers = trial.suggest_categorical(
+            "drop_outers", self.prepset.drop_outers
+        )
+        self.prepset.tuned_drop_outers = drop_outers
         data = self.data.clear(
             strategy_by_col=self.prepset.strategy_by_col,
             num_strategy=imputer,
@@ -194,6 +199,7 @@ class OptunaOptimizer(BaseOptimizer):
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=z_score_method,
             normalize_int=normalize_int,
+            drop_outers=drop_outers
         )
         acc = algo.optuna_tune(data)
         self.leaderboard.addmodel(
@@ -218,7 +224,7 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
-        return self.model[0].preprocessor
+        return self.leaderboard.board[0].preprocessor
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

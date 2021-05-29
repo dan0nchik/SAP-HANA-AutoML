@@ -6,10 +6,7 @@ from hana_ml.algorithms.pal.preprocessing import (
     FeatureNormalizer,
     variance_test,
 )
-import pandas as pd
 
-pd.options.display.max_columns = None
-pd.options.display.max_rows = None
 from hana_automl.algorithms.classification.decisiontreecls import DecisionTreeCls
 from hana_automl.algorithms.classification.gradboostcls import GBCls
 from hana_automl.algorithms.classification.hybgradboostcls import HGBCls
@@ -28,6 +25,11 @@ from hana_automl.algorithms.regression.mlpreg import MLPreg
 from hana_automl.algorithms.regression.rdtreg import RDTReg
 from hana_automl.algorithms.regression.svr import SVReg
 from hana_automl.utils.error import PreprocessError
+
+import pandas as pd
+
+pd.options.display.max_columns = None
+pd.options.display.max_rows = None
 
 
 class Preprocessor:

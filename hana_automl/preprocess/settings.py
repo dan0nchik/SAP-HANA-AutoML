@@ -17,3 +17,5 @@ class PreprocessorSettings:
         self.normalize_int = [False]
         self.tuned_normalize_int: bool = False
         self.strategy_by_col = strategy_by_col
+        self.drop_outers = [False, True]
+        self.tuned_drop_outers: bool = False

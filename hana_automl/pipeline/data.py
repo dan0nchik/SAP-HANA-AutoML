@@ -1,7 +1,12 @@
 from hana_ml import DataFrame
+from hana_ml.algorithms.pal.partition import train_test_val_split
 
-import hana_automl
 from hana_automl.preprocess.preprocessor import Preprocessor
+import pandas as pd
+
+pd.options.display.max_columns = None
+pd.options.display.max_rows = None
+
 
 
 class Data:
@@ -57,6 +62,7 @@ class Data:
         normalizer_z_score_method: str = "",
         normalize_int: bool = False,
         strategy_by_col: list = None,
+        drop_outers: bool = False,
     ):
         """Clears data using methods defined in parameters.
 
@@ -121,6 +127,15 @@ class Data:
             normalizer_z_score_method=normalizer_z_score_method,
             normalize_int=normalize_int,
         )
+        if drop_outers:
+            df = test.union([train, valid])
+            df = df.sort(self.id_colm, desc=False)
+            df = pr.drop_outers(
+                df, id=self.id_colm, target=self.target, cat_list=categorical_list
+            )
+            train, test, valid = train_test_val_split(
+                data=df, id_column=self.id_colm, random_seed=17
+            )
         return Data(
             train=train, test=test, valid=valid, target=self.target, id_col=self.id_colm
         )
