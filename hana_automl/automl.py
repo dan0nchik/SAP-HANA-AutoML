@@ -143,6 +143,9 @@ class AutoML:
         ...     steps=10,
         ... )
         """
+        if id_column is not None:
+            id_column = id_column.upper()
+
         if time_limit is None and steps is None:
             raise AutoMLError("Specify time limit or number of iterations!")
         if steps is not None:

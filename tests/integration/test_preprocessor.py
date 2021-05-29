@@ -17,10 +17,11 @@ def multiple_tasks(name):
     if name == "reg":
         df = pd.read_csv("data/reg.csv")
         id_col = "ID"
-
+    print(id_col)
+    print(df.head(5))
     inputted = Input(connection_context, df, table_name="test", id_col=id_col)
     inputted.load_data()
-    data = inputted.split_data(cat_list=None, perform_drop=False)
+    data = inputted.split_data()
     pr = Preprocessor()
 
     for i in ["zero", "mean", "median"]:
