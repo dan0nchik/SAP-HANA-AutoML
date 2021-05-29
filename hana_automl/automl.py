@@ -60,6 +60,7 @@ class AutoML:
         verbosity=2,
         output_leaderboard: bool = False,
         drop_outers: bool = False,
+        strategy_by_col: list = None,
     ):
         """Fits AutoML object
 
@@ -105,6 +106,11 @@ class AutoML:
             Print algorithms leaderboard or not.
         drop_outers: bool
             Try to drop columns outside the base dataset boundaries
+        strategy_by_col: ListOfTuples
+            Specifies the imputation strategy for a set of columns, which overrides the overall strategy for data imputation.
+            Each tuple in the list should contain at least two elements, such that: the 1st element is the name of a column;
+            the 2nd element is the imputation strategy of that column(For numerical: "mean", "median", "delete", "als", 'numerical_const'. Or categorical_const for categorical).
+            If the imputation strategy is 'categorical_const' or 'numerical_const', then a 3rd element must be included in the tuple, which specifies the constant value to be used to substitute the detected missing values in the column
 
 
         Notes
@@ -163,6 +169,7 @@ class AutoML:
         if id_column is None:
             id_column = inputted.id_col
         data = inputted.split_data(categorical_features, drop_outers)
+        data.strategy_by_col = strategy_by_col
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target
         )
@@ -226,6 +233,7 @@ class AutoML:
         df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
         file_path: str = None,
         table_name: str = None,
+        categorical_features=None,
         id_column: str = None,
         target_drop: str = None,
         verbosity=1,
@@ -299,12 +307,15 @@ class AutoML:
                     self.preprocessor_settings.tuned_num_strategy,
                 )
             pr = Preprocessor()
-            data.hana_df = pr.clean(
-                data=data.hana_df,
+            data.hana_df = pr.autoimput(
+                df=data.hana_df,
+                id=id_column,
+                strategy_by_col=self.preprocessor_settings.strategy_by_col,
                 imputer_num_strategy=self.preprocessor_settings.tuned_num_strategy,
                 normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
+                categorical_list=categorical_features,
             )
             self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted

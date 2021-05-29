@@ -92,9 +92,23 @@ class Storage(ModelStorage):
         settings_namespace = json.loads(
             str(data), object_hook=lambda d: SimpleNamespace(**d)
         )
-        automl.preprocessor_settings = PreprocessorSettings()
+        automl.preprocessor_settings = PreprocessorSettings(
+            settings_namespace.strategy_by_col
+        )
         automl.preprocessor_settings.tuned_num_strategy = (
             settings_namespace.tuned_num_strategy
+        )
+        automl.preprocessor_settings.tuned_normalizer_strategy = (
+            settings_namespace.tuned_normalizer_strategy
+        )
+        automl.preprocessor_settings.tuned_z_score_method = (
+            settings_namespace.tuned_z_score_method
+        )
+        automl.preprocessor_settings.tuned_normalize_int = (
+            settings_namespace.tuned_normalize_int
+        )
+        automl.preprocessor_settings.strategy_by_col = (
+            settings_namespace.strategy_by_col
         )
         return automl
 
