@@ -8,7 +8,6 @@ pd.options.display.max_columns = None
 pd.options.display.max_rows = None
 
 
-
 class Data:
     """We needed to reuse and store data from dataset in one place, so we've created this class.
 

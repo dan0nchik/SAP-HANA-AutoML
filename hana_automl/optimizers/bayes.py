@@ -130,7 +130,7 @@ class BayesianOptimizer(BaseOptimizer):
             normalizer_strategy=normalizer_strategy_2,
             normalizer_z_score_method=z_score_method_2,
             normalize_int=normalize_int_2,
-            drop_outers=drop_outers
+            drop_outers=drop_outers,
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
@@ -199,7 +199,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "normalizer_strategy": (0, len(self.prepset.normalizer_strategy) - 1),
                 "z_score_method": (0, len(self.prepset.z_score_method) - 1),
                 "normalize_int": (0, len(self.prepset.normalize_int) - 1),
-                "drop_outers": (0, len(self.prepset.drop_outers) - 1)
+                "drop_outers": (0, len(self.prepset.drop_outers) - 1),
             },
             random_state=17,
             verbose=self.verbosity > 1,
@@ -238,7 +238,7 @@ class BayesianOptimizer(BaseOptimizer):
                 categorical_list=self.categorical_features,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
-                normalize_int=member.preprocessor.tuned_normalize_int
+                normalize_int=member.preprocessor.tuned_normalize_int,
             )
             acc = member.algorithm.score(data=data, df=data.valid)
             member.add_valid_acc(acc)
