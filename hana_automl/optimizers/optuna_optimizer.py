@@ -66,7 +66,7 @@ class OptunaOptimizer(BaseOptimizer):
         if self.verbosity < 2:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
-        self.prepset: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
@@ -138,9 +138,8 @@ class OptunaOptimizer(BaseOptimizer):
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
-                cat_strategy=None,
-                dropempty=False,
-                categorical_list=None,
+                strategy_by_col=member.preprocessor.strategy_by_col,
+                categorical_list=self.categorical_features,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.normalize_int,
@@ -189,10 +188,9 @@ class OptunaOptimizer(BaseOptimizer):
         )
         self.prepset.tuned_normalize_int = normalize_int
         data = self.data.clear(
+            strategy_by_col=self.prepset.strategy_by_col,
             num_strategy=imputer,
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
+            categorical_list=self.categorical_features,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=z_score_method,
             normalize_int=normalize_int,
@@ -220,7 +218,7 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
-        return self.prepset
+        return self.model[0].preprocessor
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

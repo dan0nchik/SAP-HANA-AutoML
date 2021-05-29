@@ -68,7 +68,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.start_time = None
         self.categorical_features = categorical_features
         self.inner_data = None
-        self.prepset: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
@@ -122,9 +122,8 @@ class BayesianOptimizer(BaseOptimizer):
         self.prepset.tuned_normalize_int = normalize_int_2
         self.inner_data = self.data.clear(
             num_strategy=imputer,
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
+            strategy_by_col=self.prepset.strategy_by_col,
+            categorical_list=self.categorical_features,
             normalizer_strategy=normalizer_strategy_2,
             normalizer_z_score_method=z_score_method_2,
             normalize_int=normalize_int_2,
@@ -230,9 +229,8 @@ class BayesianOptimizer(BaseOptimizer):
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
-                cat_strategy=None,
-                dropempty=False,
-                categorical_list=None,
+                strategy_by_col=member.preprocessor.strategy_by_col,
+                categorical_list=self.categorical_features,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,
