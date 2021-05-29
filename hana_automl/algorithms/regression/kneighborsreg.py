@@ -29,14 +29,14 @@ class KNeighborsReg(BaseAlgorithm):
 
     def optunatune(self, trial):
         aggregate_type = trial.suggest_categorical(
-            "REG_KNeighbors_aggregate_type", ["average", "distance-weighted"]
+            "aggregate_type", ["average", "distance-weighted"]
         )
-        n_neighbors = trial.suggest_int("REG_KNeighbors_n_neighbors", 1, 100, log=True)
+        n_neighbors = trial.suggest_int("n_neighbors", 1, 100, log=True)
         algorithm = trial.suggest_categorical(
-            "REG_KNeighbors_algorithm", ["brute_force", "kd-tree"]
+            "algorithm", ["brute_force", "kd-tree"]
         )
         metric = trial.suggest_categorical(
-            "REG_KNeighbors_metric",
+            "metric",
             ["manhattan", "euclidean", "minkowski", "chebyshev"],
         )
         model = KNNRegressor(

@@ -48,19 +48,19 @@ class MLPreg(BaseAlgorithm):
         self.model = MLPRegressor(**params)
 
     def optunatune(self, trial):
-        activation = trial.suggest_categorical("REG_MLP_activation", self.actv)
+        activation = trial.suggest_categorical("activation", self.actv)
         output_activation = trial.suggest_categorical(
-            "REG_MLP_output_activation", self.actv
+            "output_activation", self.actv
         )
         hidden_layer_size = trial.suggest_int(
-            "REG_MLP_hidden_layer_size", 1, 3, log=True
+            "hidden_layer_size", 1, 3, log=True
         )
         normalization = trial.suggest_categorical(
-            "REG_MLP_normalization",
+            "normalization",
             ["no", "z-transform", "scalar"],
         )
         weight_init = trial.suggest_categorical(
-            "REG_MLP_weight_init",
+            "weight_init",
             [
                 "all-zeros",
                 "normal",
@@ -70,7 +70,7 @@ class MLPreg(BaseAlgorithm):
             ],
         )
         learning_rate = trial.suggest_float(
-            "REG_MLP_learning_rate", 1e-4, 0.5, log=True
+            "learning_rate", 1e-4, 0.5, log=True
         )
         model = MLPRegressor(
             activation=activation,

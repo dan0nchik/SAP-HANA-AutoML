@@ -29,14 +29,14 @@ class SVCls(BaseAlgorithm):
         self.model = SVC(**params1)
 
     def optunatune(self, trial):
-        c = trial.suggest_float("CLS_SV_c", 0.03125, 32768, log=True)
+        c = trial.suggest_float("c", 0.03125, 32768, log=True)
         kernel = trial.suggest_categorical(
-            "CLS_SV_kernel", ["linear", "poly", "rbf", "sigmoid"]
+            "kernel", ["linear", "poly", "rbf", "sigmoid"]
         )
-        shrink = trial.suggest_categorical("CLS_SV_shrink", [True, False])
-        tol = trial.suggest_float("CLS_SV_tol", 1e-5, 1e-1, log=True)
+        shrink = trial.suggest_categorical("shrink", [True, False])
+        tol = trial.suggest_float("tol", 1e-5, 1e-1, log=True)
         scale_info = trial.suggest_categorical(
-            "CLS_SV_scale_info", ["no", "standardization", "rescale"]
+            "scale_info", ["no", "standardization", "rescale"]
         )
         # model = UnifiedClassification(func='SVM', c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
         model = SVC(c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)

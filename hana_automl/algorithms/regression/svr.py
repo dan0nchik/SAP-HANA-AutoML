@@ -28,14 +28,14 @@ class SVReg(BaseAlgorithm):
         self.model = SVR(**params1)
 
     def optunatune(self, trial):
-        c = trial.suggest_float("REG_SV_c", 0.03125, 30000, log=True)
+        c = trial.suggest_float("c", 0.03125, 30000, log=True)
         kernel = trial.suggest_categorical(
-            "REG_SV_kernel", ["linear", "poly", "rbf", "sigmoid"]
+            "kernel", ["linear", "poly", "rbf", "sigmoid"]
         )
-        shrink = trial.suggest_categorical("REG_SV_shrink", [True, False])
-        tol = trial.suggest_float("REG_SV_tol", 1e-5, 1e-1, log=True)
+        shrink = trial.suggest_categorical("shrink", [True, False])
+        tol = trial.suggest_float("tol", 1e-5, 1e-1, log=True)
         scale_info = trial.suggest_categorical(
-            "REG_SV_scale_info", ["no", "standardization", "rescale"]
+            "scale_info", ["no", "standardization", "rescale"]
         )
         model = SVR(c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
         self.model = model

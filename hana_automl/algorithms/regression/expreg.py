@@ -21,9 +21,9 @@ class ExponentialReg(BaseAlgorithm):
 
     def optunatune(self, trial):
         decomposition = trial.suggest_categorical(
-            "REG_EXP_decomposition", ["LU", "QR", "SVD", "Cholesky"]
+            "decomposition", ["LU", "QR", "SVD", "Cholesky"]
         )
-        adjusted_r2 = trial.suggest_categorical("REG_EXP_adjusted_r2", [True, False])
+        adjusted_r2 = trial.suggest_categorical("adjusted_r2", [True, False])
         model = ExponentialRegression(
             decomposition=decomposition,
             adjusted_r2=adjusted_r2,
