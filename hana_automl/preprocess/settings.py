@@ -14,7 +14,7 @@ class PreprocessorSettings:
         self.tuned_normalizer_strategy: str = ""
         self.z_score_method = ["mean-standard", "mean-mean", "median-median"]
         self.tuned_z_score_method: str = ""
-        self.normalize_int = [False]
+        self.normalize_int = [False, True]
         self.tuned_normalize_int: bool = False
         self.strategy_by_col = strategy_by_col
         self.drop_outers = [False, True]

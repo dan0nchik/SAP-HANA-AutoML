@@ -26,11 +26,6 @@ from hana_automl.algorithms.regression.rdtreg import RDTReg
 from hana_automl.algorithms.regression.svr import SVReg
 from hana_automl.utils.error import PreprocessError
 
-import pandas as pd
-
-pd.options.display.max_columns = None
-pd.options.display.max_rows = None
-
 
 class Preprocessor:
     def autoimput(
@@ -116,6 +111,28 @@ class Preprocessor:
             for i in categorical_list:
                 remove_list.append(i)
         dt = df.dtypes()
+        if norm_int:
+            int_lst = list()
+            for i in dt:
+                if target is None:
+                    targ_variant = False
+                else:
+                    targ_variant = i[0] != target
+                if (
+                    i[0] != id
+                    and (
+                        i[1] == "INT"
+                        or i[1] == "SMALLINT"
+                        or i[1] == "MEDIUMINT"
+                        or i[1] == "INTEGER"
+                        or i[1] == "BIGINT"
+                    )
+                    and targ_variant
+                    and not (i[0] in categorical_list)
+                ):
+                    int_lst.append(i[0])
+            df = df.cast(int_lst, "DOUBLE")
+            dt = df.dtypes()
         for i in dt:
             if target is None:
                 targ_variant = False
@@ -124,7 +141,7 @@ class Preprocessor:
             if (
                 i[0] == id
                 or targ_variant
-                or (not norm_int and i[1] == "INT")
+                or i[1] == "INT"
                 or i[1] == "CHAR"
                 or i[1] == "VARCHAR"
             ):
