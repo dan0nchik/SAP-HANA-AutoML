@@ -121,9 +121,10 @@ class Input:
                     drop_exist_tab=True,
                     disable_progressbar=not self.verbose,
                 )
+            self.hana_df.declare_lttab_usage(True)
+
         if self.df is None and self.file_path is None and self.table_name is None:
             raise InputError("No data provided")
-        self.hana_df.declare_lttab_usage(True)
         if self.id_col is None:
             self.hana_df = self.hana_df.add_id()
             self.id_col = "ID"
