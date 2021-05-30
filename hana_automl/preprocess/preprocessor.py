@@ -122,6 +122,7 @@ class Preprocessor:
                     i[0] != id
                     and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
                     and targ_variant
+                    and categorical_list is not None
                     and not (i[0] in categorical_list)
                 ):
                     int_lst.append(i[0])

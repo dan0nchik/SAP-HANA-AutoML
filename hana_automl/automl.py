@@ -456,3 +456,7 @@ class AutoML:
     def best_params(self):
         """Get best hyperparameters"""
         return self.opt.get_tuned_params()
+
+    @property
+    def accuracy(self):
+        return self.opt.get_tuned_params()['accuracy']
