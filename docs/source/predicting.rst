@@ -1,4 +1,4 @@
-3. Predicting
+4. Predicting
 *************
 After the model is fitted, we can use it to predict on new data.
 

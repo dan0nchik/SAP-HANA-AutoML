@@ -1,4 +1,4 @@
-2. Fitting the model
+3. Fitting the model
 ********************
 
 Ok, you have downloaded the library and ready to do some Data Science! Firstly, let's get used to an example data. It's an imaginary data from bank. We need to predict whether the bank needs to give the loan to client, or not. It's called target feature. In the dataset it is column 'y'.
