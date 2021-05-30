@@ -34,25 +34,25 @@ class BaseAlgorithm:
         pass
 
     def score(self, data, df, metric):
-        if metric == 'accuracy' or metric == 'r2_score':
+        if metric == "accuracy" or metric == "r2_score":
             return self.model.score(df, key=data.id_colm, label=data.target)
-        elif metric in ['mae', 'mse', 'rmse']:
+        elif metric in ["mae", "mse", "rmse"]:
             c = df.columns
             c.remove(data.id_colm)
             c.remove(data.target)
-            if metric == 'mae':
+            if metric == "mae":
                 return mae_score(self.model, df, data.target, c, data.id_colm)
-            if metric == 'mse':
+            if metric == "mse":
                 return mse_score(self.model, df, data.target, c, data.id_colm)
-            if metric == 'rmse':
+            if metric == "rmse":
                 return rmse_score(self.model, df, data.target, c, data.id_colm)
 
     def set_categ(self, cat):
         self.categorical_features = cat
 
     def bayes_tune(
-            self,
-            f,
+        self,
+        f,
     ):
         if self.bayes_opt is None:
             self.bayes_opt = BayesianOptimization(
@@ -69,7 +69,7 @@ class BaseAlgorithm:
         if self.optuna_opt is None:
             v = optuna.logging.get_verbosity()
             optuna.logging.set_verbosity(optuna.logging.WARNING)
-            if self.tuning_metric in ['mse', 'rmse']:
+            if self.tuning_metric in ["mse", "rmse"]:
                 dirc = "minimize"
             else:
                 dirc = "maximize"
@@ -91,7 +91,9 @@ class BaseAlgorithm:
         ftr.remove(self.temp_data.target)
         ftr.remove(self.temp_data.id_colm)
         self.fit(self.temp_data, ftr, self.categorical_features)
-        acc = self.score(data=self.temp_data, df=self.temp_data.test, metric=self.tuning_metric)
+        acc = self.score(
+            data=self.temp_data, df=self.temp_data.test, metric=self.tuning_metric
+        )
         return acc
 
     def fit(self, data, features, categorical_features):

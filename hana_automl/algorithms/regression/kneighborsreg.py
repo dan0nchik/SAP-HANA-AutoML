@@ -35,9 +35,7 @@ class KNeighborsReg(BaseAlgorithm):
             "aggregate_type", ["average", "distance-weighted"]
         )
         n_neighbors = trial.suggest_int("n_neighbors", 1, 100, log=True)
-        algorithm = trial.suggest_categorical(
-            "algorithm", ["brute_force", "kd-tree"]
-        )
+        algorithm = trial.suggest_categorical("algorithm", ["brute_force", "kd-tree"])
         metric = trial.suggest_categorical(
             "metric",
             ["manhattan", "euclidean", "minkowski", "chebyshev"],
@@ -51,15 +49,15 @@ class KNeighborsReg(BaseAlgorithm):
         self.model = model
 
     def score(self, data, df, metric):
-        if metric in ['mae', 'mse', 'rmse']:
+        if metric in ["mae", "mse", "rmse"]:
             c = df.columns
             c.remove(data.id_colm)
             c.remove(data.target)
-            if metric == 'mae':
+            if metric == "mae":
                 return mae_score(self.model, df, data.target, c, data.id_colm)
-            if metric == 'mse':
+            if metric == "mse":
                 return mse_score(self.model, df, data.target, c, data.id_colm)
-            if metric == 'rmse':
+            if metric == "rmse":
                 return rmse_score(self.model, df, data.target, c, data.id_colm)
         else:
             return self.inner_score(df, key=data.id_colm, label=data.target)

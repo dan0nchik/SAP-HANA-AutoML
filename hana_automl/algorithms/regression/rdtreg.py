@@ -22,14 +22,10 @@ class RDTReg(BaseAlgorithm):
         self.model = RDTRegressor(**params)
 
     def optunatune(self, trial):
-        calculate_oob = trial.suggest_categorical(
-            "calculate_oob", [True, False]
-        )
+        calculate_oob = trial.suggest_categorical("calculate_oob", [True, False])
         n_estimators = trial.suggest_int("n_estimators", 100, 1000, log=True)
         max_depth = trial.suggest_int("max_depth", 2, 50)
-        min_samples_leaf = trial.suggest_int(
-            "min_samples_leaf", 1, 20, log=True
-        )
+        min_samples_leaf = trial.suggest_int("min_samples_leaf", 1, 20, log=True)
         model = RDTRegressor(
             n_estimators=n_estimators,
             max_depth=max_depth,

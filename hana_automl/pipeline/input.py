@@ -128,7 +128,9 @@ class Input:
             self.id_col = "ID"
 
         # make id column UPPER
-        self.hana_df = self.hana_df.rename_columns([self.hana_df.columns[0].upper(), *self.hana_df.columns[1:]])
+        self.hana_df = self.hana_df.rename_columns(
+            [self.hana_df.columns[0].upper(), *self.hana_df.columns[1:]]
+        )
         return
 
     def split_data(self) -> Data:

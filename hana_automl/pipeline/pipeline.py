@@ -26,7 +26,13 @@ class Pipeline:
     """
 
     def __init__(
-            self, data: Data, steps: int, task: str, time_limit: int = None, verbosity=2, tuning_metric=None
+        self,
+        data: Data,
+        steps: int,
+        task: str,
+        time_limit: int = None,
+        verbosity=2,
+        tuning_metric=None,
     ):
         self.data = data
         self.iter = steps
@@ -59,15 +65,15 @@ class Pipeline:
         )
         if self.verbosity > 0:
             print("Task:", self.task)
-        if self.task == 'reg':
+        if self.task == "reg":
             if self.tuning_metric is None:
-                self.tuning_metric = 'r2_score'
-            if self.tuning_metric not in ['r2_score', 'mse', 'rmse', 'mae']:
+                self.tuning_metric = "r2_score"
+            if self.tuning_metric not in ["r2_score", "mse", "rmse", "mae"]:
                 raise PipelineError(f"Wrong {self.task} task metric error")
-        if self.task == 'cls':
+        if self.task == "cls":
             if self.tuning_metric is None:
-                self.tuning_metric = 'accuracy'
-            if self.tuning_metric not in ['accuracy']:
+                self.tuning_metric = "accuracy"
+            if self.tuning_metric not in ["accuracy"]:
                 raise PipelineError(f"Wrong {self.task} task metric error")
         if self.verbosity > 0:
             print("Tuning metric:", self.tuning_metric)

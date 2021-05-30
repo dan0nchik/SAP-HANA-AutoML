@@ -34,9 +34,7 @@ class KNeighborsCls(BaseAlgorithm):
 
     def optunatune(self, trial):
         n_neighbors = trial.suggest_int("n_neighbors", 1, 100, log=True)
-        algorithm = trial.suggest_categorical(
-            "algorithm", ["brure-force", "kd-tree"]
-        )
+        algorithm = trial.suggest_categorical("algorithm", ["brure-force", "kd-tree"])
         voting_type = trial.suggest_categorical(
             "voting_type", ["majority", "distance-weighted"]
         )
@@ -69,7 +67,7 @@ class KNeighborsCls(BaseAlgorithm):
         )
         actual = data.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        if metric == 'accuracy':
+        if metric == "accuracy":
             return metrics.accuracy_score(
                 joined, label_true="ACTUAL", label_pred="PREDICTION"
             )

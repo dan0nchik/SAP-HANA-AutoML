@@ -26,7 +26,9 @@ class BlendingCls(Blending):
         self.title = "BlendingClassifier"
 
     def score(self, data, metric):
-        return self.inner_score(data, key=data.id_colm, metric=metric, label=data.target)
+        return self.inner_score(
+            data, key=data.id_colm, metric=metric, label=data.target
+        )
 
     def inner_score(self, data, key, metric, label=None):
         prediction = self.predict(data=data)
@@ -35,7 +37,7 @@ class BlendingCls(Blending):
         )
         actual = data.valid.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        if metric == 'accuracy':
+        if metric == "accuracy":
             return accuracy_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
 
     def predict(self, data=None, df=None, id_colm=None):

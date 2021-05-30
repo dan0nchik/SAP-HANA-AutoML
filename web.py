@@ -94,12 +94,14 @@ if st.sidebar.button(label="Submit"):
             st.error(ex)
 
 if not session_state.show_results:
-    st.write('## 👈 Complete all steps to start training!')
+    st.write("## 👈 Complete all steps to start training!")
 
 st.sidebar.markdown("# 2. Load data")
 st.sidebar.markdown("## From file:")
 uploaded_file = st.sidebar.file_uploader(label="", type=["csv", "xlsx"])
-table_name = st.sidebar.text_input(label="*(Optional)* provide table name to load dataset there:", value=None)
+table_name = st.sidebar.text_input(
+    label="*(Optional)* provide table name to load dataset there:", value=None
+)
 if table_name == "None" or table_name == "":
     table_name = None
 
@@ -110,9 +112,15 @@ if uploaded_file is not None:
 
 st.sidebar.markdown("## Or from HANA database:")
 schema = st.sidebar.text_input(label="Enter schema", value="")
-if (schema != "" or schema != "None" or schema is not None) and session_state.cc is not None:
-    tables = session_state.cc.sql(f"SELECT * FROM TABLES WHERE SCHEMA_NAME='{schema}'").collect()
-    existing_table = st.sidebar.selectbox("Select table with data", tables['TABLE_NAME'])
+if (
+    schema != "" or schema != "None" or schema is not None
+) and session_state.cc is not None:
+    tables = session_state.cc.sql(
+        f"SELECT * FROM TABLES WHERE SCHEMA_NAME='{schema}'"
+    ).collect()
+    existing_table = st.sidebar.selectbox(
+        "Select table with data", tables["TABLE_NAME"]
+    )
 
 if existing_table is not None and uploaded_file is None:
     df = session_state.cc.table(existing_table, schema).collect()
@@ -178,12 +186,12 @@ if start_training:
     session_state.show_results = False
     if id_col == no_id_msg:
         id_col = None
-    with st.spinner("Please wait, magic is happening (well, just tuning the models)..."):
+    with st.spinner(
+        "Please wait, magic is happening (well, just tuning the models)..."
+    ):
         with st.beta_expander("Show output"):
             with st_stdout("text"):
-                session_state.automl = AutoML(
-                    session_state.cc
-                )
+                session_state.automl = AutoML(session_state.cc)
                 if existing_table is not None and uploaded_file is None:
                     df_to_fit = existing_table
                 else:
@@ -210,8 +218,8 @@ if session_state.show_results:
     st.markdown("## Success!, here is best model's params:")
     st.write(session_state.automl.opt.get_tuned_params())
     if (
-            optimizer == "OptunaSearch"
-            and session_state.automl.opt.study.trials_dataframe().shape[0] >= 2
+        optimizer == "OptunaSearch"
+        and session_state.automl.opt.study.trials_dataframe().shape[0] >= 2
     ):
         st.markdown("## Some cool statistics")
         plot1 = optuna_vs.plot_optimization_history(session_state.automl.opt.study)
@@ -251,8 +259,8 @@ if session_state.show_results:
             "Select ID column", predict_columns, key="predict_id"
         )
         if predict_id_column == no_id_msg:
-            predict_df['ID'] = range(0, len(predict_df))
-            predict_id_column = 'ID'
+            predict_df["ID"] = range(0, len(predict_df))
+            predict_id_column = "ID"
 
         if right_column.button("Predict"):
             predict_slot.write(
@@ -276,13 +284,16 @@ if session_state.show_results:
             "Select target column", test_columns, key="test_t"
         )
         if test_id == no_id_msg:
-            test_df['ID'] = range(0, len(test_df))
-            test_id = 'ID'
+            test_df["ID"] = range(0, len(test_df))
+            test_id = "ID"
         if test_target == no_id_msg:
             test_target = None
         if right_column.button("Test"):
-            test_slot.write("Model score: " +
-                            str(session_state.automl.score(
-                                test_df, target=test_target, id_column=test_id
-                            ))
-                            )
+            test_slot.write(
+                "Model score: "
+                + str(
+                    session_state.automl.score(
+                        test_df, target=test_target, id_column=test_id
+                    )
+                )
+            )

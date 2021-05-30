@@ -43,17 +43,17 @@ class OptunaOptimizer(BaseOptimizer):
     """
 
     def __init__(
-            self,
-            algo_list: list,
-            data: Data,
-            problem: str,
-            iterations: int,
-            time_limit: int,
-            algo_dict: dict,
-            categorical_features: list = None,
-            droplist_columns: list = None,
-            verbosity=2,
-            tuning_metric: str = None,
+        self,
+        algo_list: list,
+        data: Data,
+        problem: str,
+        iterations: int,
+        time_limit: int,
+        algo_dict: dict,
+        categorical_features: list = None,
+        droplist_columns: list = None,
+        verbosity=2,
+        tuning_metric: str = None,
     ):
         self.algo_list = algo_list
         self.data = data
@@ -82,25 +82,25 @@ class OptunaOptimizer(BaseOptimizer):
                 "\033[31m {}\033[0m".format(
                     self.leaderboard.board[
                         len(self.leaderboard.board) - 1
-                        ].algorithm.title
+                    ].algorithm.title
                     + " trial params :"
                     + str(
                         self.leaderboard.board[len(self.leaderboard.board) - 1]
-                            .algorithm.optuna_opt.trials[
+                        .algorithm.optuna_opt.trials[
                             len(
                                 self.leaderboard.board[
                                     len(self.leaderboard.board) - 1
-                                    ].algorithm.optuna_opt.trials
+                                ].algorithm.optuna_opt.trials
                             )
                             - 1
-                            ]
-                            .params
+                        ]
+                        .params
                     )
                 )
             )
 
     def tune(self):
-        if self.tuning_metric in ['mse', 'rmse', 'mae']:
+        if self.tuning_metric in ["mse", "rmse", "mae"]:
             dirc = "minimize"
         else:
             dirc = "maximize"
@@ -154,9 +154,11 @@ class OptunaOptimizer(BaseOptimizer):
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.normalize_int,
             )
-            acc = member.algorithm.score(data=data, df=data.valid, metric=self.tuning_metric)
+            acc = member.algorithm.score(
+                data=data, df=data.valid, metric=self.tuning_metric
+            )
             member.add_valid_acc(acc)
-        reverse = self.tuning_metric == 'r2_score' or self.tuning_metric == 'accuracy'
+        reverse = self.tuning_metric == "r2_score" or self.tuning_metric == "accuracy"
         self.leaderboard.board.sort(
             key=lambda member: member.valid_accuracy + member.train_accuracy,
             reverse=reverse,

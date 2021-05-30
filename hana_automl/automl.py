@@ -59,7 +59,7 @@ class AutoML:
         verbosity=2,
         output_leaderboard: bool = False,
         strategy_by_col: list = None,
-        tuning_metric: str = None
+        tuning_metric: str = None,
     ):
         """Fits AutoML object
 
@@ -334,7 +334,7 @@ class AutoML:
         target: str = None,
         categorical_features=None,
         id_column: str = None,
-        metric = None,
+        metric=None,
     ) -> float:
         """Returns model score.
 

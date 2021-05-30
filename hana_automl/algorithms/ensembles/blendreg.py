@@ -13,13 +13,13 @@ from hana_automl.pipeline.leaderboard import Leaderboard
 
 class BlendingReg(Blending):
     def __init__(
-            self,
-            categorical_features: list = None,
-            id_col: str = None,
-            connection_context: hana_ml.dataframe.ConnectionContext = None,
-            table_name: str = None,
-            model_list: list = None,
-            leaderboard: Leaderboard = None,
+        self,
+        categorical_features: list = None,
+        id_col: str = None,
+        connection_context: hana_ml.dataframe.ConnectionContext = None,
+        table_name: str = None,
+        model_list: list = None,
+        leaderboard: Leaderboard = None,
     ):
         super().__init__(
             categorical_features,
@@ -39,16 +39,16 @@ class BlendingReg(Blending):
         for i in range(len(predictions)):
             k = (
                 predictions[i]
-                    .select(id_colm, predictions[i].columns[1])
-                    .rename_columns(["ID_" + str(i), "PREDICTION" + str(i)])
+                .select(id_colm, predictions[i].columns[1])
+                .rename_columns(["ID_" + str(i), "PREDICTION" + str(i)])
             )
             pd_res.append(k)
         joined = (
             pd_res[0]
-                .join(pd_res[1], "ID_0=ID_1")
-                .select("ID_0", "PREDICTION0", "PREDICTION1")
-                .join(pd_res[2], "ID_0=ID_2")
-                .select("ID_0", "PREDICTION0", "PREDICTION1", "PREDICTION2")
+            .join(pd_res[1], "ID_0=ID_1")
+            .select("ID_0", "PREDICTION0", "PREDICTION1")
+            .join(pd_res[2], "ID_0=ID_2")
+            .select("ID_0", "PREDICTION0", "PREDICTION1", "PREDICTION2")
         )
         joined = joined.rename_columns(
             ["ID", "PREDICTION1", "PREDICTION2", "PREDICTION3"]
@@ -59,7 +59,9 @@ class BlendingReg(Blending):
         return joined
 
     def score(self, data, metric):
-        return self.inner_score(data, key=data.id_colm, metric=metric, label=data.target)
+        return self.inner_score(
+            data, key=data.id_colm, metric=metric, label=data.target
+        )
 
     def inner_score(self, data, key, metric, label=None):
         prediction = self.predict(data=data)
@@ -68,11 +70,13 @@ class BlendingReg(Blending):
         )
         actual = data.valid.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        if metric == 'r2_score':
-            return metrics.r2_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
-        if metric == 'mae':
+        if metric == "r2_score":
+            return metrics.r2_score(
+                joined, label_true="ACTUAL", label_pred="PREDICTION"
+            )
+        if metric == "mae":
             return mae_score(df=joined)
-        if metric == 'mse':
+        if metric == "mse":
             return mse_score(df=joined)
-        if metric == 'rmse':
+        if metric == "rmse":
             return rmse_score(df=joined)
