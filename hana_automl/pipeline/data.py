@@ -62,6 +62,7 @@ class Data:
         normalize_int: bool = False,
         strategy_by_col: list = None,
         drop_outers: bool = False,
+        clean_sets: list = ["test", "train", "valid"],
     ):
         """Clears data using methods defined in parameters.
 
@@ -84,6 +85,8 @@ class Data:
             Each tuple in the list should contain at least two elements, such that: the 1st element is the name of a column;
             the 2nd element is the imputation strategy of that column(For numerical: "mean", "median", "delete", "als", 'numerical_const'. Or categorical_const for categorical).
             If the imputation strategy is 'categorical_const' or 'numerical_const', then a 3rd element must be included in the tuple, which specifies the constant value to be used to substitute the detected missing values in the column
+        clean_sets: ListOfStrings
+            Specifies parts of dataset, that will be preprocessed. List should contain 'test','train' or 'valid'. Other values will be ignored
 
 
         Returns
@@ -93,39 +96,45 @@ class Data:
 
         """
         pr = Preprocessor()
-        valid = pr.autoimput(
-            df=self.valid,
-            id=self.id_colm,
-            target=self.target,
-            imputer_num_strategy=num_strategy,
-            strategy_by_col=strategy_by_col,
-            categorical_list=categorical_list,
-            normalizer_strategy=normalizer_strategy,
-            normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int,
-        )
-        train = pr.autoimput(
-            df=self.train,
-            id=self.id_colm,
-            target=self.target,
-            imputer_num_strategy=num_strategy,
-            strategy_by_col=strategy_by_col,
-            categorical_list=categorical_list,
-            normalizer_strategy=normalizer_strategy,
-            normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int,
-        )
-        test = pr.autoimput(
-            df=self.test,
-            id=self.id_colm,
-            target=self.target,
-            imputer_num_strategy=num_strategy,
-            strategy_by_col=strategy_by_col,
-            categorical_list=categorical_list,
-            normalizer_strategy=normalizer_strategy,
-            normalizer_z_score_method=normalizer_z_score_method,
-            normalize_int=normalize_int,
-        )
+        valid = self.valid
+        train = self.train
+        test = self.test
+        if "valid" in clean_sets:
+            valid = pr.autoimput(
+                df=self.valid,
+                id=self.id_colm,
+                target=self.target,
+                imputer_num_strategy=num_strategy,
+                strategy_by_col=strategy_by_col,
+                categorical_list=categorical_list,
+                normalizer_strategy=normalizer_strategy,
+                normalizer_z_score_method=normalizer_z_score_method,
+                normalize_int=normalize_int,
+            )
+        if "train" in clean_sets:
+            train = pr.autoimput(
+                df=self.train,
+                id=self.id_colm,
+                target=self.target,
+                imputer_num_strategy=num_strategy,
+                strategy_by_col=strategy_by_col,
+                categorical_list=categorical_list,
+                normalizer_strategy=normalizer_strategy,
+                normalizer_z_score_method=normalizer_z_score_method,
+                normalize_int=normalize_int,
+            )
+        if "test" in clean_sets:
+            test = pr.autoimput(
+                df=self.test,
+                id=self.id_colm,
+                target=self.target,
+                imputer_num_strategy=num_strategy,
+                strategy_by_col=strategy_by_col,
+                categorical_list=categorical_list,
+                normalizer_strategy=normalizer_strategy,
+                normalizer_z_score_method=normalizer_z_score_method,
+                normalize_int=normalize_int,
+            )
         if drop_outers:
             df = test.union([train, valid])
             df = df.sort(self.id_colm, desc=False)

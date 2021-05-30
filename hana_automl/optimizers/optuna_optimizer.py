@@ -153,6 +153,7 @@ class OptunaOptimizer(BaseOptimizer):
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.normalize_int,
+                clean_sets=["valid"],
             )
             acc = member.algorithm.score(
                 data=data, df=data.valid, metric=self.tuning_metric
@@ -210,6 +211,7 @@ class OptunaOptimizer(BaseOptimizer):
             normalizer_z_score_method=z_score_method,
             normalize_int=normalize_int,
             drop_outers=drop_outers,
+            clean_sets=["test", "train"],
         )
         acc = algo.optuna_tune(data, self.tuning_metric)
         self.leaderboard.addmodel(
