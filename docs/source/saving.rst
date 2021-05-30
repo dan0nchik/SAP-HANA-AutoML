@@ -1,4 +1,4 @@
-4. Saving results
+5. Saving results
 *****************
 
 Prediction results might be saved either in database, or in file.

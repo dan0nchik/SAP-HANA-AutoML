@@ -5,6 +5,7 @@ Quickstart guide
    :maxdepth: 4
    
    install
+   user_creation
    fitting
    predicting
    saving

@@ -135,7 +135,19 @@ There are 2 ways to install the library
    pip3 install https://github.com/dan0nchik/SAP-HANA-AutoML/archive/dev.zip
    ```
   **Note:** latest version may contain bugs, be careful!
-
+## After installation
+Check that PAL (Predictive Analysis Library) is installed and roles are granted
+* Read docs section about that.
+* If you don't want to read docs, run this code  
+  ```python
+  from hana_automl.utils.scripts import setup_user
+  from hana_ml.dataframe import ConnectionContext
+  
+  cc = ConnectionContext(address='address', user='user', password='password', port=39015)
+  
+  # replace with credentials of user that will be created or granted a role to run PAL.
+  setup_user(connection_context=cc, username='user', password="password")
+   ```
 
 
 <!-- USAGE EXAMPLES -->
