@@ -278,12 +278,12 @@ class Preprocessor:
                 HGBReg(),
             ]
             regdict = {
+                "KNeighborsRegressor": KNeighborsReg(),
                 "DecisionTreeRegressor": DecisionTreeReg(),
                 # "GLMRegressor": GLMReg(),
                 "MLPRegressor": MLPreg(),
-                "KNeighborsRegressor": KNeighborsReg(),
-                "SupportVectorRegressor": SVReg(),
                 "RDTRegressor": RDTReg(),
+                "SupportVectorRegressor": SVReg(),
                 "GradientBoostingRegressor": GBReg(),
                 "HybridGradientBoostingRegressor": HGBReg(),
             }

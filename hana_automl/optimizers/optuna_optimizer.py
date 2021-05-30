@@ -43,16 +43,17 @@ class OptunaOptimizer(BaseOptimizer):
     """
 
     def __init__(
-        self,
-        algo_list: list,
-        data: Data,
-        problem: str,
-        iterations: int,
-        time_limit: int,
-        algo_dict: dict,
-        categorical_features: list = None,
-        droplist_columns: list = None,
-        verbosity=2,
+            self,
+            algo_list: list,
+            data: Data,
+            problem: str,
+            iterations: int,
+            time_limit: int,
+            algo_dict: dict,
+            categorical_features: list = None,
+            droplist_columns: list = None,
+            verbosity=2,
+            tuning_metric: str = None,
     ):
         self.algo_list = algo_list
         self.data = data
@@ -72,6 +73,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.tuned_params = None
         self.algorithm = None
         self.study = None
+        self.tuning_metric = tuning_metric
 
     def inner_params(self, study, trial):
         if self.verbosity > 1:
@@ -80,26 +82,30 @@ class OptunaOptimizer(BaseOptimizer):
                 "\033[31m {}\033[0m".format(
                     self.leaderboard.board[
                         len(self.leaderboard.board) - 1
-                    ].algorithm.title
+                        ].algorithm.title
                     + " trial params :"
                     + str(
                         self.leaderboard.board[len(self.leaderboard.board) - 1]
-                        .algorithm.optuna_opt.trials[
+                            .algorithm.optuna_opt.trials[
                             len(
                                 self.leaderboard.board[
                                     len(self.leaderboard.board) - 1
-                                ].algorithm.optuna_opt.trials
+                                    ].algorithm.optuna_opt.trials
                             )
                             - 1
-                        ]
-                        .params
+                            ]
+                            .params
                     )
                 )
             )
 
     def tune(self):
+        if self.tuning_metric in ['mse', 'rmse', 'mae']:
+            dirc = "minimize"
+        else:
+            dirc = "maximize"
         self.study = optuna.create_study(
-            direction="maximize",
+            direction=dirc,
             study_name="hana_automl optimization process(" + str(uuid.uuid4()) + ")",
         )
         if self.iterations is not None and self.time_limit is not None:
@@ -138,6 +144,7 @@ class OptunaOptimizer(BaseOptimizer):
                     + str(self.iterations)
                 )
             print("Starting model accuracy evaluation on the validation data!")
+
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
@@ -147,11 +154,12 @@ class OptunaOptimizer(BaseOptimizer):
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.normalize_int,
             )
-            acc = member.algorithm.score(data=data, df=data.valid)
+            acc = member.algorithm.score(data=data, df=data.valid, metric=self.tuning_metric)
             member.add_valid_acc(acc)
+        reverse = self.tuning_metric == 'r2_score' or self.tuning_metric == 'accuracy'
         self.leaderboard.board.sort(
             key=lambda member: member.valid_accuracy + member.train_accuracy,
-            reverse=True,
+            reverse=reverse,
         )
         self.model = self.leaderboard.board[0].algorithm.model
         self.algorithm = self.leaderboard.board[0].algorithm
@@ -201,7 +209,7 @@ class OptunaOptimizer(BaseOptimizer):
             normalize_int=normalize_int,
             drop_outers=drop_outers,
         )
-        acc = algo.optuna_tune(data)
+        acc = algo.optuna_tune(data, self.tuning_metric)
         self.leaderboard.addmodel(
             ModelBoard(copy.copy(algo), acc, copy.copy(self.prepset))
         )

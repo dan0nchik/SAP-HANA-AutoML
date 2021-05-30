@@ -3,7 +3,6 @@ from typing import Union
 
 import hana_ml
 import pandas
-import pandas as pd
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
@@ -60,6 +59,7 @@ class AutoML:
         verbosity=2,
         output_leaderboard: bool = False,
         strategy_by_col: list = None,
+        tuning_metric: str = None
     ):
         """Fits AutoML object
 
@@ -182,12 +182,13 @@ class AutoML:
             task=task,
             time_limit=time_limit,
             verbosity=verbosity,
+            tuning_metric=tuning_metric,
         )
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
         if output_leaderboard:
-            self.opt.print_leaderboard()
+            self.opt.print_leaderboard(self.opt.tuning_metric)
         self.model = self.opt.get_model()
         self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
@@ -224,7 +225,7 @@ class AutoML:
                 "Ensemble consists of: "
                 + str(self.model.model_list)
                 + "\nEnsemble accuracy: "
-                + str(self.model.score(data=data))
+                + str(self.model.score(data=data, metric=tuning_metric))
             )
             print("\033[0m {}".format(""))
 
@@ -255,7 +256,7 @@ class AutoML:
         target_drop: str
             Target to drop, if it exists in inputted data
         verbosity: int
-            Level of output. 1 - minimal, 2 - all output.
+            Level of output. 0 - minimal, 1 - all output.
 
         Notes
         -----
@@ -331,7 +332,9 @@ class AutoML:
         file_path: str = None,
         table_name: str = None,
         target: str = None,
+        categorical_features=None,
         id_column: str = None,
+        metric = None,
     ) -> float:
         """Returns model score.
 
@@ -382,9 +385,20 @@ class AutoML:
         data.id_colm = inp.id_col
         data.valid = inp.hana_df
         if self.ensemble:
-            return self.model.score(data)
+            return self.model.score(data, metric)
         else:
-            return self.algorithm.score(data, inp.hana_df)
+            pr = Preprocessor()
+            inp.hana_df = pr.autoimput(
+                df=inp.hana_df,
+                id=inp.id_col,
+                strategy_by_col=self.preprocessor_settings.strategy_by_col,
+                imputer_num_strategy=self.preprocessor_settings.tuned_num_strategy,
+                normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
+                normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
+                normalize_int=self.preprocessor_settings.tuned_normalize_int,
+                categorical_list=categorical_features,
+            )
+            return self.algorithm.score(data, inp.hana_df, metric)
 
     def save_results_as_csv(self, file_path: str):
         """Saves prediciton results to .csv file

@@ -29,7 +29,7 @@ class Blending:
         else:
             self.model_list = leaderboard.board[:3]
 
-    def score(self, data):
+    def score(self, data, metric):
         pass
 
     def predict(self, data, df):

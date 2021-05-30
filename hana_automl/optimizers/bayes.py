@@ -55,6 +55,7 @@ class BayesianOptimizer(BaseOptimizer):
         problem: str,
         categorical_features: list = None,
         verbosity=2,
+        tuning_metric: str = None,
     ):
         self.data = data
         self.algo_list = algo_list
@@ -73,6 +74,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
         self.verbosity = verbosity
+        self.tuning_metric = tuning_metric
 
     def objective(
         self,
