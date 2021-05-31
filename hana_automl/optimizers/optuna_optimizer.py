@@ -156,7 +156,7 @@ class OptunaOptimizer(BaseOptimizer):
                 categorical_list=self.categorical_features,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
-                normalize_int=member.preprocessor.normalize_int,
+                normalize_int=member.preprocessor.tuned_normalize_int,
                 clean_sets=["valid"],
             )
             acc = member.algorithm.score(
