@@ -29,7 +29,7 @@ class Blending:
         else:
             self.model_list = leaderboard.board[:3]
 
-    def score(self, data):
+    def score(self, data, metric):
         pass
 
     def predict(self, data, df):
@@ -44,21 +44,23 @@ class Blending:
                     id=self.id_col,
                     target=data.target,
                     imputer_num_strategy=model.preprocessor.tuned_num_strategy,
-                    cat_strategy=None,
-                    dropempty=None,
+                    strategy_by_col=model.preprocessor.strategy_by_col,
                     categorical_list=self.categorical_features,
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,
                 )
             else:
+                if data.target is None:
+                    dt = data.valid
+                else:
+                    dt = data.valid.drop(data.target)
                 df2 = pr.autoimput(
-                    df=data.valid.drop(data.target),
+                    df=dt,
                     id=data.id_colm,
                     target=data.target,
                     imputer_num_strategy=model.preprocessor.tuned_num_strategy,
-                    cat_strategy=None,
-                    dropempty=None,
+                    strategy_by_col=model.preprocessor.strategy_by_col,
                     categorical_list=self.categorical_features,
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,

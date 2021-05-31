@@ -25,20 +25,20 @@ class BlendingCls(Blending):
         )
         self.title = "BlendingClassifier"
 
-    def score(self, data):
-        return self.inner_score(data, key=data.id_colm, label=data.target)
+    def score(self, data, metric):
+        return self.inner_score(
+            data, key=data.id_colm, metric=metric, label=data.target
+        )
 
-    def inner_score(self, data, key, label=None):
-        cols = data.valid.columns
-        cols.remove(key)
-        cols.remove(label)
+    def inner_score(self, data, key, metric, label=None):
         prediction = self.predict(data=data)
         prediction = prediction.select("ID", "PREDICTION").rename_columns(
             ["ID_P", "PREDICTION"]
         )
         actual = data.valid.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        return accuracy_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
+        if metric == "accuracy":
+            return accuracy_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
 
     def predict(self, data=None, df=None, id_colm=None):
         predictions = super(BlendingCls, self).predict(data=data, df=df)

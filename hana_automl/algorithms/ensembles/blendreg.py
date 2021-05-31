@@ -5,6 +5,9 @@ from hana_ml.algorithms.pal.metrics import r2_score
 from hana_ml.dataframe import create_dataframe_from_pandas
 
 from hana_automl.algorithms.ensembles.blending import Blending
+from hana_automl.metric.mae import mae_score
+from hana_automl.metric.mse import mse_score
+from hana_automl.metric.rmse import rmse_score
 from hana_automl.pipeline.leaderboard import Leaderboard
 
 
@@ -55,17 +58,25 @@ class BlendingReg(Blending):
         )
         return joined
 
-    def score(self, data):
-        return self.inner_score(data, key=data.id_colm, label=data.target)
+    def score(self, data, metric):
+        return self.inner_score(
+            data, key=data.id_colm, metric=metric, label=data.target
+        )
 
-    def inner_score(self, data, key, label=None):
-        cols = data.valid.columns
-        cols.remove(key)
-        cols.remove(label)
+    def inner_score(self, data, key, metric, label=None):
         prediction = self.predict(data=data)
         prediction = prediction.select("ID", "PREDICTION").rename_columns(
             ["ID_P", "PREDICTION"]
         )
         actual = data.valid.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        return metrics.r2_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
+        if metric == "r2_score":
+            return metrics.r2_score(
+                joined, label_true="ACTUAL", label_pred="PREDICTION"
+            )
+        if metric == "mae":
+            return mae_score(df=joined)
+        if metric == "mse":
+            return mse_score(df=joined)
+        if metric == "rmse":
+            return rmse_score(df=joined)

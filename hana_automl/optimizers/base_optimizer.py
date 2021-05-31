@@ -37,7 +37,7 @@ class BaseOptimizer(ABC):
     def get_preprocessor_settings(self):
         """Return a :meth:`PreprocessorSettings` object with preprocessor settings"""
 
-    def print_leaderboard(self):
+    def print_leaderboard(self, metric):
         print("\033[33m {}".format("Leaderboard (top best algorithms):\n"))
         place = 1
         for member in self.leaderboard.board:
@@ -46,9 +46,9 @@ class BaseOptimizer(ABC):
                     str(place)
                     + ".  "
                     + str(member.algorithm.model)
-                    + "\n Test accuracy: "
+                    + f"\n Test {metric} score: "
                     + str(member.train_accuracy)
-                    + "  Holdout accuracy: "
+                    + f"  Holdout {metric} score: "
                     + str(member.valid_accuracy)
                 )
             )

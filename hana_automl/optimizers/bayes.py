@@ -55,6 +55,7 @@ class BayesianOptimizer(BaseOptimizer):
         problem: str,
         categorical_features: list = None,
         verbosity=2,
+        tuning_metric: str = None,
     ):
         self.data = data
         self.algo_list = algo_list
@@ -68,11 +69,12 @@ class BayesianOptimizer(BaseOptimizer):
         self.start_time = None
         self.categorical_features = categorical_features
         self.inner_data = None
-        self.prepset: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
         self.verbosity = verbosity
+        self.tuning_metric = tuning_metric
 
     def objective(
         self,
@@ -81,6 +83,7 @@ class BayesianOptimizer(BaseOptimizer):
         normalizer_strategy: int,
         z_score_method: int,
         normalize_int: int,
+        drop_outers: int,
     ):
         """Main objective function. Optimizer uses it to search for best algorithm and preprocess method.
 
@@ -120,14 +123,17 @@ class BayesianOptimizer(BaseOptimizer):
         self.prepset.tuned_z_score_method = z_score_method_2
         normalize_int_2 = self.prepset.normalize_int[round(normalize_int)]
         self.prepset.tuned_normalize_int = normalize_int_2
+        drop_outers = self.prepset.normalize_int[round(drop_outers)]
+        self.prepset.tuned_drop_outers = drop_outers
         self.inner_data = self.data.clear(
             num_strategy=imputer,
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
+            strategy_by_col=self.prepset.strategy_by_col,
+            categorical_list=self.categorical_features,
             normalizer_strategy=normalizer_strategy_2,
             normalizer_z_score_method=z_score_method_2,
             normalize_int=normalize_int_2,
+            drop_outers=drop_outers,
+            clean_sets=["test", "train"],
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
@@ -156,7 +162,7 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
-        acc = algorithm.score(self.inner_data, self.inner_data.test)
+        acc = algorithm.score(self.inner_data, self.inner_data.test, self.tuning_metric)
         if self.verbosity > 1:
             print("Child Iteration accuracy: " + str(acc))
         return acc
@@ -196,6 +202,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "normalizer_strategy": (0, len(self.prepset.normalizer_strategy) - 1),
                 "z_score_method": (0, len(self.prepset.z_score_method) - 1),
                 "normalize_int": (0, len(self.prepset.normalize_int) - 1),
+                "drop_outers": (0, len(self.prepset.drop_outers) - 1),
             },
             random_state=17,
             verbose=self.verbosity > 1,
@@ -230,14 +237,14 @@ class BayesianOptimizer(BaseOptimizer):
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
-                cat_strategy=None,
-                dropempty=False,
-                categorical_list=None,
+                strategy_by_col=member.preprocessor.strategy_by_col,
+                categorical_list=self.categorical_features,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,
+                clean_sets=["valid"],
             )
-            acc = member.algorithm.score(data=data, df=data.valid)
+            acc = member.algorithm.score(data=data, df=data.valid, metric=self.tuning_metric)
             member.add_valid_acc(acc)
 
         self.leaderboard.board.sort(

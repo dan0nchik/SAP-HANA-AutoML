@@ -23,13 +23,13 @@ class GBReg(BaseAlgorithm):
         self.model = GradientBoostingRegressor(**params)
 
     def optunatune(self, trial):
-        n_estimators = trial.suggest_int("REG_GB_n_estimators", 100, 1000, log=True)
-        max_depth = trial.suggest_int("REG_GB_max_depth", 2, 50, log=True)
+        n_estimators = trial.suggest_int("n_estimators", 100, 1000, log=True)
+        max_depth = trial.suggest_int("max_depth", 2, 50, log=True)
         min_sample_weight_leaf = trial.suggest_int(
-            "REG_GB_min_sample_weight_leaf", 1, 200, log=True
+            "min_sample_weight_leaf", 1, 200, log=True
         )
-        learning_rate = trial.suggest_float("REG_GB_learning_rate", 0.01, 1, log=True)
-        loss = trial.suggest_categorical("REG_GB_loss", ["linear"])
+        learning_rate = trial.suggest_float("learning_rate", 0.01, 1, log=True)
+        loss = trial.suggest_categorical("loss", ["linear"])
         model = GradientBoostingRegressor(
             n_estimators=n_estimators,
             loss=loss,

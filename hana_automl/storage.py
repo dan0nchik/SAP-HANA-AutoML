@@ -1,3 +1,4 @@
+from hana_automl.algorithms.base_algo import BaseAlgorithm
 from hana_automl.preprocess.settings import PreprocessorSettings
 import json
 from types import SimpleNamespace
@@ -49,7 +50,7 @@ class Storage(ModelStorage):
         if_exists: str
             Defaults to "upgrade". Not recommended to change.
         """
-        super().save_model(automl.model, if_exists)
+        super().save_model(automl.algorithm.model, if_exists)
         json_settings = json.dumps(automl.preprocessor_settings.__dict__)
         self.cursor.execute(
             f"INSERT INTO {PREPROCESSORS} (MODEL, VERSION, JSON) VALUES ('{automl.model.name}', {automl.model.version}, '{json_settings}'); "
@@ -84,6 +85,7 @@ class Storage(ModelStorage):
     def load_model(self, name, version=None, **kwargs):
         automl = AutoML(self.connection_context)
         automl.model = super().load_model(name, version, **kwargs)
+        automl.algorithm = BaseAlgorithm(model=automl.model)
         self.cursor.execute(
             f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{name}' "
             f"AND VERSION = {self.__extract_version(name)}"
@@ -92,10 +94,28 @@ class Storage(ModelStorage):
         settings_namespace = json.loads(
             str(data), object_hook=lambda d: SimpleNamespace(**d)
         )
-        automl.preprocessor_settings = PreprocessorSettings()
+        automl.preprocessor_settings = PreprocessorSettings(
+            settings_namespace.strategy_by_col
+        )
         automl.preprocessor_settings.tuned_num_strategy = (
             settings_namespace.tuned_num_strategy
         )
+        automl.preprocessor_settings.tuned_normalizer_strategy = (
+            settings_namespace.tuned_normalizer_strategy
+        )
+        automl.preprocessor_settings.tuned_z_score_method = (
+            settings_namespace.tuned_z_score_method
+        )
+        automl.preprocessor_settings.tuned_normalize_int = (
+            settings_namespace.tuned_normalize_int
+        )
+        automl.preprocessor_settings.strategy_by_col = (
+            settings_namespace.strategy_by_col
+        )
+        automl.preprocessor_settings.categorical_cols = (
+            settings_namespace.categorical_cols
+        )
+        automl.preprocessor_settings.task = settings_namespace.task
         return automl
 
     def clean_up(self):

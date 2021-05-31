@@ -3,18 +3,23 @@ from time import sleep
 import optuna
 from bayes_opt import BayesianOptimization
 
+from hana_automl.metric.mae import mae_score
+from hana_automl.metric.mse import mse_score
+from hana_automl.metric.rmse import rmse_score
+
 
 class BaseAlgorithm:
     """Base algorithm class. Inherit from it for creating custom algorithms."""
 
-    def __init__(self, custom_params: dict = None):
+    def __init__(self, custom_params: dict = None, model=None):
         self.title = ""  # for leaderboard
-        self.model = None
+        self.model = model
         self.categorical_features = None
         self.params_range = {}
         self.bayes_opt = None
         self.optuna_opt = None
         self.temp_data = None
+        self.tuning_metric = None
         if custom_params is not None:
             # self.params_range[custom_params.keys()] = custom_params.values()
             pass
@@ -28,8 +33,19 @@ class BaseAlgorithm:
     def optunatune(self, trial):
         pass
 
-    def score(self, data, df):
-        return self.model.score(df, key=data.id_colm, label=data.target)
+    def score(self, data, df, metric):
+        if metric == "accuracy" or metric == "r2_score":
+            return self.model.score(df, key=data.id_colm, label=data.target)
+        elif metric in ["mae", "mse", "rmse"]:
+            c = df.columns
+            c.remove(data.id_colm)
+            c.remove(data.target)
+            if metric == "mae":
+                return mae_score(self.model, df, data.target, c, data.id_colm)
+            if metric == "mse":
+                return mse_score(self.model, df, data.target, c, data.id_colm)
+            if metric == "rmse":
+                return rmse_score(self.model, df, data.target, c, data.id_colm)
 
     def set_categ(self, cat):
         self.categorical_features = cat
@@ -48,12 +64,17 @@ class BaseAlgorithm:
         self.bayes_opt.maximize(n_iter=1, init_points=1)
         return self.bayes_opt.max["target"], self.bayes_opt.max["params"]
 
-    def optuna_tune(self, data):
+    def optuna_tune(self, data, tuning_metric):
+        self.tuning_metric = tuning_metric
         if self.optuna_opt is None:
             v = optuna.logging.get_verbosity()
             optuna.logging.set_verbosity(optuna.logging.WARNING)
+            if self.tuning_metric in ["mse", "rmse"]:
+                dirc = "minimize"
+            else:
+                dirc = "maximize"
             self.optuna_opt = optuna.create_study(
-                direction="maximize",
+                direction=dirc,
                 study_name="hana_automl optimization process(" + self.title + ")",
             )
             optuna.logging.set_verbosity(v)
@@ -70,7 +91,9 @@ class BaseAlgorithm:
         ftr.remove(self.temp_data.target)
         ftr.remove(self.temp_data.id_colm)
         self.fit(self.temp_data, ftr, self.categorical_features)
-        acc = self.score(data=self.temp_data, df=self.temp_data.test)
+        acc = self.score(
+            data=self.temp_data, df=self.temp_data.test, metric=self.tuning_metric
+        )
         return acc
 
     def fit(self, data, features, categorical_features):

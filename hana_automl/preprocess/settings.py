@@ -7,12 +7,17 @@ class PreprocessorSettings:
         Strategy of preprocessing.
     """
 
-    def __init__(self):
-        self.num_strategy = ["mean", "median"]
+    def __init__(self, strategy_by_col: list):
+        self.num_strategy = ["mean", "median", "delete", "als"]
         self.tuned_num_strategy: str = ""
-        self.normalizer_strategy = ["min-max", "z-score", "decimal"]
+        self.normalizer_strategy = ["min-max", "decimal"]
         self.tuned_normalizer_strategy: str = ""
         self.z_score_method = ["mean-standard", "mean-mean", "median-median"]
         self.tuned_z_score_method: str = ""
-        self.normalize_int = [False]
+        self.normalize_int = [False, True]
         self.tuned_normalize_int: bool = False
+        self.strategy_by_col = strategy_by_col
+        self.drop_outers = [False, True]
+        self.tuned_drop_outers: bool = False
+        self.categorical_cols: list = None
+        self.task: str = None

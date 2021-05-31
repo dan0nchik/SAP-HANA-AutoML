@@ -34,11 +34,11 @@ class LogRegressionCls(BaseAlgorithm):
 
     def optunatune(self, trial):
 
-        max_iter = trial.suggest_int("LGReg_max_iter", 100, 1000, log=True)
+        max_iter = trial.suggest_int("max_iter", 100, 1000, log=True)
         if self.binominal:
-            solver = trial.suggest_categorical("LGReg_solver", ["auto"])
+            solver = trial.suggest_categorical("solver", ["auto"])
         else:
-            solver = trial.suggest_categorical("LGReg_solver", ["auto"])
+            solver = trial.suggest_categorical("solver", ["auto"])
         if self.binominal:
             multi_class = False
         else:

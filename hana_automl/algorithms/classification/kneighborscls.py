@@ -33,15 +33,13 @@ class KNeighborsCls(BaseAlgorithm):
         self.model = KNNClassifier(**params)
 
     def optunatune(self, trial):
-        n_neighbors = trial.suggest_int("CLS_KNeighbors_n_neighbors", 1, 100, log=True)
-        algorithm = trial.suggest_categorical(
-            "CLS_KNeighbors_algorithm", ["brure-force", "kd-tree"]
-        )
+        n_neighbors = trial.suggest_int("n_neighbors", 1, 100, log=True)
+        algorithm = trial.suggest_categorical("algorithm", ["brure-force", "kd-tree"])
         voting_type = trial.suggest_categorical(
-            "CLS_KNeighbors_voting_type", ["majority", "distance-weighted"]
+            "voting_type", ["majority", "distance-weighted"]
         )
         metric = trial.suggest_categorical(
-            "CLS_KNeighbors_metric",
+            "metric",
             ["manhattan", "euclidean", "minkowski", "cosine"],
         )
         model = KNNClassifier(
@@ -52,10 +50,10 @@ class KNeighborsCls(BaseAlgorithm):
         )
         self.model = model
 
-    def score(self, data, df):
-        return self.inner_score(df, key=data.id_colm, label=data.target)
+    def score(self, data, df, metric):
+        return self.inner_score(df, key=data.id_colm, label=data.target, metric=metric)
 
-    def inner_score(self, data, key, features=None, label=None):
+    def inner_score(self, data, key, metric, features=None, label=None):
         cols = data.columns
         cols.remove(key)
         if label is None:
@@ -69,6 +67,7 @@ class KNeighborsCls(BaseAlgorithm):
         )
         actual = data.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        return metrics.accuracy_score(
-            joined, label_true="ACTUAL", label_pred="PREDICTION"
-        )
+        if metric == "accuracy":
+            return metrics.accuracy_score(
+                joined, label_true="ACTUAL", label_pred="PREDICTION"
+            )

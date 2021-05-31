@@ -3,7 +3,6 @@ from typing import Union
 
 import hana_ml
 import pandas
-import pandas as pd
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
@@ -59,7 +58,8 @@ class AutoML:
         ensemble: bool = False,
         verbosity=2,
         output_leaderboard: bool = False,
-        drop_outers: bool = False,
+        strategy_by_col: list = None,
+        tuning_metric: str = None,
     ):
         """Fits AutoML object
 
@@ -103,8 +103,11 @@ class AutoML:
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
             Print algorithms leaderboard or not.
-        drop_outers: bool
-            Try to drop columns outside the base dataset boundaries
+        strategy_by_col: ListOfTuples
+            Specifies the imputation strategy for a set of columns, which overrides the overall strategy for data imputation.
+            Each tuple in the list should contain at least two elements, such that: the 1st element is the name of a column;
+            the 2nd element is the imputation strategy of that column(For numerical: "mean", "median", "delete", "als", 'numerical_const'. Or categorical_const for categorical).
+            If the imputation strategy is 'categorical_const' or 'numerical_const', then a 3rd element must be included in the tuple, which specifies the constant value to be used to substitute the detected missing values in the column
 
 
         Notes
@@ -140,6 +143,9 @@ class AutoML:
         ...     steps=10,
         ... )
         """
+        if id_column is not None:
+            id_column = id_column.upper()
+
         if time_limit is None and steps is None:
             raise AutoMLError("Specify time limit or number of iterations!")
         if steps is not None:
@@ -162,7 +168,8 @@ class AutoML:
             table_name = inputted.table_name
         if id_column is None:
             id_column = inputted.id_col
-        data = inputted.split_data(categorical_features, drop_outers)
+        data = inputted.split_data()
+        data.strategy_by_col = strategy_by_col
         data.binomial = Preprocessor.check_binomial(
             df=inputted.hana_df, target=data.target
         )
@@ -175,15 +182,17 @@ class AutoML:
             task=task,
             time_limit=time_limit,
             verbosity=verbosity,
+            tuning_metric=tuning_metric,
         )
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
         if output_leaderboard:
-            self.opt.print_leaderboard()
+            self.opt.print_leaderboard(self.opt.tuning_metric)
         self.model = self.opt.get_model()
         self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
+        self.categorical_features = self.preprocessor_settings.categorical_cols
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
                 "Sorry, non binomial blending classification is not supported yet!"
@@ -217,7 +226,7 @@ class AutoML:
                 "Ensemble consists of: "
                 + str(self.model.model_list)
                 + "\nEnsemble accuracy: "
-                + str(self.model.score(data=data))
+                + str(self.model.score(data=data, metric=tuning_metric))
             )
             print("\033[0m {}".format(""))
 
@@ -247,7 +256,7 @@ class AutoML:
         target_drop: str
             Target to drop, if it exists in inputted data
         verbosity: int
-            Level of output. 1 - minimal, 2 - all output.
+            Level of output. 0 - minimal, 1 - all output.
 
         Notes
         -----
@@ -281,6 +290,8 @@ class AutoML:
             verbose=verbosity > 0,
         )
         data.load_data()
+        if id_column is not None:
+            id_column = id_column.upper()
         if id_column is None:
             id_column = data.id_col
         if target_drop is not None:
@@ -299,12 +310,15 @@ class AutoML:
                     self.preprocessor_settings.tuned_num_strategy,
                 )
             pr = Preprocessor()
-            data.hana_df = pr.clean(
-                data=data.hana_df,
+            data.hana_df = pr.autoimput(
+                df=data.hana_df,
+                id=id_column,
+                strategy_by_col=self.preprocessor_settings.strategy_by_col,
                 imputer_num_strategy=self.preprocessor_settings.tuned_num_strategy,
                 normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
+                categorical_list=self.preprocessor_settings.categorical_cols,
             )
             self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted
@@ -321,6 +335,7 @@ class AutoML:
         table_name: str = None,
         target: str = None,
         id_column: str = None,
+        metric=None,
     ) -> float:
         """Returns model score.
 
@@ -355,6 +370,10 @@ class AutoML:
         score: float
             Model score.
         """
+        if id_column is not None:
+            id_column = id_column.upper()
+        if target is None:
+            raise AutoMLError("Specify target for model evaluation!")
         inp = Input(
             connection_context=self.connection_context,
             df=df,
@@ -367,10 +386,38 @@ class AutoML:
         data = Data()
         data.target = inp.target
         data.id_colm = inp.id_col
+        data.valid = inp.hana_df
+        if self.preprocessor_settings.task == "reg":
+            if metric is None:
+                metric = "r2_score"
+            if metric not in ["r2_score", "mse", "rmse", "mae"]:
+                raise AutoMLError(
+                    f"Wrong {self.preprocessor_settings.task} task metric error"
+                )
+        if self.preprocessor_settings.task == "cls":
+            if metric is None:
+                metric = "accuracy"
+            if metric not in ["accuracy"]:
+                raise AutoMLError(
+                    f"Wrong {self.preprocessor_settings.task} task metric error"
+                )
         if self.ensemble:
-            return self.algorithm.score(data)
+            return self.model.score(data, metric)
         else:
-            return self.algorithm.score(data, inp.hana_df)
+            pr = Preprocessor()
+            print(inp.hana_df)
+            print(self.preprocessor_settings.tuned_num_strategy + '-       -' + self.preprocessor_settings.tuned_normalizer_strategy + '-       -' + str(self.preprocessor_settings.tuned_normalize_int))
+            inp.hana_df = pr.autoimput(
+                df=inp.hana_df,
+                id=inp.id_col,
+                strategy_by_col=self.preprocessor_settings.strategy_by_col,
+                imputer_num_strategy=self.preprocessor_settings.tuned_num_strategy,
+                normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
+                normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
+                normalize_int=self.preprocessor_settings.tuned_normalize_int,
+                categorical_list=self.preprocessor_settings.categorical_cols,
+            )
+            return self.algorithm.score(data, inp.hana_df, metric)
 
     def save_results_as_csv(self, file_path: str):
         """Saves prediciton results to .csv file
@@ -428,3 +475,7 @@ class AutoML:
     def best_params(self):
         """Get best hyperparameters"""
         return self.opt.get_tuned_params()
+
+    @property
+    def accuracy(self):
+        return self.opt.get_tuned_params()['accuracy']

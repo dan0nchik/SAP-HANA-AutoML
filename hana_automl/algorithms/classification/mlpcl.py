@@ -51,22 +51,18 @@ class MLPcls(BaseAlgorithm):
         self.model = MLPClassifier(**params)
 
     def optunatune(self, trial):
-        activation = trial.suggest_categorical("CLS_MLP_activation", self.actv)
-        output_activation = trial.suggest_categorical(
-            "CLS_MLPcls_output_activation", self.actv
-        )
-        hidden_layer_size = trial.suggest_int("Hidden_Layer_Size", 1, 3, log=True)
+        activation = trial.suggest_categorical("activation", self.actv)
+        output_activation = trial.suggest_categorical("output_activation", self.actv)
+        hidden_layer_size = trial.suggest_int("hidden_Layer_Size", 1, 3, log=True)
         normalization = trial.suggest_categorical(
-            "CLS_MLP_normalization",
+            "normalization",
             ["no", "z-transform", "scalar"],
         )
         weight_init = trial.suggest_categorical(
-            "CLS_MLP_weight_init",
+            "weight_init",
             self.weight_init,
         )
-        learning_rate = trial.suggest_float(
-            "CLS_MLP_learning_rate", 1e-4, 0.5, log=True
-        )
+        learning_rate = trial.suggest_float("learning_rate", 1e-4, 0.5, log=True)
         """
         model = UnifiedClassification(
             func='MLP',

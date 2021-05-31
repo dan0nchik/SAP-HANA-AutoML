@@ -53,6 +53,7 @@ class OptunaOptimizer(BaseOptimizer):
         categorical_features: list = None,
         droplist_columns: list = None,
         verbosity=2,
+        tuning_metric: str = None,
     ):
         self.algo_list = algo_list
         self.data = data
@@ -66,37 +67,50 @@ class OptunaOptimizer(BaseOptimizer):
         if self.verbosity < 2:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
-        self.prepset: PreprocessorSettings = PreprocessorSettings()
+        self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
+        self.prepset.categorical_cols = categorical_features
+        if tuning_metric in ["accuracy"]:
+            self.prepset.task = "cls"
+        else:
+            self.prepset.task = "reg"
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
         self.algorithm = None
         self.study = None
+        self.tuning_metric = tuning_metric
 
     def inner_params(self, study, trial):
-        time.sleep(1)
-        print(
-            "\033[31m {}\033[0m".format(
-                self.leaderboard.board[len(self.leaderboard.board) - 1].algorithm.title
-                + " trial params :"
-                + str(
-                    self.leaderboard.board[len(self.leaderboard.board) - 1]
-                    .algorithm.optuna_opt.trials[
-                        len(
-                            self.leaderboard.board[
-                                len(self.leaderboard.board) - 1
-                            ].algorithm.optuna_opt.trials
-                        )
-                        - 1
-                    ]
-                    .params
+        if self.verbosity > 1:
+            time.sleep(1)
+            print(
+                "\033[31m {}\033[0m".format(
+                    self.leaderboard.board[
+                        len(self.leaderboard.board) - 1
+                    ].algorithm.title
+                    + " trial params :"
+                    + str(
+                        self.leaderboard.board[len(self.leaderboard.board) - 1]
+                        .algorithm.optuna_opt.trials[
+                            len(
+                                self.leaderboard.board[
+                                    len(self.leaderboard.board) - 1
+                                ].algorithm.optuna_opt.trials
+                            )
+                            - 1
+                        ]
+                        .params
+                    )
                 )
             )
-        )
 
     def tune(self):
+        if self.tuning_metric in ["mse", "rmse", "mae"]:
+            dirc = "minimize"
+        else:
+            dirc = "maximize"
         self.study = optuna.create_study(
-            direction="maximize",
+            direction=dirc,
             study_name="hana_automl optimization process(" + str(uuid.uuid4()) + ")",
         )
         if self.iterations is not None and self.time_limit is not None:
@@ -116,7 +130,6 @@ class OptunaOptimizer(BaseOptimizer):
             )
         time.sleep(2)
         self.tuned_params = self.study.best_params
-        self.prepset.tuned_num_strategy = self.study.best_params.pop("imputer")
         if self.verbosity > 0:
             res = len(self.study.trials)
             if self.iterations is None:
@@ -135,21 +148,25 @@ class OptunaOptimizer(BaseOptimizer):
                     + str(self.iterations)
                 )
             print("Starting model accuracy evaluation on the validation data!")
+
         for member in self.leaderboard.board:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
-                cat_strategy=None,
-                dropempty=False,
-                categorical_list=None,
+                strategy_by_col=member.preprocessor.strategy_by_col,
+                categorical_list=self.categorical_features,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
-                normalize_int=member.preprocessor.normalize_int,
+                normalize_int=member.preprocessor.tuned_normalize_int,
+                clean_sets=["valid"],
             )
-            acc = member.algorithm.score(data=data, df=data.valid)
+            acc = member.algorithm.score(
+                data=data, df=data.valid, metric=self.tuning_metric
+            )
             member.add_valid_acc(acc)
+        reverse = self.tuning_metric == "r2_score" or self.tuning_metric == "accuracy"
         self.leaderboard.board.sort(
             key=lambda member: member.valid_accuracy + member.train_accuracy,
-            reverse=True,
+            reverse=reverse,
         )
         self.model = self.leaderboard.board[0].algorithm.model
         self.algorithm = self.leaderboard.board[0].algorithm
@@ -188,16 +205,19 @@ class OptunaOptimizer(BaseOptimizer):
             "normalize_int", self.prepset.normalize_int
         )
         self.prepset.tuned_normalize_int = normalize_int
+        drop_outers = trial.suggest_categorical("drop_outers", self.prepset.drop_outers)
+        self.prepset.tuned_drop_outers = drop_outers
         data = self.data.clear(
+            strategy_by_col=self.prepset.strategy_by_col,
             num_strategy=imputer,
-            cat_strategy=None,
-            dropempty=False,
-            categorical_list=None,
+            categorical_list=self.categorical_features,
             normalizer_strategy=normalizer_strategy,
             normalizer_z_score_method=z_score_method,
             normalize_int=normalize_int,
+            drop_outers=drop_outers,
+            clean_sets=["test", "train"],
         )
-        acc = algo.optuna_tune(data)
+        acc = algo.optuna_tune(data, self.tuning_metric)
         self.leaderboard.addmodel(
             ModelBoard(copy.copy(algo), acc, copy.copy(self.prepset))
         )
@@ -220,7 +240,7 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
-        return self.prepset
+        return self.leaderboard.board[0].preprocessor
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""
