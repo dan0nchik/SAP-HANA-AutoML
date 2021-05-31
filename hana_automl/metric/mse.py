@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from hana_ml import DataFrame
 
+# locale.setlocale(locale.LC_ALL, "USA")
+
 
 def mse_score(
     algo=None, df: DataFrame = None, target=None, ftr: list = None, id: str = None

@@ -290,6 +290,8 @@ class AutoML:
             verbose=verbosity > 0,
         )
         data.load_data()
+        if id_column is not None:
+            id_column = id_column.upper()
         if id_column is None:
             id_column = data.id_col
         if target_drop is not None:
@@ -368,6 +370,8 @@ class AutoML:
         score: float
             Model score.
         """
+        if id_column is not None:
+            id_column = id_column.upper()
         if target is None:
             raise AutoMLError("Specify target for model evaluation!")
         inp = Input(
