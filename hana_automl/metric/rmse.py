@@ -1,7 +1,10 @@
+import locale
 import math
 from decimal import Decimal
 
 from hana_ml import DataFrame
+
+locale.setlocale(locale.LC_ALL, "USA")
 
 
 def rmse_score(
@@ -22,7 +25,7 @@ def rmse_score(
         pandas = res.collect()
         cols = res.columns
         pandas["rmse_coef"] = pandas.apply(
-            lambda row: (Decimal(row[cols[2]]) - Decimal(row[cols[1]])) ** 2, axis=1
+            lambda row: val(row[cols[2]], row[cols[1]]), axis=1
         )
         return math.sqrt(pandas["rmse_coef"].mean())
     else:
@@ -32,3 +35,11 @@ def rmse_score(
             lambda row: (Decimal(row[cols[0]]) - Decimal(row[cols[1]])) ** 2, axis=1
         )
         return math.sqrt(pandas["rmse_coef"].mean())
+
+
+def val(a, b):
+    if type(a) is not Decimal:
+        a = Decimal(a)
+    if type(b) is not Decimal:
+        b = Decimal(b)
+    return (a - b) ** 2

@@ -1,6 +1,9 @@
+import locale
 from decimal import Decimal
 
 from hana_ml import DataFrame
+
+locale.setlocale(locale.LC_ALL, "USA")
 
 
 def mae_score(
@@ -21,7 +24,7 @@ def mae_score(
         pandas = res.collect()
         cols = res.columns
         pandas["mae_coef"] = pandas.apply(
-            lambda row: abs(Decimal(row[cols[2]]) - Decimal(row[cols[1]])), axis=1
+            lambda row: val(row[cols[2]], row[cols[1]]), axis=1
         )
         return pandas["mae_coef"].mean()
     else:
@@ -31,3 +34,11 @@ def mae_score(
             lambda row: abs(Decimal(row[cols[0]]) - Decimal(row[cols[1]])), axis=1
         )
         return pandas["mae_coef"].mean()
+
+
+def val(a, b):
+    if type(a) is not Decimal:
+        a = Decimal(a)
+    if type(b) is not Decimal:
+        b = Decimal(b)
+    return abs(a - b)
