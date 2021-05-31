@@ -1,10 +1,7 @@
-import locale
 import math
 from decimal import Decimal
 
 from hana_ml import DataFrame
-
-locale.setlocale(locale.LC_ALL, "USA")
 
 
 def rmse_score(
@@ -14,8 +11,15 @@ def rmse_score(
         res = algo.predict(df, id, ftr)
         if type(res) == tuple:
             res = res[0]
+        if (
+            str(algo).split(" ")[0]
+            == "<hana_ml.algorithms.pal.neural_network.MLPRegressor"
+        ):
+            id_val = 2
+        else:
+            id_val = 1
         res = (
-            res.select([res.columns[0], res.columns[1]])
+            res.select([res.columns[0], res.columns[id_val]])
             .join(
                 df.select([id, target]).rename_columns(["ID_TEMP", target]),
                 "ID_TEMP=" + id,
@@ -41,5 +45,7 @@ def val(a, b):
     if type(a) is not Decimal:
         a = Decimal(a)
     if type(b) is not Decimal:
+        if type(b) is not str:
+            b = str(b)
         b = Decimal(b)
     return (a - b) ** 2
