@@ -123,7 +123,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.prepset.tuned_z_score_method = z_score_method_2
         normalize_int_2 = self.prepset.normalize_int[round(normalize_int)]
         self.prepset.tuned_normalize_int = normalize_int_2
-        drop_outers = self.prepset.normalize_int[round(drop_outers)]
+        drop_outers = self.prepset.drop_outers[round(drop_outers)]
         self.prepset.tuned_drop_outers = drop_outers
         self.inner_data = self.data.clear(
             num_strategy=imputer,
@@ -138,7 +138,10 @@ class BayesianOptimizer(BaseOptimizer):
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
         )
-        print("Best child Iteration cycle score: " + str(target))
+        if self.tuning_metric not in ["accuracy", "r2_score"]:
+            print("Best child Iteration cycle score: " + str(-1 * target))
+        else:
+            print("Best child Iteration cycle score: " + str(target))
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
         self.fit(algo, self.inner_data)
@@ -162,9 +165,11 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
-        acc = algorithm.score(self.inner_data, self.inner_data.test)
+        acc = algorithm.score(self.inner_data, self.inner_data.test, self.tuning_metric)
         if self.verbosity > 1:
-            print("Child Iteration accuracy: " + str(acc))
+            print(f"Child iteration {self.tuning_metric} score: {acc}")
+        if self.tuning_metric not in ["accuracy", "r2_score"]:
+            acc = -1 * acc
         return acc
 
     def get_tuned_params(self) -> dict:
@@ -244,12 +249,14 @@ class BayesianOptimizer(BaseOptimizer):
                 normalize_int=member.preprocessor.tuned_normalize_int,
                 clean_sets=["valid"],
             )
-            acc = member.algorithm.score(data=data, df=data.valid)
+            acc = member.algorithm.score(
+                data=data, df=data.valid, metric=self.tuning_metric
+            )
             member.add_valid_acc(acc)
-
+        reverse = self.tuning_metric == "r2_score" or self.tuning_metric == "accuracy"
         self.leaderboard.board.sort(
             key=lambda member: member.valid_accuracy + member.train_accuracy,
-            reverse=True,
+            reverse=reverse,
         )
         self.model = self.leaderboard.board[0].algorithm.model
         self.algorithm = self.leaderboard.board[0].algorithm

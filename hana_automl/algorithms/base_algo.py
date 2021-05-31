@@ -56,10 +56,7 @@ class BaseAlgorithm:
     ):
         if self.bayes_opt is None:
             self.bayes_opt = BayesianOptimization(
-                f=f,
-                pbounds=self.params_range,
-                verbose=False,
-                random_state=17,
+                f=f, pbounds=self.params_range, verbose=False, random_state=17
             )
         self.bayes_opt.maximize(n_iter=1, init_points=1)
         return self.bayes_opt.max["target"], self.bayes_opt.max["params"]

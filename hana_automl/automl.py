@@ -401,8 +401,6 @@ class AutoML:
             return self.model.score(data, metric)
         else:
             pr = Preprocessor()
-            print(inp.hana_df)
-            print(self.preprocessor_settings.tuned_num_strategy + '-       -' + self.preprocessor_settings.tuned_normalizer_strategy + '-       -' + str(self.preprocessor_settings.tuned_normalize_int))
             inp.hana_df = pr.autoimput(
                 df=inp.hana_df,
                 id=inp.id_col,
@@ -474,4 +472,4 @@ class AutoML:
 
     @property
     def accuracy(self):
-        return self.opt.get_tuned_params()['accuracy']
+        return self.opt.get_tuned_params()["accuracy"]
