@@ -162,7 +162,7 @@ class BayesianOptimizer(BaseOptimizer):
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
-        acc = algorithm.score(self.inner_data, self.inner_data.test)
+        acc = algorithm.score(self.inner_data, self.inner_data.test, self.tuning_metric)
         if self.verbosity > 1:
             print("Child Iteration accuracy: " + str(acc))
         return acc
@@ -244,7 +244,7 @@ class BayesianOptimizer(BaseOptimizer):
                 normalize_int=member.preprocessor.tuned_normalize_int,
                 clean_sets=["valid"],
             )
-            acc = member.algorithm.score(data=data, df=data.valid)
+            acc = member.algorithm.score(data=data, df=data.valid, metric=self.tuning_metric)
             member.add_valid_acc(acc)
 
         self.leaderboard.board.sort(
