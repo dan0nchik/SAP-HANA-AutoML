@@ -1,3 +1,4 @@
+from hana_automl.algorithms.base_algo import BaseAlgorithm
 from hana_automl.preprocess.settings import PreprocessorSettings
 import json
 from types import SimpleNamespace
@@ -49,7 +50,7 @@ class Storage(ModelStorage):
         if_exists: str
             Defaults to "upgrade". Not recommended to change.
         """
-        super().save_model(automl.model, if_exists)
+        super().save_model(automl.algorithm.model, if_exists)
         json_settings = json.dumps(automl.preprocessor_settings.__dict__)
         self.cursor.execute(
             f"INSERT INTO {PREPROCESSORS} (MODEL, VERSION, JSON) VALUES ('{automl.model.name}', {automl.model.version}, '{json_settings}'); "
@@ -84,6 +85,7 @@ class Storage(ModelStorage):
     def load_model(self, name, version=None, **kwargs):
         automl = AutoML(self.connection_context)
         automl.model = super().load_model(name, version, **kwargs)
+        automl.algorithm = BaseAlgorithm(model=automl.model)
         self.cursor.execute(
             f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{name}' "
             f"AND VERSION = {self.__extract_version(name)}"
@@ -110,6 +112,10 @@ class Storage(ModelStorage):
         automl.preprocessor_settings.strategy_by_col = (
             settings_namespace.strategy_by_col
         )
+        automl.preprocessor_settings.categorical_cols = (
+            settings_namespace.categorical_cols
+        )
+        automl.preprocessor_settings.task = settings_namespace.task
         return automl
 
     def clean_up(self):

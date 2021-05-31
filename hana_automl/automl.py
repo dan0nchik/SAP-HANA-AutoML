@@ -192,6 +192,7 @@ class AutoML:
         self.model = self.opt.get_model()
         self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
+        self.categorical_features = self.preprocessor_settings.categorical_cols
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
                 "Sorry, non binomial blending classification is not supported yet!"
@@ -234,7 +235,6 @@ class AutoML:
         df: Union[pandas.DataFrame, hana_ml.dataframe.DataFrame, str] = None,
         file_path: str = None,
         table_name: str = None,
-        categorical_features=None,
         id_column: str = None,
         target_drop: str = None,
         verbosity=1,
@@ -316,7 +316,7 @@ class AutoML:
                 normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
-                categorical_list=categorical_features,
+                categorical_list=self.preprocessor_settings.categorical_cols,
             )
             self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted
@@ -332,7 +332,6 @@ class AutoML:
         file_path: str = None,
         table_name: str = None,
         target: str = None,
-        categorical_features=None,
         id_column: str = None,
         metric=None,
     ) -> float:
@@ -384,10 +383,26 @@ class AutoML:
         data.target = inp.target
         data.id_colm = inp.id_col
         data.valid = inp.hana_df
+        if self.preprocessor_settings.task == "reg":
+            if metric is None:
+                metric = "r2_score"
+            if metric not in ["r2_score", "mse", "rmse", "mae"]:
+                raise AutoMLError(
+                    f"Wrong {self.preprocessor_settings.task} task metric error"
+                )
+        if self.preprocessor_settings.task == "cls":
+            if metric is None:
+                metric = "accuracy"
+            if metric not in ["accuracy"]:
+                raise AutoMLError(
+                    f"Wrong {self.preprocessor_settings.task} task metric error"
+                )
         if self.ensemble:
             return self.model.score(data, metric)
         else:
             pr = Preprocessor()
+            print(inp.hana_df)
+            print(self.preprocessor_settings.tuned_num_strategy + '-       -' + self.preprocessor_settings.tuned_normalizer_strategy + '-       -' + str(self.preprocessor_settings.tuned_normalize_int))
             inp.hana_df = pr.autoimput(
                 df=inp.hana_df,
                 id=inp.id_col,
@@ -396,7 +411,7 @@ class AutoML:
                 normalizer_strategy=self.preprocessor_settings.tuned_normalizer_strategy,
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
-                categorical_list=categorical_features,
+                categorical_list=self.preprocessor_settings.categorical_cols,
             )
             return self.algorithm.score(data, inp.hana_df, metric)
 

@@ -11,9 +11,9 @@ from hana_automl.metric.rmse import rmse_score
 class BaseAlgorithm:
     """Base algorithm class. Inherit from it for creating custom algorithms."""
 
-    def __init__(self, custom_params: dict = None):
+    def __init__(self, custom_params: dict = None, model=None):
         self.title = ""  # for leaderboard
-        self.model = None
+        self.model = model
         self.categorical_features = None
         self.params_range = {}
         self.bayes_opt = None

@@ -68,6 +68,11 @@ class OptunaOptimizer(BaseOptimizer):
             optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
         self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
+        self.prepset.categorical_cols = categorical_features
+        if tuning_metric in ["accuracy"]:
+            self.prepset.task = "cls"
+        else:
+            self.prepset.task = "reg"
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
@@ -125,7 +130,6 @@ class OptunaOptimizer(BaseOptimizer):
             )
         time.sleep(2)
         self.tuned_params = self.study.best_params
-        self.prepset.tuned_num_strategy = self.study.best_params.pop("imputer")
         if self.verbosity > 0:
             res = len(self.study.trials)
             if self.iterations is None:

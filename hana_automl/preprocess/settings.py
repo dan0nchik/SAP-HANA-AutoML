@@ -19,3 +19,5 @@ class PreprocessorSettings:
         self.strategy_by_col = strategy_by_col
         self.drop_outers = [False, True]
         self.tuned_drop_outers: bool = False
+        self.categorical_cols: list = None
+        self.task: str = None
