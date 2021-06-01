@@ -46,6 +46,7 @@ class MLPcls(BaseAlgorithm):
         params["normalization"] = ["no", "z-transform", "scalar"][
             round(params["normalization"])
         ]
+        params["training_style"] = "batch"
         params["weight_init"] = self.weight_init[round(params["weight_init"])]
         # self.model = UnifiedClassification(func='MLP', **params)
         self.model = MLPClassifier(**params)
