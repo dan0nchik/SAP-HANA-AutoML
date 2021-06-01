@@ -97,8 +97,8 @@ class AutoML:
         time_limit: int
             Amount of time(in seconds) to tune the model
         ensemble: bool
-            Specify if you want to get an ensemble. :doc:`./examples` What is that?
-            Currently supported: "blending"
+            Specify if you want to get an ensemble.
+            Currently supported: "blending". What is that? Details here: :doc:`./algorithms`
         verbosity: int
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
@@ -131,15 +131,15 @@ class AutoML:
         ...                        password='your password',
         ...                        port=9999) #your port
 
-        Creating and fitting the model:
+        Creating and fitting the model (see fitting section for detailed example):
 
         >>> automl = AutoML(cc)
-        >>> m.fit(
-        ...     df = df,
+        >>> automl.fit(
+        ...     df = df, # your pandas dataframe.
         ...     target="y",
         ...     id_column='ID',
         ...     categorical_features=["y", 'marital', 'education', 'housing', 'loan'],
-        ...     columns_to_remove=['default', 'contact', 'month', 'poutcome'],
+        ...     columns_to_remove=['default', 'contact', 'month', 'poutcome', 'job'],
         ...     steps=10,
         ... )
         """

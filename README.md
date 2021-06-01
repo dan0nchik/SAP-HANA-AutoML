@@ -153,6 +153,7 @@ Check that PAL (Predictive Analysis Library) is installed and roles are granted
 <!-- USAGE EXAMPLES -->
 # Usage 
 
+## From code
 Our library in a few lines of code
 
 Connect to database.
@@ -187,6 +188,10 @@ Predict.
 
 _For more examples, please refer to the [Documentation](https://sap-hana-automl.readthedocs.io/en/latest/index.html)_
 
+## How to run Streamlit client
+1. Clone repository: `git clone https://github.com/dan0nchik/SAP-HANA-AutoML.git`
+2. Install dependencies: `pip3 install -r requirements.txt`
+3. Run GUI: `streamlit run ./web.py`
 
 
 <!-- ROADMAP -->
@@ -207,15 +212,37 @@ Any contributions you make are **greatly appreciated** 👏!
     ```sh
    pip3 install -r requirements.txt
    ```
-4. Make some changes
-5. Write tests that cover your code in `tests` directory
-6. Run tests (in `SAP-HANA-AutoML directory`)
+4. Create `credentials.py` file in `tests` directory
+    Your files should look like this:  
+    ```
+    SAP-HANA-AutoML
+    │   README.md
+    │   all other files   
+    │   .....
+    |
+    └───tests
+        │   test files...
+        │   credentials.py
+      ```
+
+    Copy and paste this piece of code there and replace it with your credentials:
+    ``` python
+    host = "host"
+    user = "username"
+    password = "password"
+    port = 39015
+    ```
+    Don't worry, this file is in .gitignore, so your credentials won't be seen by anyone.
+
+5. Make some changes
+6. Write tests that cover your code in `tests` directory
+7. Run tests (in `SAP-HANA-AutoML directory`)
     ```sh
     pytest
     ```
-7. Commit your changes (`git commit -m 'Add some amazing features'`)
-8. Push to the branch (`git push origin feature/AmazingFeature`)
-9. Open a Pull Request
+8. Commit your changes (`git commit -m 'Add some amazing features'`)
+9. Push to the branch (`git push origin feature/AmazingFeature`)
+10. Open a Pull Request
 
 
 

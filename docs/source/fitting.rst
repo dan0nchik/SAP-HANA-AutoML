@@ -1,7 +1,8 @@
 3. Fitting the model
 ********************
 
-Ok, you have downloaded the library and ready to do some Data Science! Firstly, let's get used to an example data. It's an imaginary data from bank. We need to predict whether the bank needs to give the loan to client, or not. It's called target feature. In the dataset it is column 'y'.
+Ok, you have downloaded the library and ready to do some Data Science! The data is related with direct marketing campaigns of a Portuguese banking institution. The marketing campaigns were based on phone calls. Often, more than one contact to the same client was required, in order to access if the product (bank term deposit) would be ('yes') or not ('no') subscribed. Column 'y' is the column we will predict.
+
 Let's load the dataframe:
 
 .. code-block:: python
