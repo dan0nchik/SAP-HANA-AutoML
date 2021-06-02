@@ -4,7 +4,6 @@ import uuid
 import hana_ml
 
 import hana_automl.algorithms.base_algo
-from hana_automl.pipeline.data import Data
 from hana_automl.preprocess.settings import PreprocessorSettings
 import time
 
@@ -45,7 +44,7 @@ class OptunaOptimizer(BaseOptimizer):
     def __init__(
         self,
         algo_list: list,
-        data: Data,
+        data,
         problem: str,
         iterations: int,
         time_limit: int,
@@ -230,11 +229,11 @@ class OptunaOptimizer(BaseOptimizer):
             "accuracy": self.leaderboard.board[0].valid_accuracy,
         }
 
-    def get_model(self) -> hana_ml.algorithms.pal.pal_base:
+    def get_model(self):
         """Returns tuned model."""
         return self.model
 
-    def get_algorithm(self) -> hana_automl.algorithms.base_algo.BaseAlgorithm:
+    def get_algorithm(self):
         """Returns tuned AutoML algorithm"""
         return self.algorithm
 

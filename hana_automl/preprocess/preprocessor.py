@@ -29,16 +29,16 @@ from hana_automl.utils.error import PreprocessError
 
 class Preprocessor:
     def autoimput(
-        self,
-        df=None,
-        target=None,
-        id=None,
-        imputer_num_strategy=None,
-        strategy_by_col=None,
-        normalizer_strategy=None,
-        normalizer_z_score_method=None,
-        normalize_int=None,
-        categorical_list=None,
+            self,
+            df: DataFrame = None,
+            target: str = None,
+            id: str = None,
+            imputer_num_strategy: str = None,
+            strategy_by_col: str = None,
+            normalizer_strategy: str = None,
+            normalizer_z_score_method: str = None,
+            normalize_int: bool = None,
+            categorical_list: list = None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -80,7 +80,7 @@ class Preprocessor:
         )
         return result
 
-    def removecolumns(self, columns: list, df):
+    def removecolumns(self, columns: list, df: DataFrame):
         if df is None:
             raise PreprocessError("Enter not null data!")
         if columns is not None:
@@ -88,14 +88,14 @@ class Preprocessor:
         return df
 
     def normalize(
-        self,
-        df,
-        method,
-        id,
-        target,
-        categorical_list=None,
-        norm_int=False,
-        z_score_method="mean-standard",
+            self,
+            df: DataFrame,
+            method: str,
+            id: str,
+            target: str,
+            categorical_list: list = None,
+            norm_int: bool = False,
+            z_score_method: str = "mean-standard",
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -119,11 +119,11 @@ class Preprocessor:
                 else:
                     targ_variant = i[0] != target
                 if (
-                    i[0] != id
-                    and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
-                    and targ_variant
-                    and categorical_list is not None
-                    and not (i[0] in categorical_list)
+                        i[0] != id
+                        and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
+                        and targ_variant
+                        and categorical_list is not None
+                        and not (i[0] in categorical_list)
                 ):
                     int_lst.append(i[0])
             if len(int_lst) > 0:
@@ -151,7 +151,7 @@ class Preprocessor:
                 right = cols[:indx]
                 left = [id]
                 cur = cols[indx]
-                left.extend(cols[indx + 1 :])
+                left.extend(cols[indx + 1:])
                 left_normd = [id]
                 rng = copy.copy(i)
                 for o in range(rng + 1, len(norm_cols)):
@@ -160,16 +160,16 @@ class Preprocessor:
                         left_normd.append(norm_cols[o])
                         left = [id]
                         indx = cols.index(norm_cols[i])
-                        left.extend(cols[indx + 1 :])
+                        left.extend(cols[indx + 1:])
                     else:
                         break
                 temp_joined = (
                     df.select(*tuple(right))
-                    .join(
+                        .join(
                         trn.select(*tuple([id, cur])).rename_columns(["ID_TEMPR", cur]),
                         "ID_TEMPR=" + id,
                     )
-                    .deselect("ID_TEMPR")
+                        .deselect("ID_TEMPR")
                 )
                 if len(left_normd) > 1:
                     temp_joined = temp_joined.join(
@@ -185,16 +185,16 @@ class Preprocessor:
                 i = i + 1
         return df
 
-    def autoremovecolumns(self, df):
+    def autoremovecolumns(self, df: DataFrame):
         for cl in df:
             if (
-                "object" == str(df[cl].dtype)
-                and df[cl].nunique() > df[cl].shape[0] / 100 * 7
+                    "object" == str(df[cl].dtype)
+                    and df[cl].nunique() > df[cl].shape[0] / 100 * 7
             ) or (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
                 df = df.drop([cl], axis=1)
         return df
 
-    def drop_outers(self, df, id, target, cat_list):
+    def drop_outers(self, df: DataFrame, id: str, target: str, cat_list: list):
         col_list = df.columns
         col_list.remove(id)
         col_list.remove(target)
@@ -210,15 +210,15 @@ class Preprocessor:
         for i in col_list:
             df = (
                 variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0]
-                .rename_columns(["ID_TEMP", "DROP"])
-                .join(df, "ID_TEMP=" + id)
-                .deselect("ID_TEMP")
-                .filter("DROP = 0")
-                .deselect("DROP")
+                    .rename_columns(["ID_TEMP", "DROP"])
+                    .join(df, "ID_TEMP=" + id)
+                    .deselect("ID_TEMP")
+                    .filter("DROP = 0")
+                    .deselect("DROP")
             )
         return df
 
-    def set_task(self, data, target, task: str, algo_exceptions=None):
+    def set_task(self, data, target: str, task: str, algo_exceptions=None):
         if algo_exceptions is None:
             algo_exceptions = []
         if task is None:
@@ -293,7 +293,7 @@ class Preprocessor:
             return reglist, "reg", regdict
 
     @staticmethod
-    def check_binomial(df, target):
+    def check_binomial(df: DataFrame, target: str):
         if target is None or df is None:
             raise PreprocessError("Enter correct data for check!")
         if df.distinct(target).count() < 3:

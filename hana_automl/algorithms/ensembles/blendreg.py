@@ -8,6 +8,7 @@ from hana_automl.algorithms.ensembles.blending import Blending
 from hana_automl.metric.mae import mae_score
 from hana_automl.metric.mse import mse_score
 from hana_automl.metric.rmse import rmse_score
+from hana_automl.pipeline.data import Data
 from hana_automl.pipeline.leaderboard import Leaderboard
 
 
@@ -31,7 +32,7 @@ class BlendingReg(Blending):
         )
         self.title = "BlendingRegressor"
 
-    def predict(self, data=None, df=None, id_colm=None):
+    def predict(self, data: Data=None, df: hana_ml.DataFrame=None, id_colm:str=None):
         if id_colm is None:
             id_colm = data.id_colm
         predictions = super(BlendingReg, self).predict(data=data, df=df)
@@ -58,12 +59,12 @@ class BlendingReg(Blending):
         )
         return joined
 
-    def score(self, data, metric):
+    def score(self, data:Data, metric:str):
         return self.inner_score(
             data, key=data.id_colm, metric=metric, label=data.target
         )
 
-    def inner_score(self, data, key, metric, label=None):
+    def inner_score(self, data:Data, key:str, metric:str, label:str=None):
         prediction = self.predict(data=data)
         prediction = prediction.select("ID", "PREDICTION").rename_columns(
             ["ID_P", "PREDICTION"]

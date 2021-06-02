@@ -1,25 +1,28 @@
 from time import sleep
 
+import hana_ml
 import optuna
 from bayes_opt import BayesianOptimization
 
 from hana_automl.metric.mae import mae_score
 from hana_automl.metric.mse import mse_score
 from hana_automl.metric.rmse import rmse_score
+from hana_automl.optimizers.bayes import BayesianOptimizer
+from hana_automl.optimizers.optuna_optimizer import OptunaOptimizer
 
 
 class BaseAlgorithm:
     """Base algorithm class. Inherit from it for creating custom algorithms."""
 
     def __init__(self, custom_params: dict = None, model=None):
-        self.title = ""  # for leaderboard
+        self.title: str = ""  # for leaderboard
         self.model = model
-        self.categorical_features = None
-        self.params_range = {}
-        self.bayes_opt = None
-        self.optuna_opt = None
+        self.categorical_features: list = None
+        self.params_range: dict = {}
+        self.bayes_opt: BayesianOptimizer = None
+        self.optuna_opt: OptunaOptimizer = None
         self.temp_data = None
-        self.tuning_metric = None
+        self.tuning_metric: str = None
         if custom_params is not None:
             # self.params_range[custom_params.keys()] = custom_params.values()
             pass
@@ -33,7 +36,7 @@ class BaseAlgorithm:
     def optunatune(self, trial):
         pass
 
-    def score(self, data, df, metric):
+    def score(self, data, df:hana_ml.DataFrame, metric:str):
         if metric == "accuracy" or metric == "r2_score":
             return self.model.score(df, key=data.id_colm, label=data.target)
         elif metric in ["mae", "mse", "rmse"]:
@@ -51,8 +54,8 @@ class BaseAlgorithm:
         self.categorical_features = cat
 
     def bayes_tune(
-        self,
-        f,
+            self,
+            f,
     ):
         if self.bayes_opt is None:
             self.bayes_opt = BayesianOptimization(

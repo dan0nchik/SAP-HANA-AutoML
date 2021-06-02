@@ -5,9 +5,8 @@ from bayes_opt.bayesian_optimization import BayesianOptimization
 
 import hana_automl.algorithms.base_algo
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
-from hana_automl.pipeline.data import Data
-from hana_automl.pipeline.leaderboard import Leaderboard
 
+from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import OptimizerError
@@ -49,7 +48,7 @@ class BayesianOptimizer(BaseOptimizer):
     def __init__(
         self,
         algo_list: list,
-        data: Data,
+        data,
         iterations: int,
         time_limit: int,
         problem: str,
@@ -186,7 +185,7 @@ class BayesianOptimizer(BaseOptimizer):
 
         return self.model
 
-    def get_algorithm(self) -> hana_automl.algorithms.base_algo.BaseAlgorithm:
+    def get_algorithm(self):
         """Returns tuned AutoML algorithm"""
 
         return self.algorithm
