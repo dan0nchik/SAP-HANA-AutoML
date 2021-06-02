@@ -6,7 +6,7 @@ from hana_ml import DataFrame
 
 
 def mae_score(
-    algo=None, df: DataFrame = None, target=None, ftr: list = None, id: str = None
+    algo=None, df: DataFrame = None, target:str=None, ftr: list = None, id: str = None
 ):
     if algo is not None:
         res = algo.predict(df, id, ftr)

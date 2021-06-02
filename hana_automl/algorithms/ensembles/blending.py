@@ -1,3 +1,6 @@
+import hana_ml
+
+from hana_automl.pipeline.data import Data
 from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.preprocess.preprocessor import Preprocessor
 from hana_automl.utils.error import BlendingError
@@ -6,10 +9,10 @@ from hana_automl.utils.error import BlendingError
 class Blending:
     def __init__(
         self,
-        categorical_features,
-        id_col,
-        connection_context,
-        table_name,
+        categorical_features: list,
+        id_col: str,
+        connection_context: hana_ml.ConnectionContext,
+        table_name: str,
         model_list: list = None,
         leaderboard: Leaderboard = None,
     ):
@@ -29,10 +32,10 @@ class Blending:
         else:
             self.model_list = leaderboard.board[:3]
 
-    def score(self, data, metric):
+    def score(self, data: Data, metric: str):
         pass
 
-    def predict(self, data, df):
+    def predict(self, data: Data, df: hana_ml.DataFrame):
         predictions = list()
         if data is None and df is None:
             raise BlendingError("Provide valid data for accuracy estimation")

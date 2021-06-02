@@ -7,7 +7,7 @@ class ModelBoard:
 
     def __init__(
         self,
-        algorithm: hana_automl.algorithms.base_algo,
+        algorithm,
         train_accuracy: int,
         preprocessor: PreprocessorSettings,
     ):

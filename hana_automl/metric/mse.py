@@ -2,30 +2,31 @@ from decimal import Decimal
 
 from hana_ml import DataFrame
 
+
 # locale.setlocale(locale.LC_ALL, "USA")
 
 
 def mse_score(
-    algo=None, df: DataFrame = None, target=None, ftr: list = None, id: str = None
+        algo=None, df: DataFrame = None, target: str = None, ftr: list = None, id: str = None
 ):
     if algo is not None:
         res = algo.predict(df, id, ftr)
         if type(res) == tuple:
             res = res[0]
         if (
-            str(algo).split(" ")[0]
-            == "<hana_ml.algorithms.pal.neural_network.MLPRegressor"
+                str(algo).split(" ")[0]
+                == "<hana_ml.algorithms.pal.neural_network.MLPRegressor"
         ):
             id_val = 2
         else:
             id_val = 1
         res = (
             res.select([res.columns[0], res.columns[id_val]])
-            .join(
+                .join(
                 df.select([id, target]).rename_columns(["ID_TEMP", target]),
                 "ID_TEMP=" + id,
             )
-            .deselect("ID_TEMP")
+                .deselect("ID_TEMP")
         )
         pandas = res.collect()
         cols = res.columns
