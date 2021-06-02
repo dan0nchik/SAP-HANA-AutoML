@@ -10,3 +10,4 @@ If you want to contribute or dive deeper into our code, welcome to all library m
    pipeline
    preprocessor
    utils
+   algorithms

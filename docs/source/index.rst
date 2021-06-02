@@ -46,8 +46,10 @@ Hana_automl is a simple but accurate Automated Machine Learning library. Based o
    guide
    classes
    examples
+   clients
    advanced
    core
+   
    
    
 
