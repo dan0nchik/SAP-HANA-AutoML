@@ -32,7 +32,9 @@ class BlendingReg(Blending):
         )
         self.title = "BlendingRegressor"
 
-    def predict(self, data: Data=None, df: hana_ml.DataFrame=None, id_colm:str=None):
+    def predict(
+        self, data: Data = None, df: hana_ml.DataFrame = None, id_colm: str = None
+    ):
         if id_colm is None:
             id_colm = data.id_colm
         predictions = super(BlendingReg, self).predict(data=data, df=df)
@@ -59,12 +61,12 @@ class BlendingReg(Blending):
         )
         return joined
 
-    def score(self, data:Data, metric:str):
+    def score(self, data: Data, metric: str):
         return self.inner_score(
             data, key=data.id_colm, metric=metric, label=data.target
         )
 
-    def inner_score(self, data:Data, key:str, metric:str, label:str=None):
+    def inner_score(self, data: Data, key: str, metric: str, label: str = None):
         prediction = self.predict(data=data)
         prediction = prediction.select("ID", "PREDICTION").rename_columns(
             ["ID_P", "PREDICTION"]
