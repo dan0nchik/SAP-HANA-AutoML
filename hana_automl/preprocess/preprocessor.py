@@ -29,16 +29,17 @@ from hana_automl.utils.error import PreprocessError
 
 class Preprocessor:
     def autoimput(
-            self,
-            df: DataFrame = None,
-            target: str = None,
-            id: str = None,
-            imputer_num_strategy: str = None,
-            strategy_by_col: str = None,
-            normalizer_strategy: str = None,
-            normalizer_z_score_method: str = None,
-            normalize_int: bool = None,
-            categorical_list: list = None,
+        self,
+        df: DataFrame = None,
+        target: str = None,
+        id: str = None,
+        imputer_num_strategy: str = None,
+        strategy_by_col: str = None,
+        normalizer_strategy: str = None,
+        normalizer_z_score_method: str = None,
+        normalize_int: bool = None,
+        categorical_list: list = None,
+        normalization_excp: list = None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -77,6 +78,7 @@ class Preprocessor:
             categorical_list=categorical_list,
             norm_int=normalize_int,
             z_score_method=normalizer_z_score_method,
+            normalization_excp=normalization_excp,
         )
         return result
 
@@ -88,14 +90,15 @@ class Preprocessor:
         return df
 
     def normalize(
-            self,
-            df: DataFrame,
-            method: str,
-            id: str,
-            target: str,
-            categorical_list: list = None,
-            norm_int: bool = False,
-            z_score_method: str = "mean-standard",
+        self,
+        df: DataFrame,
+        method: str,
+        id: str,
+        target: str,
+        categorical_list: list = None,
+        norm_int: bool = False,
+        z_score_method: str = "mean-standard",
+        normalization_excp=None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -119,11 +122,11 @@ class Preprocessor:
                 else:
                     targ_variant = i[0] != target
                 if (
-                        i[0] != id
-                        and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
-                        and targ_variant
-                        and categorical_list is not None
-                        and not (i[0] in categorical_list)
+                    i[0] != id
+                    and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
+                    and targ_variant
+                    and categorical_list is not None
+                    and not (i[0] in categorical_list)
                 ):
                     int_lst.append(i[0])
             if len(int_lst) > 0:
@@ -140,6 +143,9 @@ class Preprocessor:
         if len(remove_list) > 0:
             for i in remove_list:
                 col_list.remove(i)
+        if normalization_excp is not None:
+            for i in normalization_excp:
+                col_list.remove(i)
         if len(col_list) > 0:
             trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
             cols: list = df.columns
@@ -151,7 +157,7 @@ class Preprocessor:
                 right = cols[:indx]
                 left = [id]
                 cur = cols[indx]
-                left.extend(cols[indx + 1:])
+                left.extend(cols[indx + 1 :])
                 left_normd = [id]
                 rng = copy.copy(i)
                 for o in range(rng + 1, len(norm_cols)):
@@ -160,16 +166,16 @@ class Preprocessor:
                         left_normd.append(norm_cols[o])
                         left = [id]
                         indx = cols.index(norm_cols[i])
-                        left.extend(cols[indx + 1:])
+                        left.extend(cols[indx + 1 :])
                     else:
                         break
                 temp_joined = (
                     df.select(*tuple(right))
-                        .join(
+                    .join(
                         trn.select(*tuple([id, cur])).rename_columns(["ID_TEMPR", cur]),
                         "ID_TEMPR=" + id,
                     )
-                        .deselect("ID_TEMPR")
+                    .deselect("ID_TEMPR")
                 )
                 if len(left_normd) > 1:
                     temp_joined = temp_joined.join(
@@ -188,8 +194,8 @@ class Preprocessor:
     def autoremovecolumns(self, df: DataFrame):
         for cl in df:
             if (
-                    "object" == str(df[cl].dtype)
-                    and df[cl].nunique() > df[cl].shape[0] / 100 * 7
+                "object" == str(df[cl].dtype)
+                and df[cl].nunique() > df[cl].shape[0] / 100 * 7
             ) or (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
                 df = df.drop([cl], axis=1)
         return df
@@ -210,11 +216,11 @@ class Preprocessor:
         for i in col_list:
             df = (
                 variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0]
-                    .rename_columns(["ID_TEMP", "DROP"])
-                    .join(df, "ID_TEMP=" + id)
-                    .deselect("ID_TEMP")
-                    .filter("DROP = 0")
-                    .deselect("DROP")
+                .rename_columns(["ID_TEMP", "DROP"])
+                .join(df, "ID_TEMP=" + id)
+                .deselect("ID_TEMP")
+                .filter("DROP = 0")
+                .deselect("DROP")
             )
         return df
 
@@ -300,3 +306,21 @@ class Preprocessor:
             return True
         else:
             return False
+
+    @staticmethod
+    def check_normalization_exceptions(df, id, target, categorical_list):
+        excpt_list = []
+        dts = df.columns
+        dts.remove(id)
+        dts.remove(target)
+        for dt in dts:
+            if (
+                df.is_numeric(dt)
+                and dt not in categorical_list
+                and df.distinct(dt).count() < 3
+            ):
+                excpt_list.append(dt)
+        if len(excpt_list) < 1:
+            return None
+        else:
+            return excpt_list

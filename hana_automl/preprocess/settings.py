@@ -10,7 +10,7 @@ class PreprocessorSettings:
     def __init__(self, strategy_by_col: list):
         self.num_strategy: list = ["mean", "median", "delete", "als"]
         self.tuned_num_strategy: str = ""
-        self.normalizer_strategy: list = ["min-max", "decimal"]
+        self.normalizer_strategy: list = ["min-max", "decimal", "z-score"]
         self.tuned_normalizer_strategy: str = ""
         self.z_score_method: list = ["mean-standard", "mean-mean", "median-median"]
         self.tuned_z_score_method: str = ""
@@ -21,3 +21,4 @@ class PreprocessorSettings:
         self.tuned_drop_outers: bool = False
         self.categorical_cols: list = None
         self.task: str = None
+        self.normalization_exceptions = None

@@ -1,3 +1,4 @@
+import copy
 import time
 
 import hana_ml
@@ -69,6 +70,10 @@ class BayesianOptimizer(BaseOptimizer):
         self.categorical_features = categorical_features
         self.inner_data = None
         self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
+        self.prepset.categorical_cols = categorical_features
+        self.prepset.normalization_exceptions = self.data.check_norm_except(
+            categorical_features
+        )
         self.model = None
         self.leaderboard: Leaderboard = Leaderboard()
         self.algorithm = None
@@ -132,6 +137,7 @@ class BayesianOptimizer(BaseOptimizer):
             normalizer_z_score_method=z_score_method_2,
             normalize_int=normalize_int_2,
             drop_outers=drop_outers,
+            normalization_excp=self.prepset.normalization_exceptions,
             clean_sets=["test", "train"],
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
@@ -145,7 +151,7 @@ class BayesianOptimizer(BaseOptimizer):
         algo.set_params(**params)
         self.fit(algo, self.inner_data)
 
-        self.leaderboard.addmodel(ModelBoard(algo, target, self.prepset))
+        self.leaderboard.addmodel(ModelBoard(algo, target, copy.copy(self.prepset)))
 
         return target
 
@@ -246,6 +252,7 @@ class BayesianOptimizer(BaseOptimizer):
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,
+                normalization_excp=member.preprocessor.normalization_exceptions,
                 clean_sets=["valid"],
             )
             acc = member.algorithm.score(

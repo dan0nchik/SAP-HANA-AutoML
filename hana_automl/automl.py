@@ -319,6 +319,7 @@ class AutoML:
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
                 categorical_list=self.preprocessor_settings.categorical_cols,
+                normalization_excp=self.preprocessor_settings.normalization_exceptions,
             )
             self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted
@@ -414,6 +415,7 @@ class AutoML:
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
                 categorical_list=self.preprocessor_settings.categorical_cols,
+                normalization_excp=self.preprocessor_settings.normalization_exceptions,
             )
             return self.algorithm.score(data, inp.hana_df, metric)
 

@@ -1,17 +1,13 @@
 import copy
-import uuid
-
-import hana_ml
-
-import hana_automl.algorithms.base_algo
-from hana_automl.preprocess.settings import PreprocessorSettings
 import time
+import uuid
 
 import optuna
 
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard
+from hana_automl.preprocess.settings import PreprocessorSettings
 
 
 class OptunaOptimizer(BaseOptimizer):
@@ -72,6 +68,10 @@ class OptunaOptimizer(BaseOptimizer):
             self.prepset.task = "cls"
         else:
             self.prepset.task = "reg"
+        self.prepset.normalization_exceptions = self.data.check_norm_except(
+            categorical_features
+        )
+        print(self.prepset.normalization_exceptions)
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None
@@ -156,6 +156,7 @@ class OptunaOptimizer(BaseOptimizer):
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,
+                normalization_excp=member.preprocessor.normalization_exceptions,
                 clean_sets=["valid"],
             )
             acc = member.algorithm.score(
@@ -214,6 +215,7 @@ class OptunaOptimizer(BaseOptimizer):
             normalizer_z_score_method=z_score_method,
             normalize_int=normalize_int,
             drop_outers=drop_outers,
+            normalization_excp=self.prepset.normalization_exceptions,
             clean_sets=["test", "train"],
         )
         acc = algo.optuna_tune(data, self.tuning_metric)

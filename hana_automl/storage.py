@@ -1,12 +1,13 @@
-from hana_automl.algorithms.base_algo import BaseAlgorithm
-from hana_automl.preprocess.settings import PreprocessorSettings
 import json
 from types import SimpleNamespace
-from hana_ml.model_storage import ModelStorage
-import hdbcli
+
 import pandas as pd
 from hana_ml.dataframe import ConnectionContext
+from hana_ml.model_storage import ModelStorage
+
+from hana_automl.algorithms.base_algo import BaseAlgorithm
 from hana_automl.automl import AutoML
+from hana_automl.preprocess.settings import PreprocessorSettings
 
 PREPROCESSORS = "PREPROCESSOR_STORAGE"
 
@@ -116,6 +117,9 @@ class Storage(ModelStorage):
             settings_namespace.categorical_cols
         )
         automl.preprocessor_settings.task = settings_namespace.task
+        automl.preprocessor_settings.normalization_exceptions = (
+            settings_namespace.normalization_exceptions
+        )
         return automl
 
     def clean_up(self):
