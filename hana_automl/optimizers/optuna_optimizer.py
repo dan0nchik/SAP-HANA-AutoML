@@ -5,7 +5,6 @@ import uuid
 import optuna
 
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
-from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
 
@@ -71,7 +70,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.prepset.normalization_exceptions = self.data.check_norm_except(
             categorical_features
         )
-        self.leaderboard: Leaderboard = Leaderboard()
+        self.leaderboard: list = list()
         self.accuracy = 0
         self.tuned_params = None
         self.algorithm = None
@@ -83,16 +82,14 @@ class OptunaOptimizer(BaseOptimizer):
             time.sleep(1)
             print(
                 "\033[31m {}\033[0m".format(
-                    self.leaderboard.board[
-                        len(self.leaderboard.board) - 1
-                    ].algorithm.title
+                    self.leaderboard[len(self.leaderboard) - 1].algorithm.title
                     + " trial params :"
                     + str(
-                        self.leaderboard.board[len(self.leaderboard.board) - 1]
+                        self.leaderboard[len(self.leaderboard) - 1]
                         .algorithm.optuna_opt.trials[
                             len(
-                                self.leaderboard.board[
-                                    len(self.leaderboard.board) - 1
+                                self.leaderboard[
+                                    len(self.leaderboard) - 1
                                 ].algorithm.optuna_opt.trials
                             )
                             - 1
@@ -147,7 +144,7 @@ class OptunaOptimizer(BaseOptimizer):
                 )
             print("Starting model accuracy evaluation on the validation data!")
 
-        for member in self.leaderboard.board:
+        for member in self.leaderboard:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,
@@ -161,14 +158,14 @@ class OptunaOptimizer(BaseOptimizer):
             acc = member.algorithm.score(
                 data=data, df=data.valid, metric=self.tuning_metric
             )
-            member.add_valid_acc(acc)
+            member.add_valid_score(acc)
         reverse = self.tuning_metric == "r2_score" or self.tuning_metric == "accuracy"
-        self.leaderboard.board.sort(
-            key=lambda member: member.valid_accuracy + member.train_accuracy,
+        self.leaderboard.sort(
+            key=lambda member: member.valid_score + member.train_score,
             reverse=reverse,
         )
-        self.model = self.leaderboard.board[0].algorithm.model
-        self.algorithm = self.leaderboard.board[0].algorithm
+        self.model = self.leaderboard[0].algorithm.model
+        self.algorithm = self.leaderboard[0].algorithm
 
     def objective(self, trial: optuna.trial.Trial) -> int:
         """Objective function. Optimizer uses it to search for best algorithm and preprocess method.
@@ -218,7 +215,7 @@ class OptunaOptimizer(BaseOptimizer):
             clean_sets=["test", "train"],
         )
         acc = algo.optuna_tune(data, self.tuning_metric)
-        self.leaderboard.addmodel(
+        self.leaderboard.append(
             ModelBoard(copy.copy(algo), acc, copy.copy(self.prepset))
         )
         return acc
@@ -227,7 +224,7 @@ class OptunaOptimizer(BaseOptimizer):
         """Returns tuned hyperparameters."""
         return {
             "algorithm": self.tuned_params,
-            "accuracy": self.leaderboard.board[0].valid_accuracy,
+            "accuracy": self.leaderboard[0].valid_accuracy,
         }
 
     def get_model(self):
@@ -240,7 +237,7 @@ class OptunaOptimizer(BaseOptimizer):
 
     def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
-        return self.leaderboard.board[0].preprocessor
+        return self.leaderboard[0].preprocessor
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

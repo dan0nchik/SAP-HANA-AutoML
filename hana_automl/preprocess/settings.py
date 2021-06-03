@@ -12,7 +12,7 @@ class PreprocessorSettings:
         self.tuned_num_strategy: str = ""
         self.normalizer_strategy: list = ["min-max", "decimal", "z-score"]
         self.tuned_normalizer_strategy: str = ""
-        self.z_score_method: list = ["mean-standard", "mean-mean", "median-median"]
+        self.z_score_method: list = ["mean-standard", "mean-mean"]
         self.tuned_z_score_method: str = ""
         self.normalize_int: list = [False, True]
         self.tuned_normalize_int: bool = False

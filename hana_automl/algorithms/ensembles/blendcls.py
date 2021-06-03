@@ -4,7 +4,6 @@ from hana_ml.dataframe import create_dataframe_from_pandas
 
 from hana_automl.algorithms.ensembles.blending import Blending
 from hana_automl.pipeline.data import Data
-from hana_automl.pipeline.leaderboard import Leaderboard
 
 
 class BlendingCls(Blending):
@@ -15,7 +14,7 @@ class BlendingCls(Blending):
         connection_context: hana_ml.ConnectionContext,
         table_name: str,
         model_list: list = None,
-        leaderboard: Leaderboard = None,
+        leaderboard: list = None,
     ):
         super(BlendingCls, self).__init__(
             categorical_features,

@@ -1,7 +1,6 @@
 import hana_ml
 
 from hana_automl.pipeline.data import Data
-from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.preprocess.preprocessor import Preprocessor
 from hana_automl.utils.error import BlendingError
 
@@ -14,7 +13,7 @@ class Blending:
         connection_context: hana_ml.ConnectionContext,
         table_name: str,
         model_list: list = None,
-        leaderboard: Leaderboard = None,
+        leaderboard: list = None,
     ):
         self.id_col = id_col
         self.categorical_features = categorical_features
@@ -30,7 +29,7 @@ class Blending:
         if model_list is not None:
             self.model_list = model_list
         else:
-            self.model_list = leaderboard.board[:3]
+            self.model_list = leaderboard[:3]
 
     def score(self, data: Data, metric: str):
         pass

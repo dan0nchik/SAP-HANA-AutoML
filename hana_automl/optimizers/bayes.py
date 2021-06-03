@@ -2,17 +2,13 @@ import copy
 import time
 
 import hana_ml
+import numpy as np
 from bayes_opt.bayesian_optimization import BayesianOptimization
 
-import hana_automl.algorithms.base_algo
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
-
-from hana_automl.pipeline.leaderboard import Leaderboard
 from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import OptimizerError
-
-import numpy as np
 
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -75,7 +71,7 @@ class BayesianOptimizer(BaseOptimizer):
             categorical_features
         )
         self.model = None
-        self.leaderboard: Leaderboard = Leaderboard()
+        self.leaderboard: list = list()
         self.algorithm = None
         self.verbosity = verbosity
         self.tuning_metric = tuning_metric
@@ -144,18 +140,24 @@ class BayesianOptimizer(BaseOptimizer):
             f=self.child_objective
         )
         if self.tuning_metric not in ["accuracy", "r2_score"]:
-            print("Best child Iteration cycle score: " + str(-1 * target))
+            print(
+                f"Best child Iteration cycle {self.tuning_metric} score: "
+                + str(-1 * target)
+            )
         else:
-            print("Best child Iteration cycle score: " + str(target))
+            print(
+                f"Best child Iteration cycle {self.tuning_metric} score: " + str(target)
+            )
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
         self.fit(algo, self.inner_data)
-
-        self.leaderboard.addmodel(ModelBoard(algo, target, copy.copy(self.prepset)))
+        self.leaderboard.append(
+            ModelBoard(copy.copy(algo), target, copy.copy(self.prepset))
+        )
 
         return target
 
-    def child_objective(self, **hyperparameters) -> int:
+    def child_objective(self, **hyperparameters) -> float:
         """Mini objective function. It is used to tune hyperparameters of algorithm that was chosen in main objective.
 
         Parameters
@@ -164,25 +166,27 @@ class BayesianOptimizer(BaseOptimizer):
             Parameters of algorithm's model.
         Returns
         -------
-        acc: float
-            Accuracy score of a model.
+        score: float
+            Tuning metric score of a model.
         """
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
-        acc = algorithm.score(self.inner_data, self.inner_data.test, self.tuning_metric)
+        score = algorithm.score(
+            self.inner_data, self.inner_data.test, self.tuning_metric
+        )
         if self.verbosity > 1:
-            print(f"Child iteration {self.tuning_metric} score: {acc}")
+            print(f"Child iteration {self.tuning_metric} score: {score}")
         if self.tuning_metric not in ["accuracy", "r2_score"]:
-            acc = -1 * acc
-        return acc
+            score = -1 * score
+        return score
 
     def get_tuned_params(self) -> dict:
         """Returns tuned hyperparameters."""
 
         return {
             "title": self.algo_list[self.algo_index].title,
-            "accuracy": self.leaderboard.board[0].valid_accuracy,
+            "accuracy": self.leaderboard[0].valid_accuracy,
             "info": self.tuned_params,
         }
 
@@ -244,11 +248,11 @@ class BayesianOptimizer(BaseOptimizer):
         self.tuned_params = opt.max
         if self.verbosity > 0:
             print("Starting model accuracy evaluation on the validation data!")
-        for member in self.leaderboard.board:
-            data = self.data.clear(
+        for member in self.leaderboard:
+            data2 = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,
-                categorical_list=self.categorical_features,
+                categorical_list=member.preprocessor.categorical_cols,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,
@@ -256,16 +260,16 @@ class BayesianOptimizer(BaseOptimizer):
                 clean_sets=["valid"],
             )
             acc = member.algorithm.score(
-                data=data, df=data.valid, metric=self.tuning_metric
+                data=data2, df=data2.valid, metric=self.tuning_metric
             )
-            member.add_valid_acc(acc)
+            member.add_valid_score(acc)
         reverse = self.tuning_metric == "r2_score" or self.tuning_metric == "accuracy"
-        self.leaderboard.board.sort(
-            key=lambda member: member.valid_accuracy + member.train_accuracy,
+        self.leaderboard.sort(
+            key=lambda member: member.valid_score + member.train_score,
             reverse=reverse,
         )
-        self.model = self.leaderboard.board[0].algorithm.model
-        self.algorithm = self.leaderboard.board[0].algorithm
+        self.model = self.leaderboard[0].algorithm.model
+        self.algorithm = self.leaderboard[0].algorithm
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

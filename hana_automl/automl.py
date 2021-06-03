@@ -1,3 +1,4 @@
+import copy
 import json
 from typing import Union
 
@@ -41,6 +42,7 @@ class AutoML:
         self.ensemble = False
         self.columns_to_remove = None
         self.algorithm = None
+        self.leaderboard: list = None
 
     def fit(
         self,
@@ -192,13 +194,13 @@ class AutoML:
         self.model = self.opt.get_model()
         self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
-        self.categorical_features = self.preprocessor_settings.categorical_cols
+        self.leaderboard = copy.copy(self.opt.leaderboard)
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
                 "Sorry, non binomial blending classification is not supported yet!"
             )
         if ensemble:
-            if len(self.opt.leaderboard.board) < 3:
+            if len(self.opt.leaderboard) < 3:
                 raise BlendingError(
                     "Sorry, not enough fitted models for ensembling! Restart the process"
                 )
@@ -228,8 +230,8 @@ class AutoML:
             print("\033[33m {}".format("\n"))
             print(
                 "Ensemble consists of: "
-                + str(self.model.model_list)
-                + "\nEnsemble accuracy: "
+                + f"{self.model.model_list[0].algorithm}, {self.model.model_list[1].algorithm}, {self.model.model_list[2].algorithm}"
+                + f"\nEnsemble {tuning_metric} score: "
                 + str(self.model.score(data=data, metric=tuning_metric))
             )
             print("\033[0m {}".format(""))
@@ -481,5 +483,10 @@ class AutoML:
         return self.opt.get_tuned_params()
 
     @property
-    def accuracy(self):
-        return self.opt.get_tuned_params()["accuracy"]
+    def leaderboard(self):
+        """Get best hyperparameters"""
+        if self.leaderboard is None:
+            raise AutoMLError(
+                "There was no optimization process during the session! In order to get leaderboard you have to run one"
+            )
+        return self.leaderboard

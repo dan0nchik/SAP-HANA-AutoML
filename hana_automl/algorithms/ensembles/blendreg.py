@@ -6,7 +6,6 @@ from hana_automl.metric.mae import mae_score
 from hana_automl.metric.mse import mse_score
 from hana_automl.metric.rmse import rmse_score
 from hana_automl.pipeline.data import Data
-from hana_automl.pipeline.leaderboard import Leaderboard
 
 
 class BlendingReg(Blending):
@@ -17,7 +16,7 @@ class BlendingReg(Blending):
         connection_context: hana_ml.dataframe.ConnectionContext = None,
         table_name: str = None,
         model_list: list = None,
-        leaderboard: Leaderboard = None,
+        leaderboard: list = None,
     ):
         super().__init__(
             categorical_features,
