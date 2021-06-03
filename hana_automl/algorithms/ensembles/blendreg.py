@@ -77,7 +77,6 @@ class BlendingReg(Blending):
         )
         actual = data.valid.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
-        print(joined.collect().head())
         if metric == "r2_score":
             return r2_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
         if metric == "mae":

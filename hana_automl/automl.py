@@ -225,7 +225,6 @@ class AutoML:
                 )
                 if tuning_metric is None:
                     tuning_metric = "r2_score"
-            print(tuning_metric)
             print("\033[33m {}".format("\n"))
             print(
                 "Ensemble consists of: "

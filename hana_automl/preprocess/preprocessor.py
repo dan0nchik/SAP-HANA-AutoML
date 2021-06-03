@@ -110,6 +110,7 @@ class Preprocessor:
             fn = FeatureNormalizer(method="decimal")
         col_list = df.columns
         remove_list = list()
+        remove_list.append(id)
         if categorical_list is not None:
             for i in categorical_list:
                 remove_list.append(i)
@@ -140,55 +141,19 @@ class Preprocessor:
             if i[0] == id or targ_variant or i[1] in ["INT", "CHAR", "VARCHAR"]:
                 if not i[0] in remove_list:
                     remove_list.append(i[0])
+        if normalization_excp is not None:
+            for i in normalization_excp:
+                if i not in remove_list:
+                    remove_list.append(i)
         if len(remove_list) > 0:
             for i in remove_list:
                 col_list.remove(i)
-        if normalization_excp is not None:
-            for i in normalization_excp:
-                col_list.remove(i)
-        if len(col_list) > 0:
-            trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
-            cols: list = df.columns
-            norm_cols = trn.columns
-            norm_cols.remove(id)
-            i = 0
-            while i <= len(norm_cols) - 1:
-                indx = cols.index(norm_cols[i])
-                right = cols[:indx]
-                left = [id]
-                cur = cols[indx]
-                left.extend(cols[indx + 1 :])
-                left_normd = [id]
-                rng = copy.copy(i)
-                for o in range(rng + 1, len(norm_cols)):
-                    if cols.index(norm_cols[o]) - indx == 1:
-                        i += 1
-                        left_normd.append(norm_cols[o])
-                        left = [id]
-                        indx = cols.index(norm_cols[i])
-                        left.extend(cols[indx + 1 :])
-                    else:
-                        break
-                temp_joined = (
-                    df.select(*tuple(right))
-                    .join(
-                        trn.select(*tuple([id, cur])).rename_columns(["ID_TEMPR", cur]),
-                        "ID_TEMPR=" + id,
-                    )
-                    .deselect("ID_TEMPR")
-                )
-                if len(left_normd) > 1:
-                    temp_joined = temp_joined.join(
-                        trn.select(*tuple(left_normd)).rename_columns(
-                            ["ID_TEMPR", *left_normd[1:]]
-                        ),
-                        "ID_TEMPR=" + id,
-                    ).deselect("ID_TEMPR")
-                df = temp_joined.join(
-                    df.select(*tuple(left)).rename_columns(["ID_TEMPR", *left[1:]]),
-                    "ID_TEMPR=" + id,
-                ).deselect("ID_TEMPR")
-                i = i + 1
+        trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
+        df = (
+            df.select(remove_list)
+            .join(trn.rename_columns(["ID_TEMPR", *col_list]), f"ID_TEMPR={id}")
+            .deselect("ID_TEMPR")
+        )
         return df
 
     def autoremovecolumns(self, df: DataFrame):
