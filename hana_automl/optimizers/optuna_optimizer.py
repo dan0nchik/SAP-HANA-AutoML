@@ -71,7 +71,6 @@ class OptunaOptimizer(BaseOptimizer):
         self.prepset.normalization_exceptions = self.data.check_norm_except(
             categorical_features
         )
-        print(self.prepset.normalization_exceptions)
         self.leaderboard: Leaderboard = Leaderboard()
         self.accuracy = 0
         self.tuned_params = None

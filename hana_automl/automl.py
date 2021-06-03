@@ -213,6 +213,8 @@ class AutoML:
                     table_name=table_name,
                     leaderboard=self.opt.leaderboard,
                 )
+                if tuning_metric is None:
+                    tuning_metric = "accuracy"
             else:
                 self.model = BlendingReg(
                     categorical_features=categorical_features,
@@ -221,6 +223,9 @@ class AutoML:
                     table_name=table_name,
                     leaderboard=self.opt.leaderboard,
                 )
+                if tuning_metric is None:
+                    tuning_metric = "r2_score"
+            print(tuning_metric)
             print("\033[33m {}".format("\n"))
             print(
                 "Ensemble consists of: "

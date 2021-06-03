@@ -1,8 +1,5 @@
 import hana_ml
-import pandas as pd
-from hana_ml.algorithms.pal import metrics
 from hana_ml.algorithms.pal.metrics import r2_score
-from hana_ml.dataframe import create_dataframe_from_pandas
 
 from hana_automl.algorithms.ensembles.blending import Blending
 from hana_automl.metric.mae import mae_score
@@ -40,9 +37,16 @@ class BlendingReg(Blending):
         predictions = super(BlendingReg, self).predict(data=data, df=df)
         pd_res = list()
         for i in range(len(predictions)):
+            if (
+                str(self.model_list[i].algorithm.model).split(" ")[0]
+                == "<hana_ml.algorithms.pal.neural_network.MLPRegressor"
+            ):
+                id_val = 2
+            else:
+                id_val = 1
             k = (
                 predictions[i]
-                .select(id_colm, predictions[i].columns[1])
+                .select(id_colm, predictions[i].columns[id_val])
                 .rename_columns(["ID_" + str(i), "PREDICTION" + str(i)])
             )
             pd_res.append(k)
@@ -73,10 +77,9 @@ class BlendingReg(Blending):
         )
         actual = data.valid.select(key, label).rename_columns(["ID_A", "ACTUAL"])
         joined = actual.join(prediction, "ID_P=ID_A").select("ACTUAL", "PREDICTION")
+        print(joined.collect().head())
         if metric == "r2_score":
-            return metrics.r2_score(
-                joined, label_true="ACTUAL", label_pred="PREDICTION"
-            )
+            return r2_score(joined, label_true="ACTUAL", label_pred="PREDICTION")
         if metric == "mae":
             return mae_score(df=joined)
         if metric == "mse":

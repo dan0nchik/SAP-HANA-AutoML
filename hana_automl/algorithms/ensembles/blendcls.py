@@ -50,9 +50,16 @@ class BlendingCls(Blending):
         if id_colm is None:
             id_colm = data.id_colm
         for i in range(len(predictions)):
+            if (
+                str(self.model_list[i].algorithm.model).split(" ")[0]
+                == "<hana_ml.algorithms.pal.neural_network.MLPClassifier"
+            ):
+                id_val = 2
+            else:
+                id_val = 1
             k = (
                 predictions[i]
-                .select(id_colm, predictions[i].columns[1])
+                .select(id_colm, predictions[i].columns[id_val])
                 .rename_columns(["ID_" + str(i), "PREDICTION" + str(i)])
             )
             pd_res.append(k)
