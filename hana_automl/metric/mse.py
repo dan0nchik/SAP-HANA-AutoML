@@ -1,9 +1,4 @@
-from decimal import Decimal
-
 from hana_ml import DataFrame
-
-
-# locale.setlocale(locale.LC_ALL, "USA")
 
 
 def mse_score(
@@ -32,26 +27,14 @@ def mse_score(
             )
             .deselect("ID_TEMP")
         )
+        res = res.rename_columns(["ID", "PREDICTION", "REAL"]).select(
+            ("AVG((REAL - PREDICTION)*(REAL - PREDICTION))", "VAL")
+        )
         pandas = res.collect()
-        cols = res.columns
-        pandas["mse_coef"] = pandas.apply(
-            lambda row: val(row[cols[2]], row[cols[1]]), axis=1
-        )
-        return pandas["mse_coef"].mean()
+        return pandas.VAL[0]
     else:
-        pandas = df.collect()
-        cols = df.columns
-        pandas["mse_coef"] = pandas.apply(
-            lambda row: (Decimal(row[cols[0]]) - Decimal(row[cols[1]])) ** 2, axis=1
+        res = df.rename_columns(["REAL", "PREDICTION"]).select(
+            ("AVG((REAL - PREDICTION)*(REAL - PREDICTION))", "VAL")
         )
-        return pandas["mse_coef"].mean()
-
-
-def val(a, b):
-    if type(a) is not Decimal:
-        a = Decimal(a)
-    if type(b) is not Decimal:
-        if type(b) is not str:
-            b = str(b)
-        b = Decimal(b)
-    return (a - b) ** 2
+        pandas = res.collect()
+        return pandas.VAL[0]
