@@ -142,7 +142,9 @@ class OptunaOptimizer(BaseOptimizer):
                     + " iterations of "
                     + str(self.iterations)
                 )
-            print("Starting model accuracy evaluation on the validation data!")
+            print(
+                f"Starting model {self.tuning_metric} score evaluation on the validation data!"
+            )
 
         for member in self.leaderboard:
             data = self.data.clear(

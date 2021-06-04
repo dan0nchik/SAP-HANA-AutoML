@@ -247,7 +247,9 @@ class BayesianOptimizer(BaseOptimizer):
                 print("All iterations completed successfully!")
         self.tuned_params = opt.max
         if self.verbosity > 0:
-            print("Starting model accuracy evaluation on the validation data!")
+            print(
+                f"Starting model {self.tuning_metric} score evaluation on the validation data!"
+            )
         for member in self.leaderboard:
             data2 = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,

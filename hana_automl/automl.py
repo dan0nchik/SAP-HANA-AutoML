@@ -42,7 +42,9 @@ class AutoML:
         self.ensemble = False
         self.columns_to_remove = None
         self.algorithm = None
-        self.leaderboard: list = None
+        self.leaderboard = None
+        self.leaderboard_metric = None
+        self.val_data = None
 
     def fit(
         self,
@@ -178,6 +180,8 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
+        self.val_data = copy.copy(data)
+        self.val_data.train = None
         pipe = Pipeline(
             data=data,
             steps=steps,
@@ -227,6 +231,7 @@ class AutoML:
                 )
                 if tuning_metric is None:
                     tuning_metric = "r2_score"
+            self.leaderboard_metric = tuning_metric
             print("\033[33m {}".format("\n"))
             print(
                 "Ensemble consists of: "
@@ -472,6 +477,66 @@ class AutoML:
         """Returns fitted HANA PAL model"""
         return self.model
 
+    def sort_leaderboard(
+        self, metric, df=None, id_col=None, target=None, print_result=False
+    ):
+        if (
+            self.leaderboard[0].preprocessor.task == "cls"
+            and metric not in ["accuracy"]
+        ) or (
+            self.leaderboard[0].preprocessor.task == "cls"
+            and metric not in ["r2_score", "mse", "mae", "rmse"]
+        ):
+            raise AutoMLError("Wrong metric for task or this metric is nt supported!")
+        if df is None:
+            data = self.val_data
+            clean_sets = ["valid"]
+        else:
+            data = Data(valid=df, id_col=id_col, target=target)
+            clean_sets = ["valid"]
+        print(f"Starting model {metric} score evaluation on the validation data!")
+        for member in self.leaderboard:
+            data_temp = data.clear(
+                num_strategy=member.preprocessor.tuned_num_strategy,
+                strategy_by_col=member.preprocessor.strategy_by_col,
+                categorical_list=member.preprocessor.categorical_cols,
+                normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
+                normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
+                normalize_int=member.preprocessor.tuned_normalize_int,
+                normalization_excp=member.preprocessor.normalization_exceptions,
+                clean_sets=clean_sets,
+            )
+            acc = member.algorithm.score(data=data, df=data_temp.valid, metric=metric)
+            member.add_valid_score(acc)
+        self.leaderboard_metric = metric
+        reverse = metric == "r2_score" or metric == "accuracy"
+        self.leaderboard.sort(
+            key=lambda member: member.valid_score,
+            reverse=reverse,
+        )
+        if print_result:
+            self.print_leaderboard()
+
+    def print_leaderboard(self):
+        print(
+            "\033[33m{}".format(
+                f"Metric:{self.leaderboard_metric}\nLeaderboard (top best algorithms):\n"
+            )
+        )
+        place = 1
+        for member in self.leaderboard:
+            print(
+                "\033[33m {}".format(
+                    str(place)
+                    + ".  "
+                    + str(member.algorithm.model)
+                    + f"\n Holdout {self.leaderboard_metric} score: "
+                    + str(member.valid_score)
+                )
+            )
+            print("\033[0m {}".format(""))
+            place += 1
+
     @property
     def optimizer(self):
         """Get optimizer"""
@@ -482,8 +547,7 @@ class AutoML:
         """Get best hyperparameters"""
         return self.opt.get_tuned_params()
 
-    @property
-    def leaderboard(self):
+    def get_leaderboard(self):
         """Get best hyperparameters"""
         if self.leaderboard is None:
             raise AutoMLError(
