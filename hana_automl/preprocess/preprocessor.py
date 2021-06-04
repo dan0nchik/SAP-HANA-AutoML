@@ -159,7 +159,6 @@ class Preprocessor:
 
     def autoremovecolumns(self, df: DataFrame):
         for column in df.columns:
-            i = df.select('Survived')
             if (
                     "object" == str(df[column].dtype)
                     and df[column].nunique() > df[column].shape[0] / 100 * 7
@@ -168,26 +167,27 @@ class Preprocessor:
         return df
 
     def drop_outers(self, df: DataFrame, id: str, target: str, cat_list: list):
-        if cat_list is None:
-            cat_list = []
-        saved = df.save(where='DROP_OUTERS', table_type="COLUMN", force=True)
-        cursor = saved.connection_context.connection.cursor()
-        df_description = df.describe().collect()
-        random_data_std = df_description['std']
-        random_data_mean = df_description['mean']
-        anomaly_cut_off = random_data_std * 3
-        lower_limit = random_data_mean - anomaly_cut_off
-        upper_limit = random_data_mean + anomaly_cut_off
-
-        columns = []
-        for i in saved.columns:
-            if i not in cat_list:
-                columns.append(i)
-
-        for column, lower_per_column, upper_per_column in zip(columns, lower_limit, upper_limit):
-            if (not math.isnan(lower_per_column)) and (not math.isnan(upper_per_column)):
-                cursor.execute(f'DELETE FROM DROP_OUTERS WHERE "{column}" < {lower_per_column} OR "{column}" > {upper_per_column};')
-        return saved
+        col_list = df.columns
+        col_list.remove(id)
+        col_list.remove(target)
+        if cat_list is not None:
+            for i in cat_list:
+                col_list.remove(i)
+        data_types = df.dtypes()
+        for i in data_types:
+            if i[0] in col_list:
+                if i[1] == "CHAR" or i[1] == "VARCHAR":
+                    col_list.remove(i[0])
+        for i in col_list:
+            df = (
+                variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0]
+                .rename_columns(["ID_TEMP", "DROP"])
+                .join(df, "ID_TEMP=" + id)
+                .deselect("ID_TEMP")
+                .filter("DROP = 0")
+                .deselect("DROP")
+            )
+        return df
 
     def set_task(self, data, target: str, task: str, algo_exceptions=None):
         if algo_exceptions is None:

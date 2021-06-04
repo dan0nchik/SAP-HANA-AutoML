@@ -101,14 +101,13 @@ class Data:
         train = self.train
         test = self.test
         if drop_outers:
-            train = pr.drop_outers(
-                train, id=self.id_colm, target=self.target, cat_list=categorical_list
+            df = test.union([train, valid])
+            df = df.sort(self.id_colm, desc=False)
+            df = pr.drop_outers(
+                df, id=self.id_colm, target=self.target, cat_list=categorical_list
             )
-            test = pr.drop_outers(
-                test, id=self.id_colm, target=self.target, cat_list=categorical_list
-            )
-            valid = pr.drop_outers(
-                valid, id=self.id_colm, target=self.target, cat_list=categorical_list
+            train, test, valid = train_test_val_split(
+                data=df, id_column=self.id_colm, random_seed=17
             )
         if "valid" in clean_sets:
             valid = pr.autoimput(
