@@ -9,7 +9,6 @@ from hana_automl.pipeline.data import Data
 class BlendingCls(Blending):
     def __init__(
         self,
-        categorical_features: list,
         id_col: str,
         connection_context: hana_ml.ConnectionContext,
         table_name: str,
@@ -17,7 +16,6 @@ class BlendingCls(Blending):
         leaderboard: list = None,
     ):
         super(BlendingCls, self).__init__(
-            categorical_features,
             id_col,
             connection_context,
             table_name,
