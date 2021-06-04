@@ -185,9 +185,8 @@ class BayesianOptimizer(BaseOptimizer):
         """Returns tuned hyperparameters."""
 
         return {
-            "title": self.algo_list[self.algo_index].title,
-            "accuracy": self.leaderboard[0].valid_accuracy,
-            "info": self.tuned_params,
+            "algorithm": self.tuned_params,
+            "accuracy": self.leaderboard[0].valid_score,
         }
 
     def get_model(self) -> hana_ml.algorithms.pal.pal_base:

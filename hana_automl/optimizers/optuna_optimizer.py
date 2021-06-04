@@ -226,7 +226,7 @@ class OptunaOptimizer(BaseOptimizer):
         """Returns tuned hyperparameters."""
         return {
             "algorithm": self.tuned_params,
-            "accuracy": self.leaderboard[0].valid_accuracy,
+            "accuracy": self.leaderboard[0].valid_score,
         }
 
     def get_model(self):

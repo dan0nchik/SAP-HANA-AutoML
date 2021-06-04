@@ -29,5 +29,6 @@ def test_classification(optimizer):
         steps=5,
         optimizer=optimizer,
         task="cls",
+        output_leaderboard=True
     )
     assert m.best_params["accuracy"] > 0.50

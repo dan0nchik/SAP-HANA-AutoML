@@ -1,5 +1,5 @@
 import copy
-
+import math
 from hana_ml import DataFrame
 from hana_ml.algorithms.pal.preprocessing import (
     Imputer,
@@ -29,17 +29,17 @@ from hana_automl.utils.error import PreprocessError
 
 class Preprocessor:
     def autoimput(
-        self,
-        df: DataFrame = None,
-        target: str = None,
-        id: str = None,
-        imputer_num_strategy: str = None,
-        strategy_by_col: str = None,
-        normalizer_strategy: str = None,
-        normalizer_z_score_method: str = None,
-        normalize_int: bool = None,
-        categorical_list: list = None,
-        normalization_excp: list = None,
+            self,
+            df: DataFrame = None,
+            target: str = None,
+            id: str = None,
+            imputer_num_strategy: str = None,
+            strategy_by_col: str = None,
+            normalizer_strategy: str = None,
+            normalizer_z_score_method: str = None,
+            normalize_int: bool = None,
+            categorical_list: list = None,
+            normalization_excp: list = None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -90,15 +90,15 @@ class Preprocessor:
         return df
 
     def normalize(
-        self,
-        df: DataFrame,
-        method: str,
-        id: str,
-        target: str,
-        categorical_list: list = None,
-        norm_int: bool = False,
-        z_score_method: str = "mean-standard",
-        normalization_excp=None,
+            self,
+            df: DataFrame,
+            method: str,
+            id: str,
+            target: str,
+            categorical_list: list = None,
+            norm_int: bool = False,
+            z_score_method: str = "mean-standard",
+            normalization_excp=None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -114,6 +114,8 @@ class Preprocessor:
         if categorical_list is not None:
             for i in categorical_list:
                 remove_list.append(i)
+        else:
+            categorical_list = []
         dt = df.dtypes()
         if norm_int:
             int_lst = []
@@ -123,11 +125,10 @@ class Preprocessor:
                 else:
                     targ_variant = i[0] != target
                 if (
-                    i[0] != id
-                    and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
-                    and targ_variant
-                    and categorical_list is not None
-                    and not (i[0] in categorical_list)
+                        i[0] != id
+                        and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
+                        and targ_variant
+                        and not (i[0] in categorical_list)
                 ):
                     int_lst.append(i[0])
             if len(int_lst) > 0:
@@ -151,43 +152,42 @@ class Preprocessor:
         trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
         df = (
             df.select(remove_list)
-            .join(trn.rename_columns(["ID_TEMPR", *col_list]), f"ID_TEMPR={id}")
-            .deselect("ID_TEMPR")
+                .join(trn.rename_columns(["ID_TEMPR", *col_list]), f"ID_TEMPR={id}")
+                .deselect("ID_TEMPR")
         )
         return df
 
     def autoremovecolumns(self, df: DataFrame):
-        for cl in df:
+        for column in df.columns:
+            i = df.select('Survived')
             if (
-                "object" == str(df[cl].dtype)
-                and df[cl].nunique() > df[cl].shape[0] / 100 * 7
-            ) or (df[cl].nunique() > df[cl].shape[0] / 100 * 9):
-                df = df.drop([cl], axis=1)
+                    "object" == str(df[column].dtype)
+                    and df[column].nunique() > df[column].shape[0] / 100 * 7
+            ) or (df[column].nunique() > df[column].shape[0] / 100 * 9):
+                df = df.drop([column])
         return df
 
     def drop_outers(self, df: DataFrame, id: str, target: str, cat_list: list):
-        col_list = df.columns
-        col_list.remove(id)
-        col_list.remove(target)
-        if cat_list is not None:
-            for i in cat_list:
-                if i in col_list:
-                    col_list.remove(i)
-        data_types = df.dtypes()
-        for i in data_types:
-            if i[0] in col_list:
-                if i[1] == "CHAR" or i[1] == "VARCHAR":
-                    col_list.remove(i[0])
-        for i in col_list:
-            df = (
-                variance_test(data=df, sigma_num=3.0, key=id, data_col=i)[0]
-                .rename_columns(["ID_TEMP", "DROP"])
-                .join(df, "ID_TEMP=" + id)
-                .deselect("ID_TEMP")
-                .filter("DROP = 0")
-                .deselect("DROP")
-            )
-        return df
+        if cat_list is None:
+            cat_list = []
+        saved = df.save(where='DROP_OUTERS', table_type="COLUMN", force=True)
+        cursor = saved.connection_context.connection.cursor()
+        df_description = df.describe().collect()
+        random_data_std = df_description['std']
+        random_data_mean = df_description['mean']
+        anomaly_cut_off = random_data_std * 3
+        lower_limit = random_data_mean - anomaly_cut_off
+        upper_limit = random_data_mean + anomaly_cut_off
+
+        columns = []
+        for i in saved.columns:
+            if i not in cat_list:
+                columns.append(i)
+
+        for column, lower_per_column, upper_per_column in zip(columns, lower_limit, upper_limit):
+            if (not math.isnan(lower_per_column)) and (not math.isnan(upper_per_column)):
+                cursor.execute(f'DELETE FROM DROP_OUTERS WHERE "{column}" < {lower_per_column} OR "{column}" > {upper_per_column};')
+        return saved
 
     def set_task(self, data, target: str, task: str, algo_exceptions=None):
         if algo_exceptions is None:
@@ -278,11 +278,13 @@ class Preprocessor:
         dts = df.columns
         dts.remove(id)
         dts.remove(target)
+        if categorical_list is None:
+            categorical_list = []
         for dt in dts:
             if (
-                df.is_numeric(dt)
-                and dt not in categorical_list
-                and df.distinct(dt).count() < 3
+                    df.is_numeric(dt)
+                    and dt not in categorical_list
+                    and df.distinct(dt).count() < 3
             ):
                 excpt_list.append(dt)
         if len(excpt_list) < 1:

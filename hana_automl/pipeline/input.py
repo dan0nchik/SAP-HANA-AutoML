@@ -131,6 +131,7 @@ class Input:
         self.hana_df = self.hana_df.rename_columns(
             [self.hana_df.columns[0].upper(), *self.hana_df.columns[1:]]
         )
+        self.id_col = self.id_col.upper()
         return
 
     def split_data(self) -> Data:
