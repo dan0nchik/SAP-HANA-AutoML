@@ -180,6 +180,7 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
+        data.drop_duplicates()
         self.val_data = copy.copy(data)
         self.val_data.train = None
         pipe = Pipeline(

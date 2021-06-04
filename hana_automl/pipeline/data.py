@@ -159,3 +159,12 @@ class Data:
             target=self.target,
             categorical_list=categorical_list,
         )
+
+    def drop_duplicates(self):
+        df = self.test.union([self.train, self.valid])
+        cols = df.columns
+        cols.remove(self.id_colm)
+        df = df.drop_duplicates(cols)
+        self.train, self.test, self.valid = train_test_val_split(
+            data=df, id_column=self.id_colm, random_seed=17
+        )
