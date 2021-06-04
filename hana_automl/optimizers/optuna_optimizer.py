@@ -46,7 +46,7 @@ class OptunaOptimizer(BaseOptimizer):
         algo_dict: dict,
         categorical_features: list = None,
         droplist_columns: list = None,
-        verbosity=2,
+        verbose=2,
         tuning_metric: str = None,
     ):
         self.algo_list = algo_list
@@ -57,8 +57,8 @@ class OptunaOptimizer(BaseOptimizer):
         self.algo_dict = algo_dict
         self.categorical_features = categorical_features
         self.droplist_columns = droplist_columns
-        self.verbosity = verbosity
-        if self.verbosity < 2:
+        self.verbose = verbose
+        if self.verbose < 2:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
         self.model = None
         self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
@@ -78,7 +78,7 @@ class OptunaOptimizer(BaseOptimizer):
         self.tuning_metric = tuning_metric
 
     def inner_params(self, study, trial):
-        if self.verbosity > 1:
+        if self.verbose > 1:
             time.sleep(1)
             print(
                 "\033[31m {}\033[0m".format(
@@ -125,7 +125,7 @@ class OptunaOptimizer(BaseOptimizer):
             )
         time.sleep(2)
         self.tuned_params = self.study.best_params
-        if self.verbosity > 0:
+        if self.verbose > 0:
             res = len(self.study.trials)
             if self.iterations is None:
                 print(

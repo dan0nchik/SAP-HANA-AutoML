@@ -50,7 +50,7 @@ class BayesianOptimizer(BaseOptimizer):
         time_limit: int,
         problem: str,
         categorical_features: list = None,
-        verbosity=2,
+        verbose=2,
         tuning_metric: str = None,
     ):
         self.data = data
@@ -73,7 +73,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.model = None
         self.leaderboard: list = list()
         self.algorithm = None
-        self.verbosity = verbosity
+        self.verbose = verbose
         self.tuning_metric = tuning_metric
 
     def objective(
@@ -175,7 +175,7 @@ class BayesianOptimizer(BaseOptimizer):
         score = algorithm.score(
             self.inner_data, self.inner_data.test, self.tuning_metric
         )
-        if self.verbosity > 1:
+        if self.verbose > 1:
             print(f"Child iteration {self.tuning_metric} score: {score}")
         if self.tuning_metric not in ["accuracy", "r2_score"]:
             score = -1 * score
@@ -218,7 +218,7 @@ class BayesianOptimizer(BaseOptimizer):
                 "drop_outers": (0, len(self.prepset.drop_outers) - 1),
             },
             random_state=17,
-            verbose=self.verbosity > 1,
+            verbose=self.verbose > 1,
         )
         self.start_time = time.perf_counter()
         try:
@@ -227,7 +227,7 @@ class BayesianOptimizer(BaseOptimizer):
             else:
                 opt.maximize(n_iter=self.iter, init_points=1)
         except OptimizerError:
-            if self.verbosity > 0:
+            if self.verbose > 0:
                 if self.iter is None:
                     print(
                         "There was a stop due to a time limit! Completed "
@@ -242,10 +242,10 @@ class BayesianOptimizer(BaseOptimizer):
                         + str(self.iter)
                     )
         else:
-            if self.verbosity > 0:
+            if self.verbose > 0:
                 print("All iterations completed successfully!")
         self.tuned_params = opt.max
-        if self.verbosity > 0:
+        if self.verbose > 0:
             print(
                 f"Starting model {self.tuning_metric} score evaluation on the validation data!"
             )

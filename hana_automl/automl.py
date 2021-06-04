@@ -60,7 +60,7 @@ class AutoML:
         optimizer: str = "OptunaSearch",
         time_limit: int = None,
         ensemble: bool = False,
-        verbosity=2,
+        verbose=2,
         output_leaderboard: bool = False,
         strategy_by_col: list = None,
         tuning_metric: str = None,
@@ -103,7 +103,7 @@ class AutoML:
         ensemble: bool
             Specify if you want to get an ensemble.
             Currently supported: "blending". What is that? Details here: :doc:`./algorithms`
-        verbosity: int
+        verbose: int
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
             Print algorithms leaderboard or not.
@@ -165,7 +165,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            verbose=verbosity > 0,
+            verbose=verbose > 0,
         )
         inputted.load_data()
         if table_name is None:
@@ -188,7 +188,7 @@ class AutoML:
             steps=steps,
             task=task,
             time_limit=time_limit,
-            verbosity=verbosity,
+            verbose=verbose,
             tuning_metric=tuning_metric,
         )
         self.opt = pipe.train(
@@ -213,7 +213,7 @@ class AutoML:
                 raise BlendingError(
                     "Sorry, not enough fitted models for ensembling! Restart the process"
                 )
-            if verbosity > 0:
+            if verbose > 0:
                 print("Starting ensemble accuracy evaluation on the validation data!")
             self.ensemble = ensemble
             if pipe.task == "cls":
@@ -247,7 +247,7 @@ class AutoML:
         table_name: str = None,
         id_column: str = None,
         target_drop: str = None,
-        verbosity=1,
+        verbose=1,
     ):
         """Makes predictions using fitted model.
 
@@ -265,7 +265,7 @@ class AutoML:
             ID column in table. Needed for HANA. If None, it will be created in dataset automatically
         target_drop: str
             Target to drop, if it exists in inputted data
-        verbosity: int
+        verbose: int
             Level of output. 0 - minimal, 1 - all output.
 
         Notes
@@ -289,7 +289,7 @@ class AutoML:
         ...                table_name='PREDICTION',
         ...                id_column='ID',
         ...                target_drop='target',
-        ...                verbosity=1)
+        ...                verbose=1)
         """
         data = Input(
             connection_context=self.connection_context,
@@ -297,7 +297,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            verbose=verbosity > 0,
+            verbose=verbose > 0,
         )
         data.load_data()
         if id_column is not None:
@@ -308,7 +308,7 @@ class AutoML:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
             data.hana_df = data.hana_df.drop(self.columns_to_remove)
-            if verbosity > 0:
+            if verbose > 0:
                 print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
@@ -318,7 +318,7 @@ class AutoML:
                 id_colm=data.id_col,
             )
         else:
-            if verbosity > 0:
+            if verbose > 0:
                 print(
                     "Preprocessor settings:",
                     self.preprocessor_settings.tuned_num_strategy,
@@ -339,7 +339,7 @@ class AutoML:
         res = self.predicted
         if type(self.predicted) == tuple:
             res = res[0]
-        if verbosity > 0:
+        if verbose > 0:
             print("Prediction results (first 20 rows): \n", res.head(20).collect())
         return res.collect()
 
