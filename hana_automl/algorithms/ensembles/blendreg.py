@@ -11,7 +11,6 @@ from hana_automl.pipeline.data import Data
 class BlendingReg(Blending):
     def __init__(
         self,
-        categorical_features: list = None,
         id_col: str = None,
         connection_context: hana_ml.dataframe.ConnectionContext = None,
         table_name: str = None,
@@ -19,7 +18,6 @@ class BlendingReg(Blending):
         leaderboard: list = None,
     ):
         super().__init__(
-            categorical_features,
             id_col,
             connection_context,
             table_name,

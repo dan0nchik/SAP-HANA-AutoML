@@ -8,7 +8,6 @@ from hana_automl.utils.error import BlendingError
 class Blending:
     def __init__(
         self,
-        categorical_features: list,
         id_col: str,
         connection_context: hana_ml.ConnectionContext,
         table_name: str,
@@ -16,7 +15,6 @@ class Blending:
         leaderboard: list = None,
     ):
         self.id_col = id_col
-        self.categorical_features = categorical_features
         self.title = ""
         self.name = "Untitled"  # for storage
         self.version = 1  # for storage
@@ -47,7 +45,7 @@ class Blending:
                     target=data.target,
                     imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     strategy_by_col=model.preprocessor.strategy_by_col,
-                    categorical_list=self.categorical_features,
+                    categorical_list=model.preprocessor.categorical_cols,
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,
@@ -63,7 +61,7 @@ class Blending:
                     target=data.target,
                     imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     strategy_by_col=model.preprocessor.strategy_by_col,
-                    categorical_list=self.categorical_features,
+                    categorical_list=model.preprocessor.categorical_cols,
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,

@@ -217,7 +217,6 @@ class AutoML:
             self.ensemble = ensemble
             if pipe.task == "cls":
                 self.model = BlendingCls(
-                    categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,
                     table_name=table_name,
@@ -225,7 +224,6 @@ class AutoML:
                 )
             else:
                 self.model = BlendingReg(
-                    categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,
                     table_name=table_name,
@@ -313,7 +311,11 @@ class AutoML:
                 print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
-            self.predicted = self.model.predict(df=data.hana_df, id_colm=data.id_col)
+            self.predicted = self.model.predict(
+                data=Data(id_col=id_column, target=target_drop),
+                df=data.hana_df,
+                id_colm=data.id_col,
+            )
         else:
             if verbosity > 0:
                 print(
