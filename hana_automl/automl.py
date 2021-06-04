@@ -199,6 +199,10 @@ class AutoML:
         self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
         self.leaderboard = copy.copy(self.opt.leaderboard)
+        if tuning_metric is None and pipe.task == "cls":
+            tuning_metric = "accuracy"
+        elif tuning_metric is None and pipe.task == "reg":
+            tuning_metric = "r2_score"
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
                 "Sorry, non binomial blending classification is not supported yet!"
@@ -219,8 +223,6 @@ class AutoML:
                     table_name=table_name,
                     leaderboard=self.opt.leaderboard,
                 )
-                if tuning_metric is None:
-                    tuning_metric = "accuracy"
             else:
                 self.model = BlendingReg(
                     categorical_features=categorical_features,
@@ -229,8 +231,6 @@ class AutoML:
                     table_name=table_name,
                     leaderboard=self.opt.leaderboard,
                 )
-                if tuning_metric is None:
-                    tuning_metric = "r2_score"
             self.leaderboard_metric = tuning_metric
             print("\033[33m {}".format("\n"))
             print(
