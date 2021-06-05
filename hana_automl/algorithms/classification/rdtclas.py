@@ -21,6 +21,7 @@ class RDTCls(BaseAlgorithm):
         params["min_samples_leaf"] = round(params["min_samples_leaf"])
         params["n_estimators"] = round(params["n_estimators"])
         # self.model = UnifiedClassification(func='RandomDecisionTree', **params)
+        self.tuned_params = params
         self.model = RDTClassifier(**params)
 
     def optunatune(self, trial):

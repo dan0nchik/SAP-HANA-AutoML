@@ -19,6 +19,7 @@ class RDTReg(BaseAlgorithm):
         params["max_depth"] = round(params["max_depth"])
         params["min_samples_leaf"] = round(params["min_samples_leaf"])
         params["n_estimators"] = round(params["n_estimators"])
+        self.tuned_params = params
         self.model = RDTRegressor(**params)
 
     def optunatune(self, trial):

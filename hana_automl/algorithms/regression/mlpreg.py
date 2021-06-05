@@ -49,6 +49,7 @@ class MLPreg(BaseAlgorithm):
             "variance-scale-uniform",
         ][round(params["weight_init"])]
         params["training_style"] = "batch"
+        self.tuned_params = params
         self.model = MLPRegressor(**params)
 
     def optunatune(self, trial):

@@ -30,6 +30,7 @@ class KNeighborsCls(BaseAlgorithm):
         ][round(params["metric"])]
         params["n_neighbors"] = round(params["n_neighbors"])
         params["algorithm"] = ["brure-force", "kd-tree"][round(params["algorithm"])]
+        self.tuned_params = params
         self.model = KNNClassifier(**params)
 
     def optunatune(self, trial):

@@ -22,6 +22,7 @@ class HGBReg(BaseAlgorithm):
         params["split_method"] = ["exact", "sketch", "sampling"][
             round(params["split_method"])
         ]
+        self.tuned_params = params
         self.model = HybridGradientBoostingRegressor(**params)
 
     def optunatune(self, trial):

@@ -26,6 +26,7 @@ class SVCls(BaseAlgorithm):
             round(params["scale_info"])
         ]
         # self.model = UnifiedClassification(func='SVM', **params1)
+        self.tuned_params = params
         self.model = SVC(**params1)
 
     def optunatune(self, trial):

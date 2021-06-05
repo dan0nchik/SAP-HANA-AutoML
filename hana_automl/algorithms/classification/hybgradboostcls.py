@@ -23,6 +23,7 @@ class HGBCls(BaseAlgorithm):
             round(params["split_method"])
         ]
         # self.model = UnifiedClassification(func='HybridGradientBoostingTree', **params)
+        self.tuned_params = params
         self.model = HybridGradientBoostingClassifier(**params)
 
     def optunatune(self, trial):

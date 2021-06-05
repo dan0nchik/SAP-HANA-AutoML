@@ -30,6 +30,7 @@ class LogRegressionCls(BaseAlgorithm):
                 params["class_map0"] = self.class_map0
                 params["class_map1"] = self.class_map1
         # self.model = UnifiedClassification(func='LogisticRegression', **params)
+        self.tuned_params = params
         self.model = LogisticRegression(**params)
 
     def optunatune(self, trial):

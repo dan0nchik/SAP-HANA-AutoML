@@ -20,6 +20,7 @@ class DecisionTreeCls(BaseAlgorithm):
         params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
         # self.model = UnifiedClassification(func='DecisionTree', **params)
+        self.tuned_params = params
         self.model = DecisionTreeClassifier(**params)
 
     def optunatune(self, trial):

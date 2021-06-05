@@ -49,6 +49,7 @@ class MLPcls(BaseAlgorithm):
         params["training_style"] = "batch"
         params["weight_init"] = self.weight_init[round(params["weight_init"])]
         # self.model = UnifiedClassification(func='MLP', **params)
+        self.tuned_params = params
         self.model = MLPClassifier(**params)
 
     def optunatune(self, trial):

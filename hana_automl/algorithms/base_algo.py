@@ -23,6 +23,7 @@ class BaseAlgorithm:
         self.optuna_opt: OptunaOptimizer = None
         self.temp_data = None
         self.tuning_metric: str = None
+        self.tuned_params: dict = None
         if custom_params is not None:
             # self.params_range[custom_params.keys()] = custom_params.values()
             pass

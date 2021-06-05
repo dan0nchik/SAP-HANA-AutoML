@@ -20,6 +20,7 @@ class GBCls(BaseAlgorithm):
         params["max_depth"] = round(params["max_depth"])
         params["min_sample_weight_leaf"] = round(params["min_sample_weight_leaf"])
         params["loss"] = ["linear", "logistic"][round(params["loss"])]
+        self.tuned_params = params
         self.model = GradientBoostingClassifier(**params)
 
     def optunatune(self, trial):

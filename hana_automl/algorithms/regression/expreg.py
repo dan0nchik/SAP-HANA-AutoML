@@ -17,6 +17,7 @@ class ExponentialReg(BaseAlgorithm):
             round(params["decomposition"])
         ]
         params["adjusted_r2"] = round(params["adjusted_r2"])
+        self.tuned_params = params
         self.model = ExponentialRegression(**params)
 
     def optunatune(self, trial):

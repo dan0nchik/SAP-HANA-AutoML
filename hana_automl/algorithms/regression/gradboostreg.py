@@ -20,6 +20,7 @@ class GBReg(BaseAlgorithm):
         params["max_depth"] = round(params["max_depth"])
         params["min_sample_weight_leaf"] = round(params["min_sample_weight_leaf"])
         params["loss"] = ["linear"][round(params["loss"])]
+        self.tuned_params = params
         self.model = GradientBoostingRegressor(**params)
 
     def optunatune(self, trial):

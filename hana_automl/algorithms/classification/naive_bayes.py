@@ -15,6 +15,7 @@ class NBayesCls(BaseAlgorithm):
     def set_params(self, **params):
         params["discretization"] = ["no", "supervised"][round(params["discretization"])]
         # self.model = UnifiedClassification(func='NaiveBayes', **params)
+        self.tuned_params = params
         self.model = NaiveBayes(**params)
 
     def optunatune(self, trial):

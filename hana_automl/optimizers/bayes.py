@@ -146,15 +146,22 @@ class BayesianOptimizer(BaseOptimizer):
             tr = -1 * target
         else:
             tr = target
-        print(
-            f"\033[32m[I {now}] \033[36mTrial {self.trial_num} finished with value: {tr} and parametrs: 'algo': {self.algo_list[self.algo_index]}, 'imputer': {imputer}, 'normalizer_strategy': {normalizer_strategy_2}, 'normalize_int': {normalize_int_2}, 'drop_outers': {drop_outers}\033[0m"
-        )
+        if self.verbose > 1:
+            print(
+                f"\033[32m[I {now}] \033[36mTrial {self.trial_num} finished with value: {tr} and parametrs: {{ 'algo': {self.algo_list[self.algo_index]}, 'imputer': {imputer}, 'normalizer_strategy': {normalizer_strategy_2}, 'normalize_int': {normalize_int_2}, 'drop_outers': {drop_outers}}}\033[0m"
+            )
         self.trial_num = self.trial_num + 1
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
+        if self.verbose > 1:
+            print(
+                "\033[36m {}\033[0m".format(
+                    algo.title + " trial params :" + str(algo.tuned_params)
+                )
+            )
         self.fit(algo, self.inner_data)
         self.leaderboard.append(
-            ModelBoard(copy.copy(algo), target, copy.copy(self.prepset))
+            ModelBoard(copy.copy(algo), tr, copy.copy(self.prepset))
         )
 
         return target
@@ -177,8 +184,6 @@ class BayesianOptimizer(BaseOptimizer):
         score = algorithm.score(
             self.inner_data, self.inner_data.test, self.tuning_metric
         )
-        if self.verbose > 1:
-            print(f"Child iteration {self.tuning_metric} score: {score}")
         if self.tuning_metric not in ["accuracy", "r2_score"]:
             score = -1 * score
         return score
