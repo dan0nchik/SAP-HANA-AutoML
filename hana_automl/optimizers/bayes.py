@@ -1,5 +1,6 @@
 import copy
 import time
+from datetime import datetime
 
 import hana_ml
 import numpy as np
@@ -75,6 +76,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.algorithm = None
         self.verbose = verbose
         self.tuning_metric = tuning_metric
+        self.trial_num = 0
 
     def objective(
         self,
@@ -139,15 +141,15 @@ class BayesianOptimizer(BaseOptimizer):
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
         )
+        now = datetime.now()
         if self.tuning_metric not in ["accuracy", "r2_score"]:
-            print(
-                f"Best child Iteration cycle {self.tuning_metric} score: "
-                + str(-1 * target)
-            )
+            tr = -1 * target
         else:
-            print(
-                f"Best child Iteration cycle {self.tuning_metric} score: " + str(target)
-            )
+            tr = target
+        print(
+            f"\033[32m[I {now}] \033[36mTrial {self.trial_num} finished with value: {tr} and parametrs: 'algo': {self.algo_list[self.algo_index]}, 'imputer': {imputer}, 'normalizer_strategy': {normalizer_strategy_2}, 'normalize_int': {normalize_int_2}, 'drop_outers': {drop_outers}\033[0m"
+        )
+        self.trial_num = self.trial_num + 1
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
         self.fit(algo, self.inner_data)
@@ -206,7 +208,6 @@ class BayesianOptimizer(BaseOptimizer):
 
     def tune(self):
         """Starts hyperparameter searching."""
-
         opt = BayesianOptimization(
             f=self.objective,
             pbounds={
@@ -218,7 +219,11 @@ class BayesianOptimizer(BaseOptimizer):
                 "drop_outers": (0, len(self.prepset.drop_outers) - 1),
             },
             random_state=17,
-            verbose=self.verbose > 1,
+            verbose=False,
+        )
+        now = datetime.now()
+        print(
+            f"\033[32m[I {now}] \033[36mA new bayesian optimization process created in memory\033[0m"
         )
         self.start_time = time.perf_counter()
         try:

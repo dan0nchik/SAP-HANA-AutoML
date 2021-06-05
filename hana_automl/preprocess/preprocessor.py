@@ -29,17 +29,17 @@ from hana_automl.utils.error import PreprocessError
 
 class Preprocessor:
     def autoimput(
-            self,
-            df: DataFrame = None,
-            target: str = None,
-            id: str = None,
-            imputer_num_strategy: str = None,
-            strategy_by_col: str = None,
-            normalizer_strategy: str = None,
-            normalizer_z_score_method: str = None,
-            normalize_int: bool = None,
-            categorical_list: list = None,
-            normalization_excp: list = None,
+        self,
+        df: DataFrame = None,
+        target: str = None,
+        id: str = None,
+        imputer_num_strategy: str = None,
+        strategy_by_col: str = None,
+        normalizer_strategy: str = None,
+        normalizer_z_score_method: str = None,
+        normalize_int: bool = None,
+        categorical_list: list = None,
+        normalization_excp: list = None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -90,15 +90,15 @@ class Preprocessor:
         return df
 
     def normalize(
-            self,
-            df: DataFrame,
-            method: str,
-            id: str,
-            target: str,
-            categorical_list: list = None,
-            norm_int: bool = False,
-            z_score_method: str = "mean-standard",
-            normalization_excp=None,
+        self,
+        df: DataFrame,
+        method: str,
+        id: str,
+        target: str,
+        categorical_list: list = None,
+        norm_int: bool = False,
+        z_score_method: str = "mean-standard",
+        normalization_excp=None,
     ):
         if df is None:
             raise PreprocessError("Enter not null data!")
@@ -125,10 +125,10 @@ class Preprocessor:
                 else:
                     targ_variant = i[0] != target
                 if (
-                        i[0] != id
-                        and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
-                        and targ_variant
-                        and not (i[0] in categorical_list)
+                    i[0] != id
+                    and (i[1] in ["INT", "SMALLINT", "MEDIUMINT", "INTEGER", "BIGINT"])
+                    and targ_variant
+                    and not (i[0] in categorical_list)
                 ):
                     int_lst.append(i[0])
             if len(int_lst) > 0:
@@ -152,16 +152,16 @@ class Preprocessor:
         trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
         df = (
             df.select(remove_list)
-                .join(trn.rename_columns(["ID_TEMPR", *col_list]), f"ID_TEMPR={id}")
-                .deselect("ID_TEMPR")
+            .join(trn.rename_columns(["ID_TEMPR", *col_list]), f"ID_TEMPR={id}")
+            .deselect("ID_TEMPR")
         )
         return df
 
     def autoremovecolumns(self, df: DataFrame):
         for column in df.columns:
             if (
-                    "object" == str(df[column].dtype)
-                    and df[column].nunique() > df[column].shape[0] / 100 * 7
+                "object" == str(df[column].dtype)
+                and df[column].nunique() > df[column].shape[0] / 100 * 7
             ) or (df[column].nunique() > df[column].shape[0] / 100 * 9):
                 df = df.drop([column])
         return df
@@ -282,9 +282,9 @@ class Preprocessor:
             categorical_list = []
         for dt in dts:
             if (
-                    df.is_numeric(dt)
-                    and dt not in categorical_list
-                    and df.distinct(dt).count() < 3
+                df.is_numeric(dt)
+                and dt not in categorical_list
+                and df.distinct(dt).count() < 3
             ):
                 excpt_list.append(dt)
         if len(excpt_list) < 1:
