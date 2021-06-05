@@ -4,6 +4,7 @@ from typing import Union
 
 import hana_ml
 import pandas
+import pandas as pd
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
@@ -248,7 +249,7 @@ class AutoML:
         id_column: str = None,
         target_drop: str = None,
         verbose=1,
-    ):
+    ) -> pd.DataFrame:
         """Makes predictions using fitted model.
 
         Parameters

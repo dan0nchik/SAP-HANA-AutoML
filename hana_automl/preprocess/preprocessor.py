@@ -45,15 +45,20 @@ class Preprocessor:
             raise PreprocessError("Enter not null data!")
         impute = Imputer(strategy=imputer_num_strategy)
         if categorical_list is not None:
+            categorical_list = list(set(categorical_list))
             if target is None:
+                # cols = df.columns
+                # cols.remove(id)
+                # drop = None
+                # for i in categorical_list:
+                #     if i not in cols:
+                #         drop = i
+                # if drop is not None:
+                #     categorical_list.remove(drop)
                 cols = df.columns
-                cols.remove(id)
-                drop = None
-                for i in categorical_list:
-                    if i not in cols:
-                        drop = i
-                if drop is not None:
-                    categorical_list.remove(drop)
+                for column in categorical_list:
+                    if column not in cols:
+                        categorical_list.remove(column)
             if strategy_by_col is not None:
                 result = impute.fit_transform(
                     df,
@@ -109,9 +114,8 @@ class Preprocessor:
         else:
             fn = FeatureNormalizer(method="decimal")
         col_list = df.columns
-        remove_list = list()
-        remove_list.append(id)
-        if categorical_list is not None:
+        remove_list = [id]
+        if categorical_list is not None and len(categorical_list) > 0:
             for i in categorical_list:
                 remove_list.append(i)
         else:
@@ -147,13 +151,19 @@ class Preprocessor:
                 if i not in remove_list:
                     remove_list.append(i)
         if len(remove_list) > 0:
-            for i in remove_list:
+            for i in set(remove_list):
                 col_list.remove(i)
         trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
+        trn = trn.rename_columns({id: "TEMP_ID"})
+        df = df.drop(col_list)
         df = (
-            df.select(remove_list)
-            .join(trn.rename_columns(["ID_TEMPR", *col_list]), f"ID_TEMPR={id}")
-            .deselect("ID_TEMPR")
+            df.alias("SOURCE")
+            .join(
+                trn.alias("NORMALIZED"),
+                f"NORMALIZED.TEMP_ID = SOURCE.{id}",
+                how="inner",
+            )
+            .drop(["TEMP_ID"])
         )
         return df
 
@@ -168,11 +178,11 @@ class Preprocessor:
 
     def drop_outers(self, df: DataFrame, id: str, target: str, cat_list: list):
         col_list = df.columns
-        col_list.remove(id)
-        col_list.remove(target)
-        if cat_list is not None:
-            for i in cat_list:
-                col_list.remove(i)
+        if cat_list is None:
+            cat_list = []
+        cat_list.append(target)
+        cat_list.append(id)
+        col_list = list(filter(lambda column: column not in cat_list, col_list))
         data_types = df.dtypes()
         for i in data_types:
             if i[0] in col_list:

@@ -153,3 +153,4 @@ hana_automl/utils/tables.txt
 
 # pycharm
 .idea/
+.coveragerc

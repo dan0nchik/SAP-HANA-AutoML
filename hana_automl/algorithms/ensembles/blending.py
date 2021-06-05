@@ -58,7 +58,7 @@ class Blending:
                 df2 = pr.autoimput(
                     df=dt,
                     id=data.id_colm,
-                    target=data.target,
+                    target=None,
                     imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     strategy_by_col=model.preprocessor.strategy_by_col,
                     categorical_list=model.preprocessor.categorical_cols,
