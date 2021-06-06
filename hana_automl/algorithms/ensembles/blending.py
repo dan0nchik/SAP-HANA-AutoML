@@ -55,7 +55,7 @@ class Blending:
                 if data.target is None:
                     dt = data.valid
                 else:
-                    dt = data.valid.drop(data.target)
+                    dt = data.valid.drop([data.target])
                 df2 = pr.autoimput(
                     df=dt,
                     id=data.id_colm,
