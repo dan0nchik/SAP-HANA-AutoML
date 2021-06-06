@@ -47,14 +47,6 @@ class Preprocessor:
         if categorical_list is not None:
             categorical_list = list(set(categorical_list))
             if target is None:
-                # cols = df.columns
-                # cols.remove(id)
-                # drop = None
-                # for i in categorical_list:
-                #     if i not in cols:
-                #         drop = i
-                # if drop is not None:
-                #     categorical_list.remove(drop)
                 cols = df.columns
                 for column in categorical_list:
                     if column not in cols:
@@ -153,18 +145,19 @@ class Preprocessor:
         if len(remove_list) > 0:
             for i in set(remove_list):
                 col_list.remove(i)
-        trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
-        trn = trn.rename_columns({id: "TEMP_ID"})
-        df = df.drop(col_list)
-        df = (
-            df.alias("SOURCE")
-            .join(
-                trn.alias("NORMALIZED"),
-                f"NORMALIZED.TEMP_ID = SOURCE.{id}",
-                how="inner",
+        if len(col_list) > 0:
+            trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
+            trn = trn.rename_columns({id: "TEMP_ID"})
+            df = df.drop(col_list)
+            df = (
+                df.alias("SOURCE")
+                .join(
+                    trn.alias("NORMALIZED"),
+                    f"NORMALIZED.TEMP_ID = SOURCE.{id}",
+                    how="inner",
+                )
+                .drop(["TEMP_ID"])
             )
-            .drop(["TEMP_ID"])
-        )
         return df
 
     def autoremovecolumns(self, df: DataFrame):

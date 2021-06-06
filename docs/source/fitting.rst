@@ -8,7 +8,7 @@ Let's load the dataframe:
 .. code-block:: python
 
     import pandas as pd #pip install pandas
-    df = pd.read_csv('https://raw.githubusercontent.com/dan0nchik/SAP-HANA-AutoML/main/data/bank_train.csv')
+    df = pd.read_csv('https://raw.githubusercontent.com/dan0nchik/SAP-HANA-AutoML/dev/data/bank_train.csv', index_col='Unnamed: 0')
     df.head()
 .. image:: images/bank.png
 
@@ -42,7 +42,7 @@ Now create the AutoML object. This will be our model.
         columns_to_remove=['default', 'contact', 'month', 'poutcome', 'job'],
         steps=5,
         time_limit=120, # model will train for 2 minutes
-        verbosity=0
+        verbose=0
     )
 
 Confused about categorical features? Read about them here. :meth:`hana_automl.automl.AutoML.fit`

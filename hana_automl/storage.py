@@ -11,6 +11,7 @@ from hana_automl.algorithms.ensembles.blendreg import BlendingReg
 from hana_automl.automl import AutoML
 from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
+from hana_automl.utils.error import StorageError
 
 PREPROCESSORS = "PREPROCESSOR_STORAGE"
 
@@ -20,18 +21,17 @@ class Storage(ModelStorage):
 
     Attributes
     ----------
-    address : str
-        Host of the database. Example: 'localhost'
-    port : int
-        Port to connect. Example: 39015
-    user: str
-        Username of database user.
-    password: str
-        Well, just user's password.
     connection_context: hana_ml.dataframe.ConnectionContext
         Connection info for HANA database.
     schema : str
         Database schema.
+
+    Examples
+    --------
+    >>> from hana_automl.storage import Storage
+    >>> from hana_ml import ConnectionContext
+    >>> cc = ConnectionContext('address', 39015, 'user', 'password')
+    >>> storage = Storage(cc, 'your schema')
     """
 
     def __init__(self, connection_context: ConnectionContext, schema: str):
@@ -53,6 +53,17 @@ class Storage(ModelStorage):
             The model.
         if_exists: str
             Defaults to "upgrade". Not recommended to change.
+
+        Note
+        ----
+        If you have ensemble enabled in AutoML model, method will determine it automatically and split
+        ensemble model in multiple usual models.
+
+        Examples
+        --------
+        >>> from hana_automl.automl import AutoML
+        >>> automl.fit(df='table in HANA', target='some target', steps=3)
+        >>> storage.save_model(automl)
         """
         if not table_exists(self.cursor, self.schema, PREPROCESSORS):
             self.cursor.execute(
@@ -60,7 +71,7 @@ class Storage(ModelStorage):
                 f"5000)); "
             )
         if isinstance(automl.model, BlendingCls) or isinstance(
-            automl.model, BlendingReg
+                automl.model, BlendingReg
         ):
             if isinstance(automl.model, BlendingCls):
                 ensemble_name = "_ensemble_cls_"
@@ -68,6 +79,8 @@ class Storage(ModelStorage):
                 ensemble_name = "_ensemble_reg_"
             model_counter = 1
             for model in automl.model.model_list:  # type: ModelBoard
+                if automl.model.name is None or automl.model.name == "":
+                    raise StorageError("Please give your model a name.")
                 name = automl.model.name + ensemble_name + str(model_counter)
                 model.algorithm.model.name = name
                 json_settings = json.dumps(model.preprocessor.__dict__)
@@ -87,34 +100,81 @@ class Storage(ModelStorage):
                 model_counter += 1
 
         else:
-            super().save_model(automl.algorithm.model, if_exists)
+            if len(self.__find_ensembles(automl.model.name)) > 0:
+                raise StorageError('There is an ensemble with the same name in storage. Please change the name of the '
+                                   'model.')
+            super().save_model(automl.model, if_exists)
             json_settings = json.dumps(automl.preprocessor_settings.__dict__)
             self.cursor.execute(
                 f"INSERT INTO {PREPROCESSORS} (MODEL, VERSION, JSON) VALUES ('{automl.model.name}', {automl.model.version}, '{json_settings}'); "
             )
 
-    def list_preprocessors(self, name: str) -> pd.DataFrame:
+    def list_preprocessors(self, name: str = None) -> pd.DataFrame:
         """
-        Show preprocessors in database.
+        Show preprocessors for models in database.
+
         Parameters
         ----------
-        name: str
+        name: str, optional
             Model name.
+
         Returns
         -------
         res: pd.DataFrame
             DataFrame containing all preprocessors in database.
-        """
-        self.cursor.execute(
-            f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{name}';"
-        )
-        res = self.cursor.fetchall()
-        col_names = [i[0] for i in self.cursor.description]
-        return pd.DataFrame(res, columns=col_names)
 
-    def delete_model(self, name, version=None):
+        Note
+        ----
+        Do not delete or save preprocessors apart from model!
+        They are saved/deleted/changed automatically WITH model.
+
+        Examples
+        --------
+        >>> storage.list_preprocessors()
+             MODEL  VERSION	 JSON
+          1.  test        1  {'tuned_num'...}
+        """
+
+        if (name is not None) and name != '':
+            ensembles = self.__find_ensembles(name)
+            if len(ensembles) > 0:
+                result = pd.DataFrame(columns=['MODEL', 'VERSION', 'JSON'])
+                for model in ensembles:
+                    self.cursor.execute(
+                        f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{model[0]}';"
+                    )
+                    res = self.cursor.fetchall()
+                    col_names = [i[0] for i in self.cursor.description]
+                    df = pd.DataFrame(res, columns=col_names)
+                    result = result.append(df, ignore_index=True)
+                return result
+            else:
+                self.cursor.execute(
+                    f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{name}';"
+                )
+                res = self.cursor.fetchall()
+                col_names = [i[0] for i in self.cursor.description]
+                return pd.DataFrame(res, columns=col_names)
+        else:
+            self.cursor.execute(
+                f"SELECT * FROM {self.schema}.{PREPROCESSORS};"
+            )
+            res = self.cursor.fetchall()
+            col_names = [i[0] for i in self.cursor.description]
+            return pd.DataFrame(res, columns=col_names)
+
+    def delete_model(self, name: str, version: int = None):
+        """Deletes model.
+
+        Parameters
+        ----------
+        name: str
+            Model to remove
+        version: int, optional
+            Model's version.
+        """
         ensembles = self.__find_ensembles(name)
-        if len(ensembles):
+        if len(ensembles) > 0:
             for model in ensembles:  # type: tuple
                 super().delete_model(model[0], model[1])
                 self.cursor.execute(
@@ -126,12 +186,25 @@ class Storage(ModelStorage):
                 f"DELETE FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{name}' AND VERSION = {version}"
             )
 
-    def delete_models(self, name, start_time=None, end_time=None):
+    def delete_models(self, name: str, start_time=None, end_time=None):
         raise NotImplementedError(
             "This method will be implemented soon. Sorry for trouble."
         )
 
-    def load_model(self, name, version=None, **kwargs):
+    def load_model(self, name: str, version: int = None, **kwargs):
+        """Loads new model.
+
+        Parameters
+        ----------
+        name: str
+            Model to load
+        version: int, optional
+            Model's version.
+
+        Returns
+        -------
+        AutoML object
+        """
         automl = AutoML(self.connection_context)
         ensembles = self.__find_ensembles(name)
         if len(ensembles) > 0:
@@ -168,10 +241,11 @@ class Storage(ModelStorage):
         return automl
 
     def clean_up(self):
+        """Be careful! This method deletes all models from database!"""
         super().clean_up()
         self.cursor.execute(f"DROP TABLE {self.schema}.{PREPROCESSORS}")
 
-    def __extract_version(self, name):
+    def __extract_version(self, name: str):
         self.cursor.execute(
             f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{name}'"
         )

@@ -137,7 +137,7 @@ class AutoML:
         ...                        port=9999) #your port
 
         Creating and fitting the model (see fitting section for detailed example):
-
+        >>> from hana_automl.automl import AutoML
         >>> automl = AutoML(cc)
         >>> automl.fit(
         ...     df = df, # your pandas dataframe.
