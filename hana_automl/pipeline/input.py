@@ -122,7 +122,7 @@ class Input:
                     drop_exist_tab=True,
                     disable_progressbar=not self.verbose,
                 )
-            self.hana_df.declare_lttab_usage(True) # TODO: research
+            self.hana_df.declare_lttab_usage(True)  # TODO: research
         if self.id_col is None:
             self.hana_df = self.hana_df.add_id()
             self.id_col = "ID"

@@ -72,13 +72,13 @@ def test_ensembles(task):
             task="reg",
         )
         assert m.best_params["accuracy"] > 0.50
-        m.model.name = "TESTING_MODEL_REG_ENS"
+        m.model.name = "ENSEMBLE_REG"
         storage.save_model(m)
-        new = storage.load_model("TESTING_MODEL_REG_ENS", version=1)
+        new = storage.load_model("ENSEMBLE_REG", version=1)
         assert new.predict(file_path="./data/boston_test_data.csv").empty is False
-        assert storage.list_preprocessors("TESTING_MODEL_REG_ENS").empty is False
-        storage.delete_model("TESTING_MODEL_REG_ENS", version=1)
-        assert storage.list_models("TESTING_MODEL_REG_ENS").empty is True
+        assert storage.list_preprocessors("ENSEMBLE_REG").empty is False
+        storage.delete_model("ENSEMBLE_REG", version=1)
+        assert storage.list_models("ENSEMBLE_REG").empty is True
     else:
         m.fit(
             table_name="TESTING_CLS",
@@ -92,15 +92,15 @@ def test_ensembles(task):
             output_leaderboard=True,
         )
         assert m.best_params["accuracy"] > 0.50
-        m.model.name = "TESTING_MODEL_CLS_ENS"
+        m.model.name = "ENSEMBLE_CLS"
         storage.save_model(m)
-        new = storage.load_model("TESTING_MODEL_CLS_ENS", version=1)
+        new = storage.load_model("ENSEMBLE_CLS", version=1)
         assert (
             new.predict(
                 file_path="./data/test_cleaned_train.csv", id_column="PassengerId"
             ).empty
             is False
         )
-        assert storage.list_preprocessors("TESTING_MODEL_CLS_ENS").empty is False
-        storage.delete_model("TESTING_MODEL_CLS_ENS", version=1)
-        assert storage.list_models("TESTING_MODEL_CLS_ENS").empty is True
+        assert storage.list_preprocessors("ENSEMBLE_CLS").empty is False
+        storage.delete_model("ENSEMBLE_CLS", version=1)
+        assert storage.list_models("ENSEMBLE_CLS").empty is True

@@ -13,8 +13,9 @@ from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import StorageError
 
-PREPROCESSORS = "PREPROCESSOR_STORAGE"
-
+PREPROCESSORS = "AUTOML_PREPROCESSOR_STORAGE"
+ensemble_prefix = 'ensemble'
+leaderboard_prefix = 'leaderboard'
 
 class Storage(ModelStorage):
     """Storage for models and more.
@@ -71,7 +72,7 @@ class Storage(ModelStorage):
                 f"5000)); "
             )
         if isinstance(automl.model, BlendingCls) or isinstance(
-                automl.model, BlendingReg
+            automl.model, BlendingReg
         ):
             if isinstance(automl.model, BlendingCls):
                 ensemble_name = "_ensemble_cls_"
@@ -100,9 +101,13 @@ class Storage(ModelStorage):
                 model_counter += 1
 
         else:
-            if len(self.__find_ensembles(automl.model.name)) > 0:
-                raise StorageError('There is an ensemble with the same name in storage. Please change the name of the '
-                                   'model.')
+            if table_exists(self.cursor, self.schema, "HANAML_MODEL_STORAGE"):
+                if len(self.__find_models(automl.model.name, ensemble_prefix)) > 0:
+                    raise StorageError(
+                        "There is an ensemble with the same name in storage. Please change the name of "
+                        "the "
+                        "model."
+                    )
             super().save_model(automl.model, if_exists)
             json_settings = json.dumps(automl.preprocessor_settings.__dict__)
             self.cursor.execute(
@@ -135,10 +140,10 @@ class Storage(ModelStorage):
           1.  test        1  {'tuned_num'...}
         """
 
-        if (name is not None) and name != '':
-            ensembles = self.__find_ensembles(name)
+        if (name is not None) and name != "":
+            ensembles = self.__find_models(name, ensemble_prefix)
             if len(ensembles) > 0:
-                result = pd.DataFrame(columns=['MODEL', 'VERSION', 'JSON'])
+                result = pd.DataFrame(columns=["MODEL", "VERSION", "JSON"])
                 for model in ensembles:
                     self.cursor.execute(
                         f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{model[0]}';"
@@ -156,13 +161,18 @@ class Storage(ModelStorage):
                 col_names = [i[0] for i in self.cursor.description]
                 return pd.DataFrame(res, columns=col_names)
         else:
-            self.cursor.execute(
-                f"SELECT * FROM {self.schema}.{PREPROCESSORS};"
-            )
+            self.cursor.execute(f"SELECT * FROM {self.schema}.{PREPROCESSORS};")
             res = self.cursor.fetchall()
             col_names = [i[0] for i in self.cursor.description]
             return pd.DataFrame(res, columns=col_names)
 
+    def save_leaderboard(self, leaderboard: list, name: str):
+        for model_member in leaderboard:
+            pass
+    def load_leaderboard(self, name: str):
+        pass
+    def delete_leaderboard(self, name: str):
+        pass
     def delete_model(self, name: str, version: int = None):
         """Deletes model.
 
@@ -173,7 +183,7 @@ class Storage(ModelStorage):
         version: int, optional
             Model's version.
         """
-        ensembles = self.__find_ensembles(name)
+        ensembles = self.__find_models(name, ensemble_prefix)
         if len(ensembles) > 0:
             for model in ensembles:  # type: tuple
                 super().delete_model(model[0], model[1])
@@ -206,7 +216,7 @@ class Storage(ModelStorage):
         AutoML object
         """
         automl = AutoML(self.connection_context)
-        ensembles = self.__find_ensembles(name)
+        ensembles = self.__find_models(name, ensemble_prefix)
         if len(ensembles) > 0:
             model_list = []
             for model_name in ensembles:  # type: tuple
@@ -255,13 +265,13 @@ class Storage(ModelStorage):
             versions.append(string[1])
         return max(versions)
 
-    def __find_ensembles(self, name: str):
+    def __find_models(self, name: str, prefix: str):
         models = self.list_models()["NAME"]
         versions = self.list_models()["VERSION"]
         return [
             (model_name, version)
             for model_name, version in zip(models, versions)
-            if (name in model_name) and ("ensemble" in model_name)
+            if (name in model_name) and (prefix in model_name)
         ]
 
     def __setup_preprocessor(self, data) -> PreprocessorSettings:
