@@ -49,6 +49,7 @@ class Blending:
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,
+                    normalization_excp=model.preprocessor.normalization_exceptions
                 )
             else:
                 if data.target is None:

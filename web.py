@@ -209,8 +209,7 @@ if start_training:
                     time_limit=int(time),
                     ensemble=ensemble,
                     output_leaderboard=leaderboard,
-                    verbosity=verbosity,
-                    # drop_outers=True
+                    verbose=verbosity,
                 )
                 session_state.show_results = True
 
