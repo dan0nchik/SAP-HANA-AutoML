@@ -158,32 +158,33 @@ Our library in a few lines of code
 
 Connect to database.
 ```python
-  from hana_ml.dataframe import ConnectionContext
-  
-  cc = ConnectionContext(address='address',
-                         user='username',
-                         password='password'
-                         port=1234)
+from hana_ml.dataframe import ConnectionContext
+
+cc = ConnectionContext(address='address',
+                     user='username',
+                     password='password',
+                     port=1234)
+
 ```
 Create AutoML model and fit it.
 ```python
-  from hana_automl.automl import AutoML
-  
-  model = AutoML(cc)
-  model.fit(
-      file_path='path to training dataset', # it may be HANA table/view, or pandas DataFrame
-      steps=10, # number of iterations
-      target='target', # column to predict
-      time_limit=120 # time limit in seconds
-  )
+from hana_automl.automl import AutoML
+
+model = AutoML(cc)
+model.fit(
+  file_path='path to training dataset', # it may be HANA table/view, or pandas DataFrame
+  steps=10, # number of iterations
+  target='target', # column to predict
+  time_limit=120 # time limit in seconds
+)
 ```
 Predict.
 ```python
-  model.predict(
-    file_path='path to test dataset',
-    id_column='ID',
-    verbosity=2
-  )
+model.predict(
+file_path='path to test dataset',
+id_column='ID',
+verbosity=2
+)
 ```
 
 _For more examples, please refer to the [Documentation](https://sap-hana-automl.readthedocs.io/en/latest/index.html)_
@@ -226,17 +227,18 @@ Any contributions you make are **greatly appreciated** 👏!
       ```
 
     Copy and paste this piece of code there and replace it with your credentials:
-    ``` python
+    ```python
     host = "host"
     user = "username"
     password = "password"
     port = 39015
+    schema = "your schema"
     ```
-    Don't worry, this file is in .gitignore, so your credentials won't be seen by anyone.
+    Don't worry, **this file is in .gitignore**, so your credentials won't be seen by anyone.
 
 5. Make some changes
 6. Write tests that cover your code in `tests` directory
-7. Run tests (in `SAP-HANA-AutoML directory`)
+7. Run tests (under `SAP-HANA-AutoML directory`)
     ```sh
     pytest
     ```

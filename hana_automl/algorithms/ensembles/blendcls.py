@@ -9,9 +9,9 @@ from hana_automl.pipeline.data import Data
 class BlendingCls(Blending):
     def __init__(
         self,
-        id_col: str,
-        connection_context: hana_ml.ConnectionContext,
-        table_name: str,
+        id_col: str = None,
+        connection_context: hana_ml.ConnectionContext = None,
+        table_name: str = None,
         model_list: list = None,
         leaderboard: list = None,
     ):

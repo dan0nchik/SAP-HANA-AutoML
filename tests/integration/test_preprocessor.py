@@ -1,7 +1,7 @@
 from hana_automl.pipeline.input import Input
 from hana_automl.preprocess.preprocessor import Preprocessor
 import pandas as pd
-from ..connection import connection_context
+from ..connection import connection_context, schema
 import pytest
 import time
 
@@ -10,7 +10,7 @@ import time
 def test_tasks(name):
     from benchmarks.cleanup import clean
 
-    clean(connection_context, 'MINECRAFT')  # replace with your schema
+    clean(connection_context, schema)
     multiple_tasks(name)
 
 

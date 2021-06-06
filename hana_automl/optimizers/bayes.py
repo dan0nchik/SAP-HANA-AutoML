@@ -196,7 +196,7 @@ class BayesianOptimizer(BaseOptimizer):
             "accuracy": self.leaderboard[0].valid_score,
         }
 
-    def get_model(self) -> hana_ml.algorithms.pal.pal_base:
+    def get_model(self):
         """Returns tuned model."""
 
         return self.model

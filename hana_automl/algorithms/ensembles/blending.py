@@ -8,9 +8,9 @@ from hana_automl.utils.error import BlendingError
 class Blending:
     def __init__(
         self,
-        id_col: str,
-        connection_context: hana_ml.ConnectionContext,
-        table_name: str,
+        id_col: str = None,
+        connection_context: hana_ml.ConnectionContext = None,
+        table_name: str = None,
         model_list: list = None,
         leaderboard: list = None,
     ):
@@ -49,7 +49,7 @@ class Blending:
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,
-                    normalization_excp=model.preprocessor.normalization_exceptions
+                    normalization_excp=model.preprocessor.normalization_exceptions,
                 )
             else:
                 if data.target is None:
