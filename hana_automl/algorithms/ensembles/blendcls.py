@@ -78,6 +78,8 @@ class BlendingCls(Blending):
             else:
                 k.append(joined.at[i, "PREDICTION3"])
         joined.insert(4, "PREDICTION", k, True)
+        if self.table_name is None:
+            self.table_name = "#TEMP_TABLE"
         hana_df = create_dataframe_from_pandas(
             self.connection_context,
             joined,

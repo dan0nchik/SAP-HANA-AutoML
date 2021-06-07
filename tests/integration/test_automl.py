@@ -8,6 +8,7 @@ clean(connection_context, schema=schema)
 
 m = AutoML(connection_context)
 storage = Storage(connection_context, schema)  # replace with your schema
+verbose = 0
 
 
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
@@ -21,6 +22,7 @@ def test_regression(optimizer):
         optimizer=optimizer,
         output_leaderboard=True,
         task="reg",
+        verbose=verbose,
     )
     assert m.best_params["accuracy"] > 0.50
     m.model.name = "TESTING_MODEL_REG"
@@ -43,6 +45,7 @@ def test_classification(optimizer):
         optimizer=optimizer,
         task="cls",
         output_leaderboard=True,
+        verbose=verbose,
     )
     assert m.best_params["accuracy"] > 0.50
     m.model.name = "TESTING_MODEL_CLS"
@@ -70,6 +73,7 @@ def test_ensembles(task):
             ensemble=True,
             output_leaderboard=True,
             task="reg",
+            verbose=verbose,
         )
         assert m.best_params["accuracy"] > 0.50
         m.model.name = "ENSEMBLE_REG"
@@ -90,6 +94,7 @@ def test_ensembles(task):
             ensemble=True,
             task="cls",
             output_leaderboard=True,
+            verbose=verbose,
         )
         assert m.best_params["accuracy"] > 0.50
         m.model.name = "ENSEMBLE_CLS"

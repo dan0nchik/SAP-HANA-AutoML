@@ -20,12 +20,15 @@ from hana_automl.automl import AutoML
 
 
 class Benchmark:
-    def __init__(self, connection_context: hana_ml.dataframe.ConnectionContext):
+    def __init__(
+        self, connection_context: hana_ml.dataframe.ConnectionContext, schema: str
+    ):
         self.connection_context = connection_context
         self.apl_model = None
         self.automl_model = None
         self.apl_accuracy = 0
         self.automl_accuracy = 0
+        self.schema = schema
 
     def run(
         self,
@@ -37,6 +40,7 @@ class Benchmark:
         categorical: list = None,
     ):
         df = pd.read_csv(dataset)
+        ensemble: bool = False
         if id_column is None:
             df["ID"] = range(0, len(df))
             id_column = "ID"
@@ -50,7 +54,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
-        # train_df.declare_lttab_usage(True)
+        train_df.declare_lttab_usage(True)
         test_df = create_dataframe_from_pandas(
             self.connection_context,
             table_name="BENCHMARK_TEST",
@@ -58,7 +62,7 @@ class Benchmark:
             force=True,
             drop_exist_tab=True,
         )
-        # test_df.declare_lttab_usage(True)
+        test_df.declare_lttab_usage(True)
 
         if task == "cls":
             if grad_boost:
@@ -74,6 +78,7 @@ class Benchmark:
             else:
                 self.apl_model = AutoClassifier(self.connection_context)
         if task == "reg":
+            ensemble = True
             if grad_boost:
                 self.apl_model = GradientBoostingRegressor(self.connection_context)
             else:
@@ -85,17 +90,19 @@ class Benchmark:
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.apl_accuracy = self.apl_model.score(test_df)
         print("APL accuracy: ", self.apl_accuracy)
-        clean(self.connection_context)
+        clean(self.connection_context, self.schema)
         start_time = time.time()
+
         self.automl_model.fit(
             df,
-            steps=15,
+            table_name="BENCHMARK_AUTOML_TABLE",
+            steps=10,
             target=label,
-            table_name="BENCHMARK_AUTOML",
             categorical_features=categorical,
             id_column=id_column,
             task=task,
-            verbose=1,
+            verbose=0,
+            ensemble=ensemble,
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.automl_accuracy = self.automl_model.accuracy

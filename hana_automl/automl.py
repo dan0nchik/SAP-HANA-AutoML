@@ -46,6 +46,7 @@ class AutoML:
         self.leaderboard = None
         self.leaderboard_metric = None
         self.val_data = None
+        self.ensemble_score = 0
 
     def fit(
         self,
@@ -232,12 +233,13 @@ class AutoML:
                     leaderboard=self.opt.leaderboard,
                 )
             self.leaderboard_metric = tuning_metric
+            self.ensemble_score = self.model.score(data=data, metric=tuning_metric)
             print("\033[33m {}".format("\n"))
             print(
                 "Ensemble consists of: "
                 + f"{self.model.model_list[0].algorithm}, {self.model.model_list[1].algorithm}, {self.model.model_list[2].algorithm}"
                 + f"\nEnsemble {tuning_metric} score: "
-                + str(self.model.score(data=data, metric=tuning_metric))
+                + str(self.ensemble_score)
             )
             print("\033[0m {}".format(""))
 
@@ -550,6 +552,13 @@ class AutoML:
     def best_params(self):
         """Get best hyperparameters"""
         return self.opt.get_tuned_params()
+
+    @property
+    def accuracy(self):
+        if self.ensemble:
+            return self.ensemble_score
+        else:
+            return self.best_params['accuracy']
 
     def get_leaderboard(self):
         """Get best hyperparameters"""
