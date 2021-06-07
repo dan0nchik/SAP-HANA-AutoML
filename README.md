@@ -183,7 +183,7 @@ Predict.
 model.predict(
 file_path='path to test dataset',
 id_column='ID',
-verbosity=2
+verbose=1
 )
 ```
 

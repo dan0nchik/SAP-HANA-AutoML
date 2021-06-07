@@ -14,8 +14,9 @@ from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import StorageError
 
 PREPROCESSORS = "AUTOML_PREPROCESSOR_STORAGE"
-ensemble_prefix = 'ensemble'
-leaderboard_prefix = 'leaderboard'
+ensemble_prefix = "ensemble"
+leaderboard_prefix = "leaderboard"
+
 
 class Storage(ModelStorage):
     """Storage for models and more.
@@ -169,10 +170,13 @@ class Storage(ModelStorage):
     def save_leaderboard(self, leaderboard: list, name: str):
         for model_member in leaderboard:
             pass
+
     def load_leaderboard(self, name: str):
         pass
+
     def delete_leaderboard(self, name: str):
         pass
+
     def delete_model(self, name: str, version: int = None):
         """Deletes model.
 

@@ -5,4 +5,3 @@ schema = schema
 connection_context = ConnectionContext(
     address=host, port=port, user=user, password=password
 )
-

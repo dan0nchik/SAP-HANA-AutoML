@@ -178,7 +178,7 @@ st.sidebar.title("9. Optional settings:")
 ensemble = st.sidebar.checkbox("Use ensemble")
 leaderboard = st.sidebar.checkbox("Show leaderboard", value=True)
 optimizer = st.sidebar.selectbox("Optimizer", ["OptunaSearch", "BayesianOptimizer"])
-verbosity = st.sidebar.selectbox("Verbosity level", [1, 2], key="verbose")
+verbose = st.sidebar.selectbox("Verbose level", [1, 2], key="verbose")
 
 start_training = st.sidebar.button("Start training!")
 
@@ -209,7 +209,7 @@ if start_training:
                     time_limit=int(time),
                     ensemble=ensemble,
                     output_leaderboard=leaderboard,
-                    verbose=verbosity,
+                    verbose=verbose,
                 )
                 session_state.show_results = True
 

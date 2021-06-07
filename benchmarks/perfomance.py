@@ -95,7 +95,7 @@ class Benchmark:
             categorical_features=categorical,
             id_column=id_column,
             task=task,
-            verbosity=1,
+            verbose=1,
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.automl_accuracy = self.automl_model.accuracy
