@@ -1,4 +1,4 @@
-from hana_ml.algorithms.pal.neural_network import MLPClassifier
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -48,9 +48,8 @@ class MLPcls(BaseAlgorithm):
         ]
         params["training_style"] = "batch"
         params["weight_init"] = self.weight_init[round(params["weight_init"])]
-        # self.model = UnifiedClassification(func='MLP', **params)
         self.tuned_params = params
-        self.model = MLPClassifier(**params)
+        self.model = self.model = UnifiedClassification(func="MLP", **params)
 
     def optunatune(self, trial):
         activation = trial.suggest_categorical("activation", self.actv)
@@ -65,18 +64,8 @@ class MLPcls(BaseAlgorithm):
             self.weight_init,
         )
         learning_rate = trial.suggest_float("learning_rate", 1e-4, 0.5, log=True)
-        """
         model = UnifiedClassification(
-            func='MLP',
-            activation=activation,
-            output_activation=output_activation,
-            hidden_layer_size=(hidden_layer_size, hidden_layer_size),
-            normalization=normalization,
-            training_style="batch",
-            weight_init=weight_init,
-            learning_rate=learning_rate,
-        )"""
-        model = MLPClassifier(
+            func="MLP",
             activation=activation,
             output_activation=output_activation,
             hidden_layer_size=(hidden_layer_size, hidden_layer_size),

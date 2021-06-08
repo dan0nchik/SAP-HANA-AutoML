@@ -1,4 +1,5 @@
 from hana_ml.algorithms.pal.svm import SVC
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -25,9 +26,8 @@ class SVCls(BaseAlgorithm):
         params1["scale_info"] = ["no", "standardization", "rescale"][
             round(params["scale_info"])
         ]
-        # self.model = UnifiedClassification(func='SVM', **params1)
         self.tuned_params = params
-        self.model = SVC(**params1)
+        self.model = UnifiedClassification(func="SVM", **params1)
 
     def optunatune(self, trial):
         c = trial.suggest_float("c", 0.03125, 32768, log=True)
@@ -39,6 +39,12 @@ class SVCls(BaseAlgorithm):
         scale_info = trial.suggest_categorical(
             "scale_info", ["no", "standardization", "rescale"]
         )
-        # model = UnifiedClassification(func='SVM', c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
-        model = SVC(c=c, kernel=kernel, shrink=shrink, scale_info=scale_info, tol=tol)
+        model = UnifiedClassification(
+            func="SVM",
+            c=c,
+            kernel=kernel,
+            shrink=shrink,
+            scale_info=scale_info,
+            tol=tol,
+        )
         self.model = model

@@ -1,4 +1,4 @@
-from hana_ml.algorithms.pal.linear_model import LogisticRegression
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -29,9 +29,8 @@ class LogRegressionCls(BaseAlgorithm):
             if type(self.class_map0) is str and type(self.class_map1) is str:
                 params["class_map0"] = self.class_map0
                 params["class_map1"] = self.class_map1
-        # self.model = UnifiedClassification(func='LogisticRegression', **params)
         self.tuned_params = params
-        self.model = LogisticRegression(**params)
+        self.model = UnifiedClassification(func="LogisticRegression", **params)
 
     def optunatune(self, trial):
 
@@ -51,10 +50,11 @@ class LogRegressionCls(BaseAlgorithm):
                 params = {}
         else:
             params = {}
-        """model = UnifiedClassification(func='LogisticRegression', max_iter=max_iter,
-                                      multi_class=multi_class, solver=solver)
-        """
-        model = LogisticRegression(
-            max_iter=max_iter, multi_class=multi_class, solver=solver, **params
+        model = UnifiedClassification(
+            func="LogisticRegression",
+            max_iter=max_iter,
+            multi_class=multi_class,
+            solver=solver,
+            **params
         )
         self.model = model

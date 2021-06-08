@@ -39,7 +39,16 @@ class BaseAlgorithm:
 
     def score(self, data, df: hana_ml.DataFrame, metric: str):
         if metric == "accuracy" or metric == "r2_score":
-            return self.model.score(df, key=data.id_colm, label=data.target)
+            scr = self.model.score(df, key=data.id_colm, label=data.target)[1]
+            print(
+                type(
+                    scr.filter(r"STAT_NAME = 'ACCURACY'").collect().at[0, "STAT_VALUE"]
+                )
+            )
+            print(scr.collect())
+            return float(
+                scr.filter(r"STAT_NAME = 'ACCURACY'").collect().at[0, "STAT_VALUE"]
+            )
         elif metric in ["mae", "mse", "rmse"]:
             c = df.columns
             c.remove(data.id_colm)
@@ -93,12 +102,9 @@ class BaseAlgorithm:
         ftr.remove(self.temp_data.id_colm)
         self.fit(self.temp_data, ftr, self.categorical_features)
 
-        a = self.score(
+        acc = self.score(
             data=self.temp_data, df=self.temp_data.test, metric=self.tuning_metric
         )
-        print(a[0].collect().head())
-        print(a[1].collect())
-        acc = a
         return acc
 
     def fit(self, data, features, categorical_features):
