@@ -92,9 +92,13 @@ class BaseAlgorithm:
         ftr.remove(self.temp_data.target)
         ftr.remove(self.temp_data.id_colm)
         self.fit(self.temp_data, ftr, self.categorical_features)
-        acc = self.score(
+
+        a = self.score(
             data=self.temp_data, df=self.temp_data.test, metric=self.tuning_metric
         )
+        print(a[0].collect().head())
+        print(a[1].collect())
+        acc = a
         return acc
 
     def fit(self, data, features, categorical_features):

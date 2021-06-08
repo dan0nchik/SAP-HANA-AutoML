@@ -1,4 +1,4 @@
-from hana_ml.algorithms.pal.trees import DecisionTreeClassifier
+from hana_ml.algorithms.pal.unified_classification import UnifiedClassification
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -19,9 +19,8 @@ class DecisionTreeCls(BaseAlgorithm):
         params["min_records_of_leaf"] = round(params["min_records_of_leaf"])
         params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
-        # self.model = UnifiedClassification(func='DecisionTree', **params)
         self.tuned_params = params
-        self.model = DecisionTreeClassifier(**params)
+        self.model = UnifiedClassification(func='DecisionTree', **params)
 
     def optunatune(self, trial):
         params = dict()
@@ -35,6 +34,5 @@ class DecisionTreeCls(BaseAlgorithm):
         params["min_records_of_leaf"] = trial.suggest_int(
             "min_records_of_parent", 2, 20, log=True
         )
-        # model = UnifiedClassification(func='DecisionTree', **params)
-        model = DecisionTreeClassifier(**params)
+        model = UnifiedClassification(func='DecisionTree', **params)
         self.model = model

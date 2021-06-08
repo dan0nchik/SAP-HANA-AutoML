@@ -8,9 +8,7 @@ from hana_ml.algorithms.pal.preprocessing import (
 )
 
 from hana_automl.algorithms.classification.decisiontreecls import DecisionTreeCls
-from hana_automl.algorithms.classification.gradboostcls import GBCls
 from hana_automl.algorithms.classification.hybgradboostcls import HGBCls
-from hana_automl.algorithms.classification.kneighborscls import KNeighborsCls
 from hana_automl.algorithms.classification.logregressioncls import LogRegressionCls
 from hana_automl.algorithms.classification.mlpcl import MLPcls
 from hana_automl.algorithms.classification.naive_bayes import NBayesCls
@@ -210,25 +208,21 @@ class Preprocessor:
                 log = LogRegressionCls(binominal=data.binomial)
             clslist = [
                 DecisionTreeCls(),
-                KNeighborsCls(),
                 # log,
                 NBayesCls(),
                 MLPcls(),
                 SVCls(),
                 RDTCls(),
-                GBCls(),
                 HGBCls(),
             ]
             clsdict = {
-                "KNeighborsClassifier": KNeighborsCls(),
                 "DecisionTreeClassifier": DecisionTreeCls(),
-                # "LogisticRegressionClassifier": log,
-                "NaiveBayesClassifier": NBayesCls(),
-                "MLPClassifier": MLPcls(),
-                "SVClassifier": SVCls(),
-                "RDTClassifier": RDTCls(),
-                "GradientBoostingClassifier": GBCls(),
                 "HybridGradientBoostingClassifier": HGBCls(),
+                # "LogisticRegressionClassifier": log,
+                "MLPClassifier": MLPcls(),
+                "NaiveBayesClassifier": NBayesCls(),
+                "RDTClassifier": RDTCls(),
+                "SVClassifier": SVCls(),
             }
             clslist = [i for i in clslist if i.title not in algo_exceptions]
             clsdict = {
