@@ -106,7 +106,7 @@ class Preprocessor:
         else:
             fn = FeatureNormalizer(method="decimal")
         col_list = df.columns
-        remove_list = [id]
+        remove_list = list()
         if categorical_list is not None and len(categorical_list) > 0:
             for i in categorical_list:
                 remove_list.append(i)
@@ -117,7 +117,7 @@ class Preprocessor:
             int_lst = []
             for i in dt:
                 if target is None:
-                    targ_variant = False
+                    targ_variant = True
                 else:
                     targ_variant = i[0] != target
                 if (
@@ -143,7 +143,7 @@ class Preprocessor:
                 if i not in remove_list:
                     remove_list.append(i)
         if len(remove_list) > 0:
-            for i in set(remove_list):
+            for i in remove_list:
                 col_list.remove(i)
         if len(col_list) > 0:
             trn: DataFrame = fn.fit_transform(df, key=id, features=col_list)
@@ -249,7 +249,6 @@ class Preprocessor:
                 HGBReg(),
             ]
             regdict = {
-                "KNeighborsRegressor": KNeighborsReg(),
                 "DecisionTreeRegressor": DecisionTreeReg(),
                 # "GLMRegressor": GLMReg(),
                 "MLPRegressor": MLPreg(),

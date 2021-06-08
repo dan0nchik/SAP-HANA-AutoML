@@ -223,6 +223,7 @@ class Storage(ModelStorage):
         ensembles = self.__find_models(name, ensemble_prefix)
         if len(ensembles) > 0:
             model_list = []
+            prep_list = list()
             for model_name in ensembles:  # type: tuple
                 self.cursor.execute(
                     f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{model_name[0]}' "
@@ -230,10 +231,13 @@ class Storage(ModelStorage):
                 )
                 data = self.cursor.fetchall()[0][2]  # JSON column
                 hana_model = super().load_model(model_name[0], model_name[1], **kwargs)
+                prep = self.__setup_preprocessor(data)
                 model_board_member = ModelBoard(
-                    BaseAlgorithm(model=hana_model), 0, self.__setup_preprocessor(data)
+                    BaseAlgorithm(model=hana_model), 0, prep
                 )
+                prep_list.append(prep)
                 model_list.append(model_board_member)
+            automl.preprocessor_settings = prep_list
             if "cls" in ensembles[0][0]:
                 automl.model = BlendingCls(
                     model_list=model_list, connection_context=self.connection_context

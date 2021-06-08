@@ -150,7 +150,7 @@ class OptunaOptimizer(BaseOptimizer):
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,
-                categorical_list=self.categorical_features,
+                categorical_list=member.preprocessor.categorical_cols,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,

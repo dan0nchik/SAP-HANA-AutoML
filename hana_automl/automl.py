@@ -316,7 +316,7 @@ class AutoML:
         if self.ensemble:
             self.model.id_col = id_column
             self.predicted = self.model.predict(
-                data=Data(id_col=id_column, target=target_drop),
+                data=Data(id_col=id_column),
                 df=data.hana_df,
                 id_colm=data.id_col,
             )
@@ -405,20 +405,22 @@ class AutoML:
         data.target = inp.target
         data.id_colm = inp.id_col
         data.valid = inp.hana_df
-        if self.preprocessor_settings.task == "reg":
+        if self.preprocessor_settings is None:
+            raise AutoMLError("Run fit process or load a model before scoring!")
+        if type(self.preprocessor_settings) is list:
+            prep = self.preprocessor_settings[0]
+        else:
+            prep = self.preprocessor_settings
+        if prep.task == "reg":
             if metric is None:
                 metric = "r2_score"
             if metric not in ["r2_score", "mse", "rmse", "mae"]:
-                raise AutoMLError(
-                    f"Wrong {self.preprocessor_settings.task} task metric error"
-                )
-        if self.preprocessor_settings.task == "cls":
+                raise AutoMLError(f"Wrong {prep.task} task metric error")
+        if prep.task == "cls":
             if metric is None:
                 metric = "accuracy"
             if metric not in ["accuracy"]:
-                raise AutoMLError(
-                    f"Wrong {self.preprocessor_settings.task} task metric error"
-                )
+                raise AutoMLError(f"Wrong {prep.task} task metric error")
         if self.ensemble:
             return self.model.score(data, metric)
         else:
@@ -558,7 +560,7 @@ class AutoML:
         if self.ensemble:
             return self.ensemble_score
         else:
-            return self.best_params['accuracy']
+            return self.best_params["accuracy"]
 
     def get_leaderboard(self):
         """Get best hyperparameters"""

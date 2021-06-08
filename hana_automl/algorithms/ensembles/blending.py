@@ -43,12 +43,12 @@ class Blending:
                     df=df,
                     id=self.id_col,
                     target=data.target,
-                    imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     strategy_by_col=model.preprocessor.strategy_by_col,
-                    categorical_list=model.preprocessor.categorical_cols,
+                    imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,
+                    categorical_list=model.preprocessor.categorical_cols,
                     normalization_excp=model.preprocessor.normalization_exceptions,
                 )
             else:
@@ -60,13 +60,15 @@ class Blending:
                     df=dt,
                     id=data.id_colm,
                     target=None,
-                    imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     strategy_by_col=model.preprocessor.strategy_by_col,
-                    categorical_list=model.preprocessor.categorical_cols,
+                    imputer_num_strategy=model.preprocessor.tuned_num_strategy,
                     normalizer_strategy=model.preprocessor.tuned_normalizer_strategy,
                     normalizer_z_score_method=model.preprocessor.tuned_z_score_method,
                     normalize_int=model.preprocessor.tuned_normalize_int,
+                    categorical_list=model.preprocessor.categorical_cols,
+                    normalization_excp=model.preprocessor.normalization_exceptions,
                 )
+
             pred = model.algorithm.model.predict(df2, self.id_col)
             if type(pred) == tuple:
                 predictions.append(pred[0])

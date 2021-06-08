@@ -88,4 +88,4 @@ class BlendingCls(Blending):
             drop_exist_tab=True,
             disable_progressbar=True,
         )
-        return hana_df
+        return hana_df.deselect(["PREDICTION1", "PREDICTION2", "PREDICTION3"])
