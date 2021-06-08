@@ -43,7 +43,7 @@ class BaseOptimizer(ABC):
                 "\033[33m {}".format(
                     str(place)
                     + ".  "
-                    + str(member.algorithm.model)
+                    + str(member.algorithm.title)
                     + f"\n Test {metric} score: "
                     + str(member.train_score)
                     + f"  Holdout {metric} score: "

@@ -40,11 +40,6 @@ class BaseAlgorithm:
     def score(self, data, df: hana_ml.DataFrame, metric: str):
         if metric == "accuracy" or metric == "r2_score":
             scr = self.model.score(df, key=data.id_colm, label=data.target)[1]
-            print(
-                type(
-                    scr.filter(r"STAT_NAME = 'ACCURACY'").collect().at[0, "STAT_VALUE"]
-                )
-            )
             print(scr.collect())
             return float(
                 scr.filter(r"STAT_NAME = 'ACCURACY'").collect().at[0, "STAT_VALUE"]
