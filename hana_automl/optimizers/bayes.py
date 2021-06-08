@@ -209,7 +209,7 @@ class BayesianOptimizer(BaseOptimizer):
     def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
 
-        return self.prepset
+        return self.leaderboard[0].preprocessor
 
     def tune(self):
         """Starts hyperparameter searching."""
