@@ -1,4 +1,5 @@
 from hana_ml.algorithms.pal.trees import DecisionTreeRegressor
+from hana_ml.algorithms.pal.unified_regression import UnifiedRegression
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 
@@ -19,7 +20,7 @@ class DecisionTreeReg(BaseAlgorithm):
         params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
         self.tuned_params = params
-        self.model = DecisionTreeRegressor(**params)
+        self.model = UnifiedRegression(func="DecisionTree", **params)
 
     def optunatune(self, trial):
         algorithm = "cart"
@@ -28,7 +29,8 @@ class DecisionTreeReg(BaseAlgorithm):
         min_records_of_parent = trial.suggest_int(
             "min_records_of_parent", 2, 20, log=True
         )
-        model = DecisionTreeRegressor(
+        model = UnifiedRegression(
+            func="DecisionTree",
             algorithm=algorithm,
             max_depth=max_depth,
             min_records_of_leaf=min_records_of_leaf,
