@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 from hana_automl.automl import AutoML
 from hana_automl.storage import Storage
@@ -27,10 +28,14 @@ def test_regression(optimizer):
     assert m.best_params["accuracy"] > 0.50
     m.model.name = "TESTING_MODEL_REG"
     storage.save_model(m)
+    storage.save_leaderboard(m.leaderboard, 'TESTING_LEADERBOARD_REG')
     new = storage.load_model("TESTING_MODEL_REG", version=1)
     assert new.predict(file_path="./data/boston_test_data.csv").empty is False
+    assert new.score(df=pd.read_csv("data/boston_data.csv")[:100], target='medv', id_column="ID") > 0.50
     assert storage.list_preprocessors("TESTING_MODEL_REG").empty is False
+    assert storage.list_leaderboards().empty is False
     storage.delete_model("TESTING_MODEL_REG", version=1)
+    storage.delete_leaderboard('TESTING_LEADERBOARD_REG')
 
 
 @pytest.mark.parametrize("optimizer", ["OptunaSearch", "BayesianOptimizer"])
@@ -50,6 +55,7 @@ def test_classification(optimizer):
     assert m.best_params["accuracy"] > 0.50
     m.model.name = "TESTING_MODEL_CLS"
     storage.save_model(m)
+    storage.save_leaderboard(m.leaderboard, 'TESTING_LEADERBOARD_CLS')
     new = storage.load_model("TESTING_MODEL_CLS", version=1)
     assert (
         new.predict(
@@ -57,8 +63,11 @@ def test_classification(optimizer):
         ).empty
         is False
     )
+    assert new.score(df=pd.read_csv("data/cleaned_train.csv")[:100], target="Survived", id_column="PASSENGERID") > 0.50
     assert storage.list_preprocessors("TESTING_MODEL_CLS").empty is False
+    assert storage.list_leaderboards().empty is False
     storage.delete_model("TESTING_MODEL_CLS", version=1)
+    storage.delete_leaderboard('TESTING_LEADERBOARD_CLS')
 
 
 @pytest.mark.parametrize("task", ["cls", "reg"])
@@ -100,6 +109,7 @@ def test_ensembles(task):
         m.model.name = "ENSEMBLE_CLS"
         storage.save_model(m)
         new = storage.load_model("ENSEMBLE_CLS", version=1)
+        assert new.score(df=pd.read_csv("data/cleaned_train.csv")[:100], target="Survived", id_column="PASSENGERID") > 0.50
         assert (
             new.predict(
                 file_path="./data/test_cleaned_train.csv", id_column="PassengerId"

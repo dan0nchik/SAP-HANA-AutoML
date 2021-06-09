@@ -7,7 +7,7 @@ class RDTCls(BaseAlgorithm):
     def __init__(self):
         super(RDTCls, self).__init__()
         super().__init__()
-        self.title = "Random Decision Tree"
+        self.title = "RandomDecisionTreeClassifier"
         self.params_range = {
             "n_estimators": (100, 1000),
             "max_depth": (10, 50),

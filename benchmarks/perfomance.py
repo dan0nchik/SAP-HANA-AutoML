@@ -21,7 +21,7 @@ from hana_automl.automl import AutoML
 
 class Benchmark:
     def __init__(
-        self, connection_context: hana_ml.dataframe.ConnectionContext, schema: str
+            self, connection_context: hana_ml.dataframe.ConnectionContext, schema: str
     ):
         self.connection_context = connection_context
         self.apl_model = None
@@ -31,16 +31,18 @@ class Benchmark:
         self.schema = schema
 
     def run(
-        self,
-        dataset: str,
-        task: str,
-        grad_boost: bool,
-        label: str,
-        id_column: str = None,
-        categorical: list = None,
+            self,
+            dataset: str,
+            task: str,
+            grad_boost: bool,
+            label: str,
+            id_column: str = None,
+            categorical: list = None,
     ):
         df = pd.read_csv(dataset)
         ensemble: bool = False
+        metric = None
+
         if id_column is None:
             df["ID"] = range(0, len(df))
             id_column = "ID"
@@ -79,6 +81,7 @@ class Benchmark:
                 self.apl_model = AutoClassifier(self.connection_context)
         if task == "reg":
             ensemble = True
+            metric = 'mae'
             if grad_boost:
                 self.apl_model = GradientBoostingRegressor(self.connection_context)
             else:
@@ -103,6 +106,7 @@ class Benchmark:
             task=task,
             verbose=0,
             ensemble=ensemble,
+            tuning_metric=metric
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.automl_accuracy = self.automl_model.accuracy
