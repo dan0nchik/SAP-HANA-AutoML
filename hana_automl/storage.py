@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pandas as pd
 from hana_ml.dataframe import ConnectionContext
 from hana_ml.model_storage import ModelStorage
+from typing import List
 
 from hana_automl.algorithms.base_algo import BaseAlgorithm
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
@@ -194,7 +195,7 @@ class Storage(ModelStorage):
             return pd.DataFrame(res, columns=col_names)
 
     def save_leaderboard(
-        self, leaderboard: list[ModelBoard], name: str, top: int = None
+        self, leaderboard: List[ModelBoard], name: str, top: int = None
     ):
         """
         Saves algorithms from leaderboard.

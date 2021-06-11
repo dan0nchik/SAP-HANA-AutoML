@@ -148,12 +148,16 @@ class OptunaOptimizer(BaseOptimizer):
                 f"Starting model {self.tuning_metric} score evaluation on the validation data!"
             )
         time.sleep(1)
-        for member in tqdm(
-            self.leaderboard,
-            desc=f"\033[33m Leaderboard {self.tuning_metric} score evaluation",
-            colour="yellow",
-            bar_format="{l_bar}{bar}\033[33m{r_bar}",
-        ):
+        if self.verbose > 1:
+            lst = tqdm(
+                self.leaderboard,
+                desc=f"\033[33m Leaderboard {self.tuning_metric} score evaluation",
+                colour="yellow",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}",
+            )
+        else:
+            lst = self.leaderboard
+        for member in lst:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,

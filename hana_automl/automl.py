@@ -487,9 +487,7 @@ class AutoML:
         """Returns fitted HANA PAL model"""
         return self.model
 
-    def sort_leaderboard(
-        self, metric, df=None, id_col=None, target=None, print_result=False
-    ):
+    def sort_leaderboard(self, metric, df=None, id_col=None, target=None, verbose=1):
         if (
             self.leaderboard[0].preprocessor.task == "cls"
             and metric not in ["accuracy"]
@@ -504,14 +502,18 @@ class AutoML:
         else:
             data = Data(valid=df, id_col=id_col, target=target)
             clean_sets = ["valid"]
-        print(f"Starting model {metric} score evaluation on the validation data!")
-        time.sleep(1)
-        for member in tqdm(
-            self.leaderboard,
-            desc=f"\033[33mLeaderboard {metric} score evaluation",
-            colour="yellow",
-            bar_format="{l_bar}{bar}\033[33m{r_bar}",
-        ):
+        if verbose > 0:
+            print(f"Starting model {metric} score evaluation on the validation data!")
+            time.sleep(1)
+            lst = tqdm(
+                self.leaderboard,
+                desc=f"\033[33mLeaderboard {metric} score evaluation",
+                colour="yellow",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}",
+            )
+        else:
+            lst = self.leaderboard
+        for member in lst:
             data_temp = data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,
@@ -530,7 +532,7 @@ class AutoML:
             key=lambda member: member.valid_score,
             reverse=reverse,
         )
-        if print_result:
+        if verbose > 0:
             self.print_leaderboard()
 
     def print_leaderboard(self):
