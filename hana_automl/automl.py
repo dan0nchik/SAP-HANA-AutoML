@@ -1,10 +1,12 @@
 import copy
 import json
+import time
 from typing import Union
 
 import hana_ml
 import pandas
 import pandas as pd
+from tqdm import tqdm
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
@@ -492,7 +494,7 @@ class AutoML:
             self.leaderboard[0].preprocessor.task == "cls"
             and metric not in ["accuracy"]
         ) or (
-            self.leaderboard[0].preprocessor.task == "cls"
+            self.leaderboard[0].preprocessor.task == "reg"
             and metric not in ["r2_score", "mse", "mae", "rmse"]
         ):
             raise AutoMLError("Wrong metric for task or this metric is nt supported!")
@@ -503,7 +505,13 @@ class AutoML:
             data = Data(valid=df, id_col=id_col, target=target)
             clean_sets = ["valid"]
         print(f"Starting model {metric} score evaluation on the validation data!")
-        for member in self.leaderboard:
+        time.sleep(1)
+        for member in tqdm(
+            self.leaderboard,
+            desc=f"\033[33mLeaderboard {metric} score evaluation",
+            colour="yellow",
+            bar_format="{l_bar}{bar}\033[33m{r_bar}",
+        ):
             data_temp = data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,
