@@ -6,7 +6,7 @@ from hana_automl.algorithms.base_algo import BaseAlgorithm
 class NBayesCls(BaseAlgorithm):
     def __init__(self):
         super(NBayesCls, self).__init__()
-        self.title = "NaiveBayes"
+        self.title = "NaiveBayesClassifier"
         self.params_range = {
             "alpha": (1e-2, 100),
             "discretization": (0, 1),

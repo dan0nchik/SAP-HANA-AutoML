@@ -87,6 +87,8 @@ class Input:
                     self.df,
                     name,
                     disable_progressbar=not self.verbose,
+                    drop_exist_tab=True,
+                    force=True,
                 )
                 self.table_name = name
             elif (
@@ -122,7 +124,7 @@ class Input:
                     drop_exist_tab=True,
                     disable_progressbar=not self.verbose,
                 )
-            # self.hana_df.declare_lttab_usage(True)  # TODO: research
+            self.hana_df.declare_lttab_usage(True)  # TODO: research
         if self.id_col is None:
             self.hana_df = self.hana_df.add_id(id_col="ID")
             self.id_col = "ID"

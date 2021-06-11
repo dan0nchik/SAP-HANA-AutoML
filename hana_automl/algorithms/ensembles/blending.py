@@ -16,7 +16,7 @@ class Blending:
     ):
         self.id_col = id_col
         self.title = ""
-        self.name = "Untitled"  # for storage
+        self.name = None  # for storage
         self.version = 1  # for storage
         self.table_name = table_name
         self.connection_context = connection_context

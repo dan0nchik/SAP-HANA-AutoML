@@ -6,7 +6,7 @@ from hana_automl.algorithms.base_algo import BaseAlgorithm
 class ExponentialReg(BaseAlgorithm):
     def __init__(self):
         super(ExponentialReg, self).__init__()
-        self.title = "ExponentialRegression"
+        self.title = "ExponentialRegressor"
         self.params_range = {
             "decomposition": (0, 3),
             "adjusted_r2": (0, 1),

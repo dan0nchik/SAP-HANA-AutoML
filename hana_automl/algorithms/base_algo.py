@@ -3,6 +3,7 @@ from time import sleep
 import hana_ml
 import optuna
 from bayes_opt import BayesianOptimization
+from hana_ml.algorithms.pal.regression import ExponentialRegression
 
 from hana_automl.metric.mae import mae_score
 from hana_automl.metric.mse import mse_score
@@ -103,13 +104,23 @@ class BaseAlgorithm:
         return acc
 
     def fit(self, data, features, categorical_features):
-        self.model.fit(
-            data=data.train,
-            key=data.id_colm,
-            features=features,
-            categorical_variable=categorical_features,
-            label=data.target,
-        )
+        if isinstance(
+                self.model, ExponentialRegression
+        ):  # does not support categorical
+            self.model.fit(
+                data=data.train,
+                key=data.id_colm,
+                features=features,
+                label=data.target,
+            )
+        else:
+            self.model.fit(
+                data=data.train,
+                key=data.id_colm,
+                features=features,
+                categorical_variable=categorical_features,
+                label=data.target,
+            )
 
     def __repr__(self):
         return self.title

@@ -41,6 +41,8 @@ class Benchmark:
     ):
         df = pd.read_csv(dataset)
         ensemble: bool = False
+        metric = None
+
         if id_column is None:
             df["ID"] = range(0, len(df))
             id_column = "ID"
@@ -79,6 +81,7 @@ class Benchmark:
                 self.apl_model = AutoClassifier(self.connection_context)
         if task == "reg":
             ensemble = True
+            metric = "mae"
             if grad_boost:
                 self.apl_model = GradientBoostingRegressor(self.connection_context)
             else:
@@ -103,6 +106,7 @@ class Benchmark:
             task=task,
             verbose=0,
             ensemble=ensemble,
+            tuning_metric=metric,
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.automl_accuracy = self.automl_model.accuracy

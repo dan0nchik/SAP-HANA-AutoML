@@ -1,3 +1,4 @@
+import base64
 import sys
 from contextlib import contextmanager
 from io import StringIO
@@ -50,6 +51,30 @@ def st_stderr(dst):
 
 
 st.title("Welcome to SAP HANA AutoML!")
+st.write(
+    "Useful links: [repository](https://github.com/dan0nchik/SAP-HANA-AutoML), [documentation]("
+    "https://sap-hana-automl.readthedocs.io/en/latest/index.html)"
+)
+
+if not session_state.show_results and session_state.cc is not None:
+    st.write("## 👈 Complete all steps to start training!")
+if not session_state.show_results and session_state.cc is None:
+    st.write("## What's this? 🤔")
+    st.write(
+        "This app is visualizing the work of [hana_automl package]("
+        "https://github.com/dan0nchik/SAP-HANA-AutoML) - open-source **Automated Machine Learning library**"
+    )
+    st.write(
+        "Here you can train a quite complex machine learning model in a few button clicks!"
+    )
+    st.write(
+        "If you have an SAP HANA instance and have some *tabular* data to train model on, welcome on board!"
+    )
+    st.markdown("We currently support: **Regression** and **Classification** tasks.")
+    st.markdown(
+        "Head to our [documentation](https://sap-hana-automl.readthedocs.io/en/latest/index.html) to learn more"
+    )
+    st.write("👈 Complete all steps to start training!")
 
 st.sidebar.title("1. Enter your HANA database credentials:")
 user = st.sidebar.text_input(label="Username", value="DEVELOPER")
@@ -89,18 +114,15 @@ if st.sidebar.button(label="Submit"):
             host, port, user, password = get_database_connection()
             session_state.cc = ConnectionContext(host, port, user, password)
             session_state.show_results = False
-            st.success("Successfully connected to the database!")
+            st.success("Successfully connected to the database! 😎")
         except Exception as ex:
             st.error(ex)
-
-if not session_state.show_results:
-    st.write("## 👈 Complete all steps to start training!")
 
 st.sidebar.markdown("# 2. Load data")
 st.sidebar.markdown("## From file:")
 uploaded_file = st.sidebar.file_uploader(label="", type=["csv", "xlsx"])
 table_name = st.sidebar.text_input(
-    label="*(Optional)* provide table name to load dataset there:", value=None
+    label="OPTIONAL provide table name to load dataset there:", value=None
 )
 if table_name == "None" or table_name == "":
     table_name = None
@@ -177,8 +199,10 @@ time = st.sidebar.number_input("In seconds", 10, 86400)
 st.sidebar.title("9. Optional settings:")
 ensemble = st.sidebar.checkbox("Use ensemble")
 leaderboard = st.sidebar.checkbox("Show leaderboard", value=True)
-optimizer = st.sidebar.selectbox("Optimizer", ["OptunaSearch", "BayesianOptimizer"])
-verbose = st.sidebar.selectbox("Verbose level", [1, 2], key="verbose")
+optimizer = st.sidebar.selectbox(
+    "Hyperparameter optimizer", ["OptunaSearch", "BayesianOptimizer"]
+)
+verbose = st.sidebar.selectbox("Level of output", [0, 1, 2], key="verbose", index=1)
 
 start_training = st.sidebar.button("Start training!")
 
@@ -296,3 +320,7 @@ if session_state.show_results:
                     )
                 )
             )
+    if st.button("Reset app (start again)"):
+        session_state.show_results = False
+        session_state.cc = None
+        session_state.automl = AutoML(None)

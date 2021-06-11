@@ -6,7 +6,7 @@ from hana_automl.algorithms.base_algo import BaseAlgorithm
 class RDTReg(BaseAlgorithm):
     def __init__(self):
         super(RDTReg, self).__init__()
-        self.title = "Random_Decision_Tree_Reg"
+        self.title = "Random_Decision_Tree_Regressor"
         self.params_range = {
             "n_estimators": (50, 300),
             "max_depth": (20, 56),

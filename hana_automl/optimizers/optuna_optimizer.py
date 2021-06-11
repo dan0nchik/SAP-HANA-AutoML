@@ -4,6 +4,8 @@ import uuid
 
 import optuna
 
+from tqdm import tqdm
+
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
 from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
@@ -145,8 +147,17 @@ class OptunaOptimizer(BaseOptimizer):
             print(
                 f"Starting model {self.tuning_metric} score evaluation on the validation data!"
             )
-
-        for member in self.leaderboard:
+        if self.verbose > 1:
+            time.sleep(1)
+            lst = tqdm(
+                self.leaderboard,
+                desc=f"\033[33m Leaderboard {self.tuning_metric} score evaluation",
+                colour="yellow",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}\033[0m",
+            )
+        else:
+            lst = self.leaderboard
+        for member in lst:
             data = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,

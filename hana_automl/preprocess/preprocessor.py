@@ -15,6 +15,7 @@ from hana_automl.algorithms.classification.naive_bayes import NBayesCls
 from hana_automl.algorithms.classification.rdtclas import RDTCls
 from hana_automl.algorithms.classification.svc import SVCls
 from hana_automl.algorithms.regression.decisiontreereg import DecisionTreeReg
+from hana_automl.algorithms.regression.expreg import ExponentialReg
 from hana_automl.algorithms.regression.glmreg import GLMReg
 from hana_automl.algorithms.regression.gradboostreg import GBReg
 from hana_automl.algorithms.regression.hybgradboostreg import HGBReg
@@ -26,6 +27,28 @@ from hana_automl.utils.error import PreprocessError
 
 
 class Preprocessor:
+    def __init__(self):
+        self.clsdict = {
+            "DecisionTreeClassifier": DecisionTreeCls(),
+            # "LogisticRegressionClassifier": log,
+            "NaiveBayesClassifier": NBayesCls(),
+            "MLPClassifier": MLPcls(),
+            "SupportVectorClassifier": SVCls(),
+            "RandomDecisionTreeClassifier": RDTCls(),
+            "HybridGradientBoostingClassifier": HGBCls(),
+        }
+        self.regdict = {
+            "DecisionTreeRegressor": DecisionTreeReg(),
+            # "GLMRegressor": GLMReg(),
+            "ExponentialRegressor": ExponentialReg(),
+            "MLPRegressor": MLPreg(),
+            "Random_Decision_Tree_Regressor": RDTReg(),
+            "SupportVectorRegressor": SVReg(),
+            "GradientBoostingRegressor": GBReg(),
+            "HybridGradientBoostingRegressor": HGBReg(),
+            "KNNRegressor": KNeighborsReg(),
+        }
+
     def autoimput(
         self,
         df: DataFrame = None,
@@ -206,7 +229,7 @@ class Preprocessor:
                 )
             else:
                 log = LogRegressionCls(binominal=data.binomial)
-            clslist = [
+            self.clslist = [
                 DecisionTreeCls(),
                 # log,
                 NBayesCls(),
@@ -215,24 +238,15 @@ class Preprocessor:
                 RDTCls(),
                 HGBCls(),
             ]
-            clsdict = {
-                "DecisionTreeClassifier": DecisionTreeCls(),
-                "HybridGradientBoostingClassifier": HGBCls(),
-                # "LogisticRegressionClassifier": log,
-                "MLPClassifier": MLPcls(),
-                "NaiveBayesClassifier": NBayesCls(),
-                "RDTClassifier": RDTCls(),
-                "SVClassifier": SVCls(),
-            }
-            clslist = [i for i in clslist if i.title not in algo_exceptions]
+            clslist = [i for i in self.clslist if i.title not in algo_exceptions]
             clsdict = {
                 key: value
-                for key, value in clsdict.items()
+                for key, value in self.clsdict.items()
                 if key.title not in algo_exceptions
             }
             return clslist, "cls", clsdict
         else:
-            reglist = [
+            self.reglist = [
                 DecisionTreeReg(),
                 # GLMReg(),
                 KNeighborsReg(),
@@ -242,19 +256,10 @@ class Preprocessor:
                 GBReg(),
                 HGBReg(),
             ]
-            regdict = {
-                "DecisionTreeRegressor": DecisionTreeReg(),
-                # "GLMRegressor": GLMReg(),
-                "MLPRegressor": MLPreg(),
-                "RDTRegressor": RDTReg(),
-                "SupportVectorRegressor": SVReg(),
-                "GradientBoostingRegressor": GBReg(),
-                "HybridGradientBoostingRegressor": HGBReg(),
-            }
-            reglist = [i for i in reglist if i.title not in algo_exceptions]
+            reglist = [i for i in self.reglist if i.title not in algo_exceptions]
             regdict = {
                 key: value
-                for key, value in regdict.items()
+                for key, value in self.regdict.items()
                 if key.title not in algo_exceptions
             }
             return reglist, "reg", regdict
