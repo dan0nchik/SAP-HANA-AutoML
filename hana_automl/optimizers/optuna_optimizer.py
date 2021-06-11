@@ -147,13 +147,13 @@ class OptunaOptimizer(BaseOptimizer):
             print(
                 f"Starting model {self.tuning_metric} score evaluation on the validation data!"
             )
-        time.sleep(1)
         if self.verbose > 1:
+            time.sleep(1)
             lst = tqdm(
                 self.leaderboard,
                 desc=f"\033[33m Leaderboard {self.tuning_metric} score evaluation",
                 colour="yellow",
-                bar_format="{l_bar}{bar}\033[33m{r_bar}",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}\033[0m",
             )
         else:
             lst = self.leaderboard

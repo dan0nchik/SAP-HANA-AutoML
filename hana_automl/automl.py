@@ -509,7 +509,7 @@ class AutoML:
                 self.leaderboard,
                 desc=f"\033[33mLeaderboard {metric} score evaluation",
                 colour="yellow",
-                bar_format="{l_bar}{bar}\033[33m{r_bar}",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}\033[0m",
             )
         else:
             lst = self.leaderboard
