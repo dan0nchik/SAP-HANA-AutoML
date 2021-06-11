@@ -40,13 +40,13 @@ class Storage(ModelStorage):
     def __init__(self, connection_context: ConnectionContext, schema: str):
         super().__init__(connection_context, schema)
         self.cursor = connection_context.connection.cursor()
-        self.create_prep_table = f"CREATE TABLE {self.schema}.{PREPROCESSORS} " \
-                                 f"(MODEL NVARCHAR(256), VERSION INT, " \
-                                 f"JSON NVARCHAR(5000), TRAIN_ACC DOUBLE, VALID_ACC DOUBLE, ALGORITHM NVARCHAR(256));"
+        self.create_prep_table = (
+            f"CREATE TABLE {self.schema}.{PREPROCESSORS} "
+            f"(MODEL NVARCHAR(256), VERSION INT, "
+            f"JSON NVARCHAR(5000), TRAIN_ACC DOUBLE, VALID_ACC DOUBLE, ALGORITHM NVARCHAR(256));"
+        )
         if not table_exists(self.cursor, self.schema, PREPROCESSORS):
-            self.cursor.execute(
-                self.create_prep_table
-            )
+            self.cursor.execute(self.create_prep_table)
         preprocessor = Preprocessor()
         self.cls_dict = preprocessor.clsdict
         self.reg_dict = preprocessor.regdict
@@ -74,14 +74,14 @@ class Storage(ModelStorage):
         >>> storage.save_model(automl)
         """
         if not table_exists(self.cursor, self.schema, PREPROCESSORS):
-            self.cursor.execute(
-                self.create_prep_table
-            )
+            self.cursor.execute(self.create_prep_table)
         if isinstance(automl.model, BlendingCls) or isinstance(
-                automl.model, BlendingReg
+            automl.model, BlendingReg
         ):
             if automl.model.name is None:
-                raise StorageError("Name your ensemble! Set name via automl.model.name='model name'")
+                raise StorageError(
+                    "Name your ensemble! Set name via automl.model.name='model name'"
+                )
             if isinstance(automl.model, BlendingCls):
                 ensemble_name = "_ensemble_cls_"
             if isinstance(automl.model, BlendingReg):
@@ -161,7 +161,16 @@ class Storage(ModelStorage):
         if (name is not None) and name != "":
             ensembles = self.__find_models(name, ensemble_prefix)
             if len(ensembles) > 0:
-                result = pd.DataFrame(columns=["MODEL", "VERSION", "JSON", 'TRAIN_ACC', 'VALID_ACC', 'ALGORITHM'])
+                result = pd.DataFrame(
+                    columns=[
+                        "MODEL",
+                        "VERSION",
+                        "JSON",
+                        "TRAIN_ACC",
+                        "VALID_ACC",
+                        "ALGORITHM",
+                    ]
+                )
                 for model in ensembles:
                     self.cursor.execute(
                         f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL='{model[0]}';"
@@ -184,7 +193,9 @@ class Storage(ModelStorage):
             col_names = [i[0] for i in self.cursor.description]
             return pd.DataFrame(res, columns=col_names)
 
-    def save_leaderboard(self, leaderboard: list[ModelBoard], name: str, top: int = None):
+    def save_leaderboard(
+        self, leaderboard: list[ModelBoard], name: str, top: int = None
+    ):
         """
         Saves algorithms from leaderboard.
 
@@ -204,11 +215,15 @@ class Storage(ModelStorage):
         """
         counter = 1
         if top is not None:
-            leaderboard = leaderboard[:top + 1]
+            leaderboard = leaderboard[: top + 1]
         for model_member in leaderboard:
-            model_name = model_member.algorithm.model.name = f"{name}_{leaderboard_prefix}_{counter}"
+            model_name = (
+                model_member.algorithm.model.name
+            ) = f"{name}_{leaderboard_prefix}_{counter}"
             json_settings = json.dumps(model_member.preprocessor.__dict__)
-            if self.model_already_exists(model_name, model_member.algorithm.model.version):
+            if self.model_already_exists(
+                model_name, model_member.algorithm.model.version
+            ):
                 self.cursor.execute(
                     f"UPDATE {self.schema}.{PREPROCESSORS} SET "
                     f"VERSION={model_member.algorithm.model.version}, "
@@ -225,7 +240,7 @@ class Storage(ModelStorage):
                     f"VALUES ('{model_name}', {model_member.algorithm.model.version}, '{str(json_settings)}', "
                     f"{model_member.train_score}, {model_member.valid_score}, '{model_member.algorithm.title}'); "
                 )
-            super().save_model(model_member.algorithm.model, if_exists='replace')
+            super().save_model(model_member.algorithm.model, if_exists="replace")
             counter += 1
 
     def load_leaderboard(self, name: str, show: bool = False) -> list:
@@ -252,26 +267,22 @@ class Storage(ModelStorage):
                     f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{member[0]}' "
                     f"AND VERSION = {member[1]}"
                 )
-                columns = self.cursor.fetchall()[0]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
+                columns = self.cursor.fetchall()[
+                    0
+                ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
                 prep = self.__setup_preprocessor(columns[2])
-                if 'Regressor' in columns[5]:
+                if "Regressor" in columns[5]:
                     algo = self.reg_dict[columns[5]]
-                if 'Classifier' in columns[5]:
+                if "Classifier" in columns[5]:
                     algo = self.cls_dict[columns[5]]
                 algo.model = super().load_model(member[0], member[1])
                 algo.title = columns[5]
-                model_board_member = ModelBoard(
-                    algo, 0, prep
-                )
+                model_board_member = ModelBoard(algo, 0, prep)
                 model_board_member.valid_score = columns[4]
                 model_board_member.train_score = columns[3]
                 leaderboard.append(model_board_member)
             if show:
-                print(
-                    "\033[33m{}".format(
-                        f"Loaded leaderboard '{name}':\n"
-                    )
-                )
+                print("\033[33m{}".format(f"Loaded leaderboard '{name}':\n"))
                 place = 1
                 for member in leaderboard:
                     print(
@@ -292,13 +303,17 @@ class Storage(ModelStorage):
         return leaderboard
 
     def list_leaderboards(self) -> pd.DataFrame:
-        df = self.connection_context.sql(f"SELECT * FROM HANAML_MODEL_STORAGE WHERE NAME LIKE '%{leaderboard_prefix}%';").collect()
+        df = self.connection_context.sql(
+            f"SELECT * FROM HANAML_MODEL_STORAGE WHERE NAME LIKE '%{leaderboard_prefix}%';"
+        ).collect()
         if df.empty:
             raise StorageError("No leaderboard was saved")
         return df
 
     def list_ensembles(self) -> pd.DataFrame:
-        df = self.connection_context.sql(f"SELECT * FROM HANAML_MODEL_STORAGE WHERE NAME LIKE '%{ensemble_prefix}%';").collect()
+        df = self.connection_context.sql(
+            f"SELECT * FROM HANAML_MODEL_STORAGE WHERE NAME LIKE '%{ensemble_prefix}%';"
+        ).collect()
         if df.empty:
             raise StorageError("No ensemble was saved")
         return df
@@ -374,17 +389,17 @@ class Storage(ModelStorage):
                     f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{model_name[0]}' "
                     f"AND VERSION = {model_name[1]}"
                 )
-                columns = self.cursor.fetchall()[0]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
+                columns = self.cursor.fetchall()[
+                    0
+                ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
                 prep = self.__setup_preprocessor(columns[2])
-                if 'Regressor' in columns[5]:
+                if "Regressor" in columns[5]:
                     algo = self.reg_dict[columns[5]]
-                if 'Classifier' in columns[5]:
+                if "Classifier" in columns[5]:
                     algo = self.cls_dict[columns[5]]
                 algo.model = super().load_model(model_name[0], model_name[1], **kwargs)
                 algo.title = columns[5]
-                model_board_member = ModelBoard(
-                    algo, 0, prep
-                )
+                model_board_member = ModelBoard(algo, 0, prep)
                 model_board_member.valid_score = columns[4]
                 model_board_member.train_score = columns[3]
                 prep_list.append(prep)
@@ -406,11 +421,13 @@ class Storage(ModelStorage):
                 f"SELECT * FROM {self.schema}.{PREPROCESSORS} WHERE MODEL = '{name}' "
                 f"AND VERSION = {version}"
             )
-            columns = self.cursor.fetchall()[0]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
+            columns = self.cursor.fetchall()[
+                0
+            ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
             automl.preprocessor_settings = self.__setup_preprocessor(columns[2])
-            if 'Regressor' in columns[5]:
+            if "Regressor" in columns[5]:
                 algo = self.reg_dict[columns[5]]
-            if 'Classifier' in columns[5]:
+            if "Classifier" in columns[5]:
                 algo = self.cls_dict[columns[5]]
             algo.title = columns[5]
             algo.model = super().load_model(name, version, **kwargs)

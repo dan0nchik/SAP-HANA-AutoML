@@ -39,7 +39,7 @@ class BaseAlgorithm:
         pass
 
     def score(self, data, df: hana_ml.DataFrame, metric: str):
-        if metric == "accuracy" or metric == "r2_score":
+        if metric == "accuracy" or metric == "r2_score" or metric is None:
             return self.model.score(df, key=data.id_colm, label=data.target)
         elif metric in ["mae", "mse", "rmse"]:
             c = df.columns
@@ -56,8 +56,8 @@ class BaseAlgorithm:
         self.categorical_features = cat
 
     def bayes_tune(
-            self,
-            f,
+        self,
+        f,
     ):
         if self.bayes_opt is None:
             self.bayes_opt = BayesianOptimization(
@@ -99,7 +99,9 @@ class BaseAlgorithm:
         return acc
 
     def fit(self, data, features, categorical_features):
-        if isinstance(self.model, ExponentialRegression):  # does not support categorical
+        if isinstance(
+            self.model, ExponentialRegression
+        ):  # does not support categorical
             self.model.fit(
                 data=data.train,
                 key=data.id_colm,

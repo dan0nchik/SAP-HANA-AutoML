@@ -51,7 +51,7 @@ class Preprocessor:
             "SupportVectorRegressor": SVReg(),
             "GradientBoostingRegressor": GBReg(),
             "HybridGradientBoostingRegressor": HGBReg(),
-            "KNNRegressor": KNeighborsReg()
+            "KNNRegressor": KNeighborsReg(),
         }
 
     def autoimput(
