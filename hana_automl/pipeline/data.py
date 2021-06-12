@@ -62,6 +62,7 @@ class Data:
         normalize_int: bool = False,
         strategy_by_col: list = None,
         drop_outers: bool = False,
+        normalization_excp: list = None,
         clean_sets: list = ["test", "train", "valid"],
     ):
         """Clears data using methods defined in parameters.
@@ -99,6 +100,15 @@ class Data:
         valid = self.valid
         train = self.train
         test = self.test
+        if drop_outers:
+            df = test.union([train, valid])
+            df = df.sort(self.id_colm, desc=False)
+            df = pr.drop_outers(
+                df, id=self.id_colm, target=self.target, cat_list=categorical_list
+            )
+            train, test, valid = train_test_val_split(
+                data=df, id_column=self.id_colm, random_seed=17
+            )
         if "valid" in clean_sets:
             valid = pr.autoimput(
                 df=self.valid,
@@ -110,6 +120,7 @@ class Data:
                 normalizer_strategy=normalizer_strategy,
                 normalizer_z_score_method=normalizer_z_score_method,
                 normalize_int=normalize_int,
+                normalization_excp=normalization_excp,
             )
         if "train" in clean_sets:
             train = pr.autoimput(
@@ -122,6 +133,7 @@ class Data:
                 normalizer_strategy=normalizer_strategy,
                 normalizer_z_score_method=normalizer_z_score_method,
                 normalize_int=normalize_int,
+                normalization_excp=normalization_excp,
             )
         if "test" in clean_sets:
             test = pr.autoimput(
@@ -134,16 +146,25 @@ class Data:
                 normalizer_strategy=normalizer_strategy,
                 normalizer_z_score_method=normalizer_z_score_method,
                 normalize_int=normalize_int,
-            )
-        if drop_outers:
-            df = test.union([train, valid])
-            df = df.sort(self.id_colm, desc=False)
-            df = pr.drop_outers(
-                df, id=self.id_colm, target=self.target, cat_list=categorical_list
-            )
-            train, test, valid = train_test_val_split(
-                data=df, id_column=self.id_colm, random_seed=17
+                normalization_excp=normalization_excp,
             )
         return Data(
             train=train, test=test, valid=valid, target=self.target, id_col=self.id_colm
+        )
+
+    def check_norm_except(self, categorical_list):
+        return Preprocessor.check_normalization_exceptions(
+            df=self.test.union([self.train, self.valid]).sort(self.id_colm, desc=False),
+            id=self.id_colm,
+            target=self.target,
+            categorical_list=categorical_list,
+        )
+
+    def drop_duplicates(self):
+        df = self.test.union([self.train, self.valid])
+        cols = df.columns
+        cols.remove(self.id_colm)
+        df = df.drop_duplicates(cols)
+        self.train, self.test, self.valid = train_test_val_split(
+            data=df, id_column=self.id_colm, random_seed=17
         )

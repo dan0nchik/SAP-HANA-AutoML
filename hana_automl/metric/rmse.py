@@ -4,11 +4,12 @@ from decimal import Decimal
 from hana_ml import DataFrame
 
 
-# locale.setlocale(locale.LC_ALL, "USA")
-
-
 def rmse_score(
-    algo=None, df: DataFrame = None, target=None, ftr: list = None, id: str = None
+    algo=None,
+    df: DataFrame = None,
+    target: str = None,
+    ftr: list = None,
+    id: str = None,
 ):
     if algo is not None:
         res = algo.predict(df, id, ftr)
@@ -29,26 +30,14 @@ def rmse_score(
             )
             .deselect("ID_TEMP")
         )
+        res = res.rename_columns(["ID", "PREDICTION", "REAL"]).select(
+            ("SQRT(AVG((REAL - PREDICTION)*(REAL - PREDICTION)))", "VAL")
+        )
         pandas = res.collect()
-        cols = res.columns
-        pandas["rmse_coef"] = pandas.apply(
-            lambda row: val(row[cols[2]], row[cols[1]]), axis=1
-        )
-        return math.sqrt(pandas["rmse_coef"].mean())
+        return pandas.VAL[0]
     else:
-        pandas = df.collect()
-        cols = df.columns
-        pandas["rmse_coef"] = pandas.apply(
-            lambda row: (Decimal(row[cols[0]]) - Decimal(row[cols[1]])) ** 2, axis=1
+        res = df.rename_columns(["REAL", "PREDICTION"]).select(
+            ("SQRT(AVG((REAL - PREDICTION)*(REAL - PREDICTION)))", "VAL")
         )
-        return math.sqrt(pandas["rmse_coef"].mean())
-
-
-def val(a, b):
-    if type(a) is not Decimal:
-        a = Decimal(a)
-    if type(b) is not Decimal:
-        if type(b) is not str:
-            b = str(b)
-        b = Decimal(b)
-    return (a - b) ** 2
+        pandas = res.collect()
+        return pandas.VAL[0]

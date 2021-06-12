@@ -25,6 +25,7 @@ class SVReg(BaseAlgorithm):
         params1["scale_info"] = ["no", "standardization", "rescale"][
             round(params["scale_info"])
         ]
+        self.tuned_params = params
         self.model = SVR(**params1)
 
     def optunatune(self, trial):

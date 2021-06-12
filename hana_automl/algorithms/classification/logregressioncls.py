@@ -6,7 +6,7 @@ from hana_automl.algorithms.base_algo import BaseAlgorithm
 class LogRegressionCls(BaseAlgorithm):
     def __init__(self, binominal, class_map0=None, class_map1=None):
         super(LogRegressionCls, self).__init__()
-        self.title = "Logistic Regression"
+        self.title = "LogisticRegressionClassifier"
         self.binominal = binominal
         self.class_map0 = class_map0
         self.class_map1 = class_map1
@@ -30,6 +30,7 @@ class LogRegressionCls(BaseAlgorithm):
                 params["class_map0"] = self.class_map0
                 params["class_map1"] = self.class_map1
         # self.model = UnifiedClassification(func='LogisticRegression', **params)
+        self.tuned_params = params
         self.model = LogisticRegression(**params)
 
     def optunatune(self, trial):

@@ -1,18 +1,16 @@
+import copy
 import time
+from datetime import datetime
 
 import hana_ml
+import numpy as np
 from bayes_opt.bayesian_optimization import BayesianOptimization
+from tqdm import tqdm
 
-import hana_automl.algorithms.base_algo
 from hana_automl.optimizers.base_optimizer import BaseOptimizer
-from hana_automl.pipeline.data import Data
-from hana_automl.pipeline.leaderboard import Leaderboard
-
 from hana_automl.pipeline.modelres import ModelBoard
 from hana_automl.preprocess.settings import PreprocessorSettings
 from hana_automl.utils.error import OptimizerError
-
-import numpy as np
 
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -49,12 +47,12 @@ class BayesianOptimizer(BaseOptimizer):
     def __init__(
         self,
         algo_list: list,
-        data: Data,
+        data,
         iterations: int,
         time_limit: int,
         problem: str,
         categorical_features: list = None,
-        verbosity=2,
+        verbose=2,
         tuning_metric: str = None,
     ):
         self.data = data
@@ -70,11 +68,16 @@ class BayesianOptimizer(BaseOptimizer):
         self.categorical_features = categorical_features
         self.inner_data = None
         self.prepset: PreprocessorSettings = PreprocessorSettings(data.strategy_by_col)
+        self.prepset.categorical_cols = categorical_features
+        self.prepset.normalization_exceptions = self.data.check_norm_except(
+            categorical_features
+        )
         self.model = None
-        self.leaderboard: Leaderboard = Leaderboard()
+        self.leaderboard: list = list()
         self.algorithm = None
-        self.verbosity = verbosity
+        self.verbose = verbose
         self.tuning_metric = tuning_metric
+        self.trial_num = 0
 
     def objective(
         self,
@@ -123,7 +126,7 @@ class BayesianOptimizer(BaseOptimizer):
         self.prepset.tuned_z_score_method = z_score_method_2
         normalize_int_2 = self.prepset.normalize_int[round(normalize_int)]
         self.prepset.tuned_normalize_int = normalize_int_2
-        drop_outers = self.prepset.normalize_int[round(drop_outers)]
+        drop_outers = self.prepset.drop_outers[round(drop_outers)]
         self.prepset.tuned_drop_outers = drop_outers
         self.inner_data = self.data.clear(
             num_strategy=imputer,
@@ -133,21 +136,38 @@ class BayesianOptimizer(BaseOptimizer):
             normalizer_z_score_method=z_score_method_2,
             normalize_int=normalize_int_2,
             drop_outers=drop_outers,
+            normalization_excp=self.prepset.normalization_exceptions,
             clean_sets=["test", "train"],
         )
         target, params = self.algo_list[self.algo_index].bayes_tune(
             f=self.child_objective
         )
-        print("Best child Iteration cycle score: " + str(target))
+        now = datetime.now()
+        if self.tuning_metric not in ["accuracy", "r2_score"]:
+            tr = -1 * target
+        else:
+            tr = target
+        if self.verbose > 1:
+            print(
+                f"\033[32m[I {now}] \033[36mTrial {self.trial_num} finished with value: {tr} and parametrs: {{ 'algo': {self.algo_list[self.algo_index]}, 'imputer': {imputer}, 'normalizer_strategy': {normalizer_strategy_2}, 'normalize_int': {normalize_int_2}, 'drop_outers': {drop_outers}}}\033[0m"
+            )
+        self.trial_num = self.trial_num + 1
         algo = self.algo_list[self.algo_index]
         algo.set_params(**params)
+        if self.verbose > 1:
+            print(
+                "\033[36m {}\033[0m".format(
+                    algo.title + " trial params :" + str(algo.tuned_params)
+                )
+            )
         self.fit(algo, self.inner_data)
-
-        self.leaderboard.addmodel(ModelBoard(algo, target, self.prepset))
+        self.leaderboard.append(
+            ModelBoard(copy.copy(algo), tr, copy.copy(self.prepset))
+        )
 
         return target
 
-    def child_objective(self, **hyperparameters) -> int:
+    def child_objective(self, **hyperparameters) -> float:
         """Mini objective function. It is used to tune hyperparameters of algorithm that was chosen in main objective.
 
         Parameters
@@ -156,32 +176,33 @@ class BayesianOptimizer(BaseOptimizer):
             Parameters of algorithm's model.
         Returns
         -------
-        acc: float
-            Accuracy score of a model.
+        score: float
+            Tuning metric score of a model.
         """
         algorithm = self.algo_list[self.algo_index]
         algorithm.set_params(**hyperparameters)
         self.fit(algorithm, self.inner_data)
-        acc = algorithm.score(self.inner_data, self.inner_data.test, self.tuning_metric)
-        if self.verbosity > 1:
-            print("Child Iteration accuracy: " + str(acc))
-        return acc
+        score = algorithm.score(
+            self.inner_data, self.inner_data.test, self.tuning_metric
+        )
+        if self.tuning_metric not in ["accuracy", "r2_score"]:
+            score = -1 * score
+        return score
 
     def get_tuned_params(self) -> dict:
         """Returns tuned hyperparameters."""
 
         return {
-            "title": self.algo_list[self.algo_index].title,
-            "accuracy": self.leaderboard.board[0].valid_accuracy,
-            "info": self.tuned_params,
+            "algorithm": self.tuned_params,
+            "accuracy": self.leaderboard[0].valid_score,
         }
 
-    def get_model(self) -> hana_ml.algorithms.pal.pal_base:
+    def get_model(self):
         """Returns tuned model."""
 
         return self.model
 
-    def get_algorithm(self) -> hana_automl.algorithms.base_algo.BaseAlgorithm:
+    def get_algorithm(self):
         """Returns tuned AutoML algorithm"""
 
         return self.algorithm
@@ -189,11 +210,10 @@ class BayesianOptimizer(BaseOptimizer):
     def get_preprocessor_settings(self) -> PreprocessorSettings:
         """Returns tuned preprocessor settings."""
 
-        return self.prepset
+        return self.leaderboard[0].preprocessor
 
     def tune(self):
         """Starts hyperparameter searching."""
-
         opt = BayesianOptimization(
             f=self.objective,
             pbounds={
@@ -205,7 +225,11 @@ class BayesianOptimizer(BaseOptimizer):
                 "drop_outers": (0, len(self.prepset.drop_outers) - 1),
             },
             random_state=17,
-            verbose=self.verbosity > 1,
+            verbose=False,
+        )
+        now = datetime.now()
+        print(
+            f"\033[32m[I {now}] \033[36mA new bayesian optimization process created in memory\033[0m"
         )
         self.start_time = time.perf_counter()
         try:
@@ -214,7 +238,7 @@ class BayesianOptimizer(BaseOptimizer):
             else:
                 opt.maximize(n_iter=self.iter, init_points=1)
         except OptimizerError:
-            if self.verbosity > 0:
+            if self.verbose > 0:
                 if self.iter is None:
                     print(
                         "There was a stop due to a time limit! Completed "
@@ -229,30 +253,45 @@ class BayesianOptimizer(BaseOptimizer):
                         + str(self.iter)
                     )
         else:
-            if self.verbosity > 0:
+            if self.verbose > 0:
                 print("All iterations completed successfully!")
         self.tuned_params = opt.max
-        if self.verbosity > 0:
-            print("Starting model accuracy evaluation on the validation data!")
-        for member in self.leaderboard.board:
-            data = self.data.clear(
+        if self.verbose > 0:
+            print(
+                f"Starting model {self.tuning_metric} score evaluation on the validation data!"
+            )
+        if self.verbose > 1:
+            time.sleep(1)
+            lst = tqdm(
+                self.leaderboard,
+                desc=f"\033[33m Leaderboard {self.tuning_metric} score evaluation",
+                colour="yellow",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}\033[0m",
+            )
+        else:
+            lst = self.leaderboard
+        for member in lst:
+            data2 = self.data.clear(
                 num_strategy=member.preprocessor.tuned_num_strategy,
                 strategy_by_col=member.preprocessor.strategy_by_col,
-                categorical_list=self.categorical_features,
+                categorical_list=member.preprocessor.categorical_cols,
                 normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
                 normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
                 normalize_int=member.preprocessor.tuned_normalize_int,
+                normalization_excp=member.preprocessor.normalization_exceptions,
                 clean_sets=["valid"],
             )
-            acc = member.algorithm.score(data=data, df=data.valid, metric=self.tuning_metric)
-            member.add_valid_acc(acc)
-
-        self.leaderboard.board.sort(
-            key=lambda member: member.valid_accuracy + member.train_accuracy,
-            reverse=True,
+            acc = member.algorithm.score(
+                data=data2, df=data2.valid, metric=self.tuning_metric
+            )
+            member.add_valid_score(acc)
+        reverse = self.tuning_metric == "r2_score" or self.tuning_metric == "accuracy"
+        self.leaderboard.sort(
+            key=lambda member: member.valid_score + member.train_score,
+            reverse=reverse,
         )
-        self.model = self.leaderboard.board[0].algorithm.model
-        self.algorithm = self.leaderboard.board[0].algorithm
+        self.model = self.leaderboard[0].algorithm.model
+        self.algorithm = self.leaderboard[0].algorithm
 
     def fit(self, algo, data):
         """Fits given model from data. Small method to reduce code repeating."""

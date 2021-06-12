@@ -51,7 +51,7 @@ class Input:
         self.target = target
         self.table_name = table_name
         self.verbose = verbose
-        self.hana_df = None
+        self.hana_df: hana_ml.dataframe.DataFrame = None
         self.connection_context = connection_context
 
     def load_data(self):
@@ -87,6 +87,8 @@ class Input:
                     self.df,
                     name,
                     disable_progressbar=not self.verbose,
+                    drop_exist_tab=True,
+                    force=True,
                 )
                 self.table_name = name
             elif (
@@ -122,15 +124,14 @@ class Input:
                     drop_exist_tab=True,
                     disable_progressbar=not self.verbose,
                 )
-            self.hana_df.declare_lttab_usage(True)
+            self.hana_df.declare_lttab_usage(True)  # TODO: research
         if self.id_col is None:
-            self.hana_df = self.hana_df.add_id()
+            self.hana_df = self.hana_df.add_id(id_col="ID")
             self.id_col = "ID"
 
         # make id column UPPER
-        self.hana_df = self.hana_df.rename_columns(
-            [self.hana_df.columns[0].upper(), *self.hana_df.columns[1:]]
-        )
+        self.hana_df = self.hana_df.rename_columns({self.id_col: self.id_col.upper()})
+        self.id_col = self.id_col.upper()
         return
 
     def split_data(self) -> Data:

@@ -18,6 +18,7 @@ class DecisionTreeReg(BaseAlgorithm):
         params["min_records_of_leaf"] = round(params["min_records_of_leaf"])
         params["min_records_of_parent"] = round(params["min_records_of_parent"])
         params["max_depth"] = round(params["max_depth"])
+        self.tuned_params = params
         self.model = DecisionTreeRegressor(**params)
 
     def optunatune(self, trial):

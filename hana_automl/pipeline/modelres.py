@@ -1,4 +1,3 @@
-import hana_automl
 from hana_automl.preprocess.settings import PreprocessorSettings
 
 
@@ -7,14 +6,14 @@ class ModelBoard:
 
     def __init__(
         self,
-        algorithm: hana_automl.algorithms.base_algo,
-        train_accuracy: int,
+        algorithm,
+        train_score: float,
         preprocessor: PreprocessorSettings,
     ):
         self.algorithm = algorithm
-        self.train_accuracy = train_accuracy
-        self.valid_accuracy = 0
+        self.train_score = train_score
+        self.valid_score = 0
         self.preprocessor = preprocessor
 
-    def add_valid_acc(self, accuracy):
-        self.valid_accuracy = accuracy
+    def add_valid_score(self, accuracy):
+        self.valid_score = accuracy

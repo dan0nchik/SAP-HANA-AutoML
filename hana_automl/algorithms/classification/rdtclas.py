@@ -7,7 +7,7 @@ class RDTCls(BaseAlgorithm):
     def __init__(self):
         super(RDTCls, self).__init__()
         super().__init__()
-        self.title = "Random Decision Tree"
+        self.title = "RandomDecisionTreeClassifier"
         self.params_range = {
             "n_estimators": (100, 1000),
             "max_depth": (10, 50),
@@ -21,6 +21,7 @@ class RDTCls(BaseAlgorithm):
         params["min_samples_leaf"] = round(params["min_samples_leaf"])
         params["n_estimators"] = round(params["n_estimators"])
         # self.model = UnifiedClassification(func='RandomDecisionTree', **params)
+        self.tuned_params = params
         self.model = RDTClassifier(**params)
 
     def optunatune(self, trial):

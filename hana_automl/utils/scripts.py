@@ -45,4 +45,6 @@ def setup_user(connection_context: ConnectionContext, username: str, password: s
     cursor.execute(
         f"""GRANT "AFL__SYS_AFL_AFLPAL_EXECUTE_WITH_GRANT_OPTION" TO {username}"""
     )
-    print("Done.")
+    print("Granting other roles...")
+    cursor.execute(f"GRANT USER ADMIN, CATALOG READ TO {username}")
+    print(f"Done.")

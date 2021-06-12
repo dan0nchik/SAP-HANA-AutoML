@@ -53,8 +53,15 @@
 
 <!-- ABOUT THE PROJECT -->
 # About the project
+### What's this?
+This is a simple but accurate Automated Machine Learning library. 
+Based on SAP HANA powerful in-memory algorithms, it provides high accuracy in multiple machine learning tasks. 
+Our library also uses numerous data preprocessing functions to automate routine data cleaning tasks. So, hana_automl goes through all AutoML steps and makes Data Science work easier.  
+### What is SAP HANA?
+From [www.sap.com](https://www.sap.com/products/hana.html): 
+SAP HANA is a high-performance in-memory database that speeds data-driven, real-time decisions and actions.
 
-## Docs
+## Documentation
 https://sap-hana-automl.readthedocs.io/en/latest/index.html
 
 ## Benchmarks
@@ -153,40 +160,46 @@ Check that PAL (Predictive Analysis Library) is installed and roles are granted
 <!-- USAGE EXAMPLES -->
 # Usage 
 
+## From code
 Our library in a few lines of code
 
 Connect to database.
 ```python
-  from hana_ml.dataframe import ConnectionContext
-  
-  cc = ConnectionContext(address='address',
-                         user='username',
-                         password='password'
-                         port=1234)
+from hana_ml.dataframe import ConnectionContext
+
+cc = ConnectionContext(address='address',
+                     user='username',
+                     password='password',
+                     port=1234)
+
 ```
 Create AutoML model and fit it.
 ```python
-  from hana_automl.automl import AutoML
-  
-  model = AutoML(cc)
-  model.fit(
-      file_path='path to training dataset', # it may be HANA table/view, or pandas DataFrame
-      steps=10, # number of iterations
-      target='target', # column to predict
-      time_limit=120 # time limit in seconds
-  )
+from hana_automl.automl import AutoML
+
+model = AutoML(cc)
+model.fit(
+  file_path='path to training dataset', # it may be HANA table/view, or pandas DataFrame
+  steps=10, # number of iterations
+  target='target', # column to predict
+  time_limit=120 # time limit in seconds
+)
 ```
 Predict.
 ```python
-  model.predict(
-    file_path='path to test dataset',
-    id_column='ID',
-    verbosity=2
-  )
+model.predict(
+file_path='path to test dataset',
+id_column='ID',
+verbose=1
+)
 ```
 
 _For more examples, please refer to the [Documentation](https://sap-hana-automl.readthedocs.io/en/latest/index.html)_
 
+## How to run Streamlit client
+1. Clone repository: `git clone https://github.com/dan0nchik/SAP-HANA-AutoML.git`
+2. Install dependencies: `pip3 install -r requirements.txt`
+3. Run GUI: `streamlit run ./web.py`
 
 
 <!-- ROADMAP -->
@@ -204,18 +217,44 @@ Any contributions you make are **greatly appreciated** 👏!
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/NewFeature`)
 3. Install dependencies  
+   ```sh
+   pip3 install Cython
+   ```
     ```sh
    pip3 install -r requirements.txt
    ```
-4. Make some changes
-5. Write tests that cover your code in `tests` directory
-6. Run tests (in `SAP-HANA-AutoML directory`)
+4. Create `credentials.py` file in `tests` directory
+    Your files should look like this:  
+    ```
+    SAP-HANA-AutoML
+    │   README.md
+    │   all other files   
+    │   .....
+    |
+    └───tests
+        │   test files...
+        │   credentials.py
+      ```
+
+    Copy and paste this piece of code there and replace it with your credentials:
+    ```python
+    host = "host"
+    user = "username"
+    password = "password"
+    port = 39015 # or any port you need
+    schema = "your schema"
+    ```
+    Don't worry, **this file is in .gitignore**, so your credentials won't be seen by anyone.
+
+5. Make some changes
+6. Write tests that cover your code in `tests` directory
+7. Run tests (under `SAP-HANA-AutoML directory`)
     ```sh
     pytest
     ```
-7. Commit your changes (`git commit -m 'Add some amazing features'`)
-8. Push to the branch (`git push origin feature/AmazingFeature`)
-9. Open a Pull Request
+8. Commit your changes (`git commit -m 'Add some amazing features'`)
+9. Push to the branch (`git push origin feature/AmazingFeature`)
+10. Open a Pull Request
 
 
 

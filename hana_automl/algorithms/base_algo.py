@@ -1,25 +1,30 @@
 from time import sleep
 
+import hana_ml
 import optuna
 from bayes_opt import BayesianOptimization
+from hana_ml.algorithms.pal.regression import ExponentialRegression
 
 from hana_automl.metric.mae import mae_score
 from hana_automl.metric.mse import mse_score
 from hana_automl.metric.rmse import rmse_score
+from hana_automl.optimizers.bayes import BayesianOptimizer
+from hana_automl.optimizers.optuna_optimizer import OptunaOptimizer
 
 
 class BaseAlgorithm:
     """Base algorithm class. Inherit from it for creating custom algorithms."""
 
     def __init__(self, custom_params: dict = None, model=None):
-        self.title = ""  # for leaderboard
+        self.title: str = ""  # for leaderboard
         self.model = model
-        self.categorical_features = None
-        self.params_range = {}
-        self.bayes_opt = None
-        self.optuna_opt = None
+        self.categorical_features: list = None
+        self.params_range: dict = {}
+        self.bayes_opt: BayesianOptimizer = None
+        self.optuna_opt: OptunaOptimizer = None
         self.temp_data = None
-        self.tuning_metric = None
+        self.tuning_metric: str = None
+        self.tuned_params: dict = None
         if custom_params is not None:
             # self.params_range[custom_params.keys()] = custom_params.values()
             pass
@@ -33,8 +38,8 @@ class BaseAlgorithm:
     def optunatune(self, trial):
         pass
 
-    def score(self, data, df, metric):
-        if metric == "accuracy" or metric == "r2_score":
+    def score(self, data, df: hana_ml.DataFrame, metric: str):
+        if metric == "accuracy" or metric == "r2_score" or metric is None:
             return self.model.score(df, key=data.id_colm, label=data.target)
         elif metric in ["mae", "mse", "rmse"]:
             c = df.columns
@@ -56,10 +61,7 @@ class BaseAlgorithm:
     ):
         if self.bayes_opt is None:
             self.bayes_opt = BayesianOptimization(
-                f=f,
-                pbounds=self.params_range,
-                verbose=False,
-                random_state=17,
+                f=f, pbounds=self.params_range, verbose=False, random_state=17
             )
         self.bayes_opt.maximize(n_iter=1, init_points=1)
         return self.bayes_opt.max["target"], self.bayes_opt.max["params"]
@@ -97,13 +99,23 @@ class BaseAlgorithm:
         return acc
 
     def fit(self, data, features, categorical_features):
-        self.model.fit(
-            data=data.train,
-            key=data.id_colm,
-            features=features,
-            categorical_variable=categorical_features,
-            label=data.target,
-        )
+        if isinstance(
+            self.model, ExponentialRegression
+        ):  # does not support categorical
+            self.model.fit(
+                data=data.train,
+                key=data.id_colm,
+                features=features,
+                label=data.target,
+            )
+        else:
+            self.model.fit(
+                data=data.train,
+                key=data.id_colm,
+                features=features,
+                categorical_variable=categorical_features,
+                label=data.target,
+            )
 
     def __repr__(self):
         return self.title

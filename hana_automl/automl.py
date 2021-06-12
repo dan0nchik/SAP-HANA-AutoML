@@ -1,8 +1,12 @@
+import copy
 import json
+import time
 from typing import Union
 
 import hana_ml
 import pandas
+import pandas as pd
+from tqdm import tqdm
 
 from hana_automl.algorithms.ensembles.blendcls import BlendingCls
 from hana_automl.algorithms.ensembles.blendreg import BlendingReg
@@ -41,6 +45,10 @@ class AutoML:
         self.ensemble = False
         self.columns_to_remove = None
         self.algorithm = None
+        self.leaderboard = None
+        self.leaderboard_metric = None
+        self.val_data = None
+        self.ensemble_score = 0
 
     def fit(
         self,
@@ -56,7 +64,7 @@ class AutoML:
         optimizer: str = "OptunaSearch",
         time_limit: int = None,
         ensemble: bool = False,
-        verbosity=2,
+        verbose=2,
         output_leaderboard: bool = False,
         strategy_by_col: list = None,
         tuning_metric: str = None,
@@ -97,9 +105,9 @@ class AutoML:
         time_limit: int
             Amount of time(in seconds) to tune the model
         ensemble: bool
-            Specify if you want to get an ensemble. :doc:`./examples` What is that?
-            Currently supported: "blending"
-        verbosity: int
+            Specify if you want to get an ensemble.
+            Currently supported: "blending". What is that? Details here: :doc:`./algorithms`
+        verbose: int
             Level of output. 1 - minimal, 2 - all output.
         output_leaderboard : bool
             Print algorithms leaderboard or not.
@@ -131,15 +139,15 @@ class AutoML:
         ...                        password='your password',
         ...                        port=9999) #your port
 
-        Creating and fitting the model:
-
+        Creating and fitting the model (see fitting section for detailed example):
+        >>> from hana_automl.automl import AutoML
         >>> automl = AutoML(cc)
-        >>> m.fit(
-        ...     df = df,
+        >>> automl.fit(
+        ...     df = df, # your pandas dataframe.
         ...     target="y",
         ...     id_column='ID',
         ...     categorical_features=["y", 'marital', 'education', 'housing', 'loan'],
-        ...     columns_to_remove=['default', 'contact', 'month', 'poutcome'],
+        ...     columns_to_remove=['default', 'contact', 'month', 'poutcome', 'job'],
         ...     steps=10,
         ... )
         """
@@ -161,7 +169,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            verbose=verbosity > 0,
+            verbose=verbose > 0,
         )
         inputted.load_data()
         if table_name is None:
@@ -176,12 +184,15 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
+        data.drop_duplicates()
+        self.val_data = copy.copy(data)
+        self.val_data.train = None
         pipe = Pipeline(
             data=data,
             steps=steps,
             task=task,
             time_limit=time_limit,
-            verbosity=verbosity,
+            verbose=verbose,
             tuning_metric=tuning_metric,
         )
         self.opt = pipe.train(
@@ -192,22 +203,25 @@ class AutoML:
         self.model = self.opt.get_model()
         self.algorithm = self.opt.get_algorithm()
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
-        self.categorical_features = self.preprocessor_settings.categorical_cols
+        self.leaderboard = copy.copy(self.opt.leaderboard)
+        if tuning_metric is None and pipe.task == "cls":
+            tuning_metric = "accuracy"
+        elif tuning_metric is None and pipe.task == "reg":
+            tuning_metric = "r2_score"
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
                 "Sorry, non binomial blending classification is not supported yet!"
             )
         if ensemble:
-            if len(self.opt.leaderboard.board) < 3:
+            if len(self.opt.leaderboard) < 3:
                 raise BlendingError(
                     "Sorry, not enough fitted models for ensembling! Restart the process"
                 )
-            if verbosity > 0:
+            if verbose > 0:
                 print("Starting ensemble accuracy evaluation on the validation data!")
             self.ensemble = ensemble
             if pipe.task == "cls":
                 self.model = BlendingCls(
-                    categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,
                     table_name=table_name,
@@ -215,18 +229,19 @@ class AutoML:
                 )
             else:
                 self.model = BlendingReg(
-                    categorical_features=categorical_features,
                     id_col=id_column,
                     connection_context=self.connection_context,
                     table_name=table_name,
                     leaderboard=self.opt.leaderboard,
                 )
+            self.leaderboard_metric = tuning_metric
+            self.ensemble_score = self.model.score(data=data, metric=tuning_metric)
             print("\033[33m {}".format("\n"))
             print(
                 "Ensemble consists of: "
-                + str(self.model.model_list)
-                + "\nEnsemble accuracy: "
-                + str(self.model.score(data=data, metric=tuning_metric))
+                + f"{self.model.model_list[0].algorithm}, {self.model.model_list[1].algorithm}, {self.model.model_list[2].algorithm}"
+                + f"\nEnsemble {tuning_metric} score: "
+                + str(self.ensemble_score)
             )
             print("\033[0m {}".format(""))
 
@@ -237,8 +252,8 @@ class AutoML:
         table_name: str = None,
         id_column: str = None,
         target_drop: str = None,
-        verbosity=1,
-    ):
+        verbose=1,
+    ) -> pd.DataFrame:
         """Makes predictions using fitted model.
 
         Parameters
@@ -255,7 +270,7 @@ class AutoML:
             ID column in table. Needed for HANA. If None, it will be created in dataset automatically
         target_drop: str
             Target to drop, if it exists in inputted data
-        verbosity: int
+        verbose: int
             Level of output. 0 - minimal, 1 - all output.
 
         Notes
@@ -279,7 +294,7 @@ class AutoML:
         ...                table_name='PREDICTION',
         ...                id_column='ID',
         ...                target_drop='target',
-        ...                verbosity=1)
+        ...                verbose=1)
         """
         data = Input(
             connection_context=self.connection_context,
@@ -287,7 +302,7 @@ class AutoML:
             path=file_path,
             table_name=table_name,
             id_col=id_column,
-            verbose=verbosity > 0,
+            verbose=verbose > 0,
         )
         data.load_data()
         if id_column is not None:
@@ -298,16 +313,20 @@ class AutoML:
             data.hana_df = data.hana_df.drop(target_drop)
         if self.columns_to_remove is not None:
             data.hana_df = data.hana_df.drop(self.columns_to_remove)
-            if verbosity > 0:
+            if verbose > 0:
                 print("Columns removed")
         if self.ensemble:
             self.model.id_col = id_column
-            self.predicted = self.model.predict(df=data.hana_df, id_colm=data.id_col)
+            self.predicted = self.model.predict(
+                data=Data(id_col=id_column),
+                df=data.hana_df,
+                id_colm=data.id_col,
+            )
         else:
-            if verbosity > 0:
+            if verbose > 0:
                 print(
                     "Preprocessor settings:",
-                    self.preprocessor_settings.tuned_num_strategy,
+                    self.preprocessor_settings,
                 )
             pr = Preprocessor()
             data.hana_df = pr.autoimput(
@@ -319,12 +338,13 @@ class AutoML:
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
                 categorical_list=self.preprocessor_settings.categorical_cols,
+                normalization_excp=self.preprocessor_settings.normalization_exceptions,
             )
             self.predicted = self.model.predict(data.hana_df, data.id_col)
         res = self.predicted
         if type(self.predicted) == tuple:
             res = res[0]
-        if verbosity > 0:
+        if verbose > 0:
             print("Prediction results (first 20 rows): \n", res.head(20).collect())
         return res.collect()
 
@@ -387,26 +407,26 @@ class AutoML:
         data.target = inp.target
         data.id_colm = inp.id_col
         data.valid = inp.hana_df
-        if self.preprocessor_settings.task == "reg":
+        if self.preprocessor_settings is None:
+            raise AutoMLError("Run fit process or load a model before scoring!")
+        if type(self.preprocessor_settings) is list:
+            prep = self.preprocessor_settings[0]
+        else:
+            prep = self.preprocessor_settings
+        if prep.task == "reg":
             if metric is None:
                 metric = "r2_score"
             if metric not in ["r2_score", "mse", "rmse", "mae"]:
-                raise AutoMLError(
-                    f"Wrong {self.preprocessor_settings.task} task metric error"
-                )
-        if self.preprocessor_settings.task == "cls":
+                raise AutoMLError(f"Wrong {prep.task} task metric error")
+        if prep.task == "cls":
             if metric is None:
                 metric = "accuracy"
             if metric not in ["accuracy"]:
-                raise AutoMLError(
-                    f"Wrong {self.preprocessor_settings.task} task metric error"
-                )
+                raise AutoMLError(f"Wrong {prep.task} task metric error")
         if self.ensemble:
             return self.model.score(data, metric)
         else:
             pr = Preprocessor()
-            print(inp.hana_df)
-            print(self.preprocessor_settings.tuned_num_strategy + '-       -' + self.preprocessor_settings.tuned_normalizer_strategy + '-       -' + str(self.preprocessor_settings.tuned_normalize_int))
             inp.hana_df = pr.autoimput(
                 df=inp.hana_df,
                 id=inp.id_col,
@@ -416,6 +436,7 @@ class AutoML:
                 normalizer_z_score_method=self.preprocessor_settings.tuned_z_score_method,
                 normalize_int=self.preprocessor_settings.tuned_normalize_int,
                 categorical_list=self.preprocessor_settings.categorical_cols,
+                normalization_excp=self.preprocessor_settings.normalization_exceptions,
             )
             return self.algorithm.score(data, inp.hana_df, metric)
 
@@ -466,6 +487,74 @@ class AutoML:
         """Returns fitted HANA PAL model"""
         return self.model
 
+    def sort_leaderboard(self, metric, df=None, id_col=None, target=None, verbose=1):
+        if (
+            self.leaderboard[0].preprocessor.task == "cls"
+            and metric not in ["accuracy"]
+        ) or (
+            self.leaderboard[0].preprocessor.task == "reg"
+            and metric not in ["r2_score", "mse", "mae", "rmse"]
+        ):
+            raise AutoMLError("Wrong metric for task or this metric is nt supported!")
+        if df is None:
+            data = self.val_data
+            clean_sets = ["valid"]
+        else:
+            data = Data(valid=df, id_col=id_col, target=target)
+            clean_sets = ["valid"]
+        if verbose > 0:
+            print(f"Starting model {metric} score evaluation on the validation data!")
+            time.sleep(1)
+            lst = tqdm(
+                self.leaderboard,
+                desc=f"\033[33mLeaderboard {metric} score evaluation",
+                colour="yellow",
+                bar_format="{l_bar}{bar}\033[33m{r_bar}\033[0m",
+            )
+        else:
+            lst = self.leaderboard
+        for member in lst:
+            data_temp = data.clear(
+                num_strategy=member.preprocessor.tuned_num_strategy,
+                strategy_by_col=member.preprocessor.strategy_by_col,
+                categorical_list=member.preprocessor.categorical_cols,
+                normalizer_strategy=member.preprocessor.tuned_normalizer_strategy,
+                normalizer_z_score_method=member.preprocessor.tuned_z_score_method,
+                normalize_int=member.preprocessor.tuned_normalize_int,
+                normalization_excp=member.preprocessor.normalization_exceptions,
+                clean_sets=clean_sets,
+            )
+            acc = member.algorithm.score(data=data, df=data_temp.valid, metric=metric)
+            member.add_valid_score(acc)
+        self.leaderboard_metric = metric
+        reverse = metric == "r2_score" or metric == "accuracy"
+        self.leaderboard.sort(
+            key=lambda member: member.valid_score,
+            reverse=reverse,
+        )
+        if verbose > 0:
+            self.print_leaderboard()
+
+    def print_leaderboard(self):
+        print(
+            "\033[33m{}".format(
+                f"Metric:{self.leaderboard_metric}\nLeaderboard (top best algorithms):\n"
+            )
+        )
+        place = 1
+        for member in self.leaderboard:
+            print(
+                "\033[33m {}".format(
+                    str(place)
+                    + ".  "
+                    + str(member.algorithm.model)
+                    + f"\n Holdout {self.leaderboard_metric} score: "
+                    + str(member.valid_score)
+                )
+            )
+            print("\033[0m {}".format(""))
+            place += 1
+
     @property
     def optimizer(self):
         """Get optimizer"""
@@ -478,4 +567,15 @@ class AutoML:
 
     @property
     def accuracy(self):
-        return self.opt.get_tuned_params()['accuracy']
+        if self.ensemble:
+            return self.ensemble_score
+        else:
+            return self.best_params["accuracy"]
+
+    def get_leaderboard(self):
+        """Get best hyperparameters"""
+        if self.leaderboard is None:
+            raise AutoMLError(
+                "There was no optimization process during the session! In order to get leaderboard you have to run one"
+            )
+        return self.leaderboard
