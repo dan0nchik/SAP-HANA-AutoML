@@ -53,8 +53,15 @@
 
 <!-- ABOUT THE PROJECT -->
 # About the project
+### What's this?
+This is a simple but accurate Automated Machine Learning library. 
+Based on SAP HANA powerful in-memory algorithms, it provides high accuracy in multiple machine learning tasks. 
+Our library also uses numerous data preprocessing functions to automate routine data cleaning tasks. So, hana_automl goes through all AutoML steps and makes Data Science work easier.  
+### What is SAP HANA?
+From [www.sap.com](https://www.sap.com/products/hana.html): 
+SAP HANA is a high-performance in-memory database that speeds data-driven, real-time decisions and actions.
 
-## Docs
+## Documentation
 https://sap-hana-automl.readthedocs.io/en/latest/index.html
 
 ## Benchmarks
@@ -234,7 +241,7 @@ Any contributions you make are **greatly appreciated** 👏!
     host = "host"
     user = "username"
     password = "password"
-    port = 39015
+    port = 39015 # or any port you need
     schema = "your schema"
     ```
     Don't worry, **this file is in .gitignore**, so your credentials won't be seen by anyone.
