@@ -210,6 +210,9 @@ Any contributions you make are **greatly appreciated** 👏!
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/NewFeature`)
 3. Install dependencies  
+   ```sh
+   pip3 install Cython
+   ```
     ```sh
    pip3 install -r requirements.txt
    ```

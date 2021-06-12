@@ -326,7 +326,7 @@ class AutoML:
             if verbose > 0:
                 print(
                     "Preprocessor settings:",
-                    self.preprocessor_settings.tuned_num_strategy,
+                    self.preprocessor_settings,
                 )
             pr = Preprocessor()
             data.hana_df = pr.autoimput(
