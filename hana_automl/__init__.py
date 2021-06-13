@@ -4,4 +4,4 @@
     2. pip3 install hana_automl
 """
 
-__version__ = "1.7"
+__version__ = "0.0.3"
