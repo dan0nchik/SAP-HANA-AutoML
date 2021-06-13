@@ -133,9 +133,9 @@ In HANA Cloud:
 
 ## Installation
 There are 2 ways to install the library
-* Stable: from pypi (currently the project lives on Test Pypi)
+* Stable: from pypi
    ```sh
-   pip3 install --extra-index-url https://test.pypi.org/simple/ hana_automl
+   pip3 install hana_automl
    ```
 * Latest: from the repository
    ```sh

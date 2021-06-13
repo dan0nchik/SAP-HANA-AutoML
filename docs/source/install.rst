@@ -26,7 +26,7 @@ Install
 
 3. Install the library from `pypi <https://pypi.org>`_ (stable)::
     
-        pip3 install --extra-index-url https://test.pypi.org/simple/ hana_automl
+        pip3 install hana_automl
    
    or `GitHub repository <https://github.com/dan0nchik/SAP-HANA-AutoML>`_ (latest version)::
 

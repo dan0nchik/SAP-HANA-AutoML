@@ -23,7 +23,7 @@ copyright = "2021, Daniel Khromov, Egor Pavlov"
 author = "Daniel Khromov, Egor Pavlov"
 
 # The full version, including alpha/beta/rc tags
-release = "1.0.0"
+release = "0.0.4"
 
 
 # -- General configuration ---------------------------------------------------
