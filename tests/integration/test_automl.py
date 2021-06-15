@@ -32,7 +32,9 @@ def test_regression(optimizer):
     )
     m.model.name = "TESTING_MODEL_REG"
     storage.save_model(m)
-    storage.save_leaderboard(m.leaderboard, "TESTING_LEADERBOARD_REG")
+    storage.save_leaderboard(
+        m.leaderboard_metric, m.leaderboard, "TESTING_LEADERBOARD_REG"
+    )
     new = storage.load_model("TESTING_MODEL_REG", version=1)
     assert new.predict(file_path="./data/boston_test_data.csv").empty is False
     # assert new.score(df=pd.read_csv("data/boston_data.csv"), target='medv', id_column="ID") > 0.50
@@ -67,7 +69,9 @@ def test_classification(optimizer):
     )
     m.model.name = "TESTING_MODEL_CLS"
     storage.save_model(m)
-    storage.save_leaderboard(m.leaderboard, "TESTING_LEADERBOARD_CLS")
+    storage.save_leaderboard(
+        m.leaderboard_metric, m.leaderboard, "TESTING_LEADERBOARD_CLS"
+    )
     new = storage.load_model("TESTING_MODEL_CLS", version=1)
     assert (
         new.predict(

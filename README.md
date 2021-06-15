@@ -8,7 +8,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/dan0nchik/SAP-HANA-AutoML">
-    <img src="https://github.com/dan0nchik/SAP-HANA-AutoML/blob/main/images/logo.png" alt="Logo" width="180" height="80">
+    <img src="https://github.com/dan0nchik/SAP-HANA-AutoML/raw/main/images/logo.png" alt="Logo" width="180" height="80">
   </a>
 
 
@@ -82,7 +82,7 @@ https://github.com/dan0nchik/SAP-HANA-AutoML/tree/main/benchmarks
 - [x] Hyperparameter tuning
 
 👇 By the end of summer 2021, blue part will be fully automated by our library
-<img src="https://github.com/dan0nchik/SAP-HANA-AutoML/blob/main/images/process.png" alt="Logo" width="100%">
+<img src="https://github.com/dan0nchik/SAP-HANA-AutoML/raw/main/images/process.png" alt="Logo" width="100%">
 
 ## Clients
 
@@ -91,7 +91,7 @@ https://github.com/dan0nchik/SAP-HANA-AutoML/tree/main/benchmarks
 * CLI (coming soon)
 
 Streamlit client
-<img src="https://github.com/dan0nchik/SAP-HANA-AutoML/blob/main/images/gui.jpg" alt="Streamlit client" width="100%">
+<img src="https://github.com/dan0nchik/SAP-HANA-AutoML/raw/main/images/gui.jpg" alt="Streamlit client" width="100%">
 
 
 ## Built With

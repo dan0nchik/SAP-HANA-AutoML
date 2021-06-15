@@ -151,6 +151,12 @@ class AutoML:
         ...     steps=10,
         ... )
         """
+        if categorical_features is not None and columns_to_remove is not None:
+            if bool(set(categorical_features) & set(columns_to_remove)):
+                raise AutoMLError(
+                    f"Columns {set(categorical_features) & set(columns_to_remove)} are in both categorical list and in "
+                    f"columns to remove. Please remove these columns from one of the lists or both of them. "
+                )
         if id_column is not None:
             id_column = id_column.upper()
 
@@ -208,6 +214,7 @@ class AutoML:
             tuning_metric = "accuracy"
         elif tuning_metric is None and pipe.task == "reg":
             tuning_metric = "r2_score"
+        self.leaderboard_metric = tuning_metric
         if ensemble and pipe.task == "cls" and not data.binomial:
             raise BlendingError(
                 "Sorry, non binomial blending classification is not supported yet!"
@@ -488,6 +495,7 @@ class AutoML:
         return self.model
 
     def sort_leaderboard(self, metric, df=None, id_col=None, target=None, verbose=1):
+        """Sorts leaderboard by given metric"""
         if (
             self.leaderboard[0].preprocessor.task == "cls"
             and metric not in ["accuracy"]
@@ -495,7 +503,7 @@ class AutoML:
             self.leaderboard[0].preprocessor.task == "reg"
             and metric not in ["r2_score", "mse", "mae", "rmse"]
         ):
-            raise AutoMLError("Wrong metric for task or this metric is nt supported!")
+            raise AutoMLError("Wrong metric for task or this metric is not supported!")
         if df is None:
             data = self.val_data
             clean_sets = ["valid"]
@@ -536,6 +544,7 @@ class AutoML:
             self.print_leaderboard()
 
     def print_leaderboard(self):
+        """Output leaderboard"""
         print(
             "\033[33m{}".format(
                 f"Metric:{self.leaderboard_metric}\nLeaderboard (top best algorithms):\n"

@@ -14,3 +14,7 @@ streamlit==0.82.0
 flit==3.2.0
 nbsphinx==0.8.6
 furo==2021.4.11b34
+jupyternotify==0.1.15
+seaborn==0.11.1
+watchdog==2.1.2
+plotly==4.14.3

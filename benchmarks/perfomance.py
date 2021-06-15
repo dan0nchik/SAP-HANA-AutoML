@@ -81,7 +81,6 @@ class Benchmark:
                 self.apl_model = AutoClassifier(self.connection_context)
         if task == "reg":
             ensemble = True
-            metric = "mae"
             if grad_boost:
                 self.apl_model = GradientBoostingRegressor(self.connection_context)
             else:
@@ -99,7 +98,8 @@ class Benchmark:
         self.automl_model.fit(
             df,
             table_name="BENCHMARK_AUTOML_TABLE",
-            steps=10,
+            steps=200,
+            time_limit=1000,
             target=label,
             categorical_features=categorical,
             id_column=id_column,
@@ -107,6 +107,7 @@ class Benchmark:
             verbose=0,
             ensemble=ensemble,
             tuning_metric=metric,
+            optimizer="BayesianOptimizer",
         )
         print(f"Finished in {round(time.time() - start_time)} seconds")
         self.automl_accuracy = self.automl_model.accuracy

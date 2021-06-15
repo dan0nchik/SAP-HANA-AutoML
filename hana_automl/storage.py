@@ -44,7 +44,7 @@ class Storage(ModelStorage):
         self.create_prep_table = (
             f"CREATE TABLE {self.schema}.{PREPROCESSORS} "
             f"(MODEL NVARCHAR(256), VERSION INT, "
-            f"JSON NVARCHAR(5000), TRAIN_ACC DOUBLE, VALID_ACC DOUBLE, ALGORITHM NVARCHAR(256));"
+            f"JSON NVARCHAR(5000), TRAIN_ACC DOUBLE, VALID_ACC DOUBLE, ALGORITHM NVARCHAR(256), METRIC NVARCHAR(256));"
         )
         if not table_exists(self.cursor, self.schema, PREPROCESSORS):
             self.cursor.execute(self.create_prep_table)
@@ -72,6 +72,7 @@ class Storage(ModelStorage):
         --------
         >>> from hana_automl.automl import AutoML
         >>> automl.fit(df='table in HANA', target='some target', steps=3)
+        >>> automl.model.name = "new model"
         >>> storage.save_model(automl)
         """
         if not table_exists(self.cursor, self.schema, PREPROCESSORS):
@@ -101,15 +102,16 @@ class Storage(ModelStorage):
                         f"JSON='{str(json_settings)}' "
                         f"TRAIN_ACC={model.train_score} "
                         f"VALID_ACC={model.valid_score} "
-                        f"ALGORITHM='{model.algorithm.title}' "
+                        f"ALGORITHM='{model.algorithm.title}'"
+                        f"METRIC='{automl.leaderboard_metric}' "
                         f"WHERE MODEL='{name}';"
                     )
                 else:
                     self.cursor.execute(
                         f"INSERT INTO {self.schema}.{PREPROCESSORS} "
-                        f"(MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM) "
+                        f"(MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM, METRIC) "
                         f"VALUES "
-                        f"('{name}', {model.algorithm.model.version}, '{str(json_settings)}', {model.train_score}, {model.valid_score}, '{model.algorithm.title}'); "
+                        f"('{name}', {model.algorithm.model.version}, '{str(json_settings)}', {model.train_score}, {model.valid_score}, '{model.algorithm.title}', '{automl.leaderboard_metric}'); "
                     )
                 super().save_model(
                     model.algorithm.model, if_exists="replace"
@@ -118,6 +120,8 @@ class Storage(ModelStorage):
                 model_counter += 1
 
         else:
+            if automl.model.name is None or automl.model.name == "":
+                raise StorageError("Please name your model! automl.model.name='model name'")
             if table_exists(self.cursor, self.schema, "HANAML_MODEL_STORAGE"):
                 if len(self.__find_models(automl.model.name, ensemble_prefix)) > 0:
                     raise StorageError(
@@ -125,12 +129,13 @@ class Storage(ModelStorage):
                         "the "
                         "model."
                     )
+
             super().save_model(automl.model, if_exists)
             json_settings = json.dumps(automl.preprocessor_settings.__dict__)
             self.cursor.execute(
-                f"INSERT INTO {PREPROCESSORS} (MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM) "
+                f"INSERT INTO {PREPROCESSORS} (MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM, METRIC) "
                 f"VALUES ('{automl.model.name}', {automl.model.version}, '{json_settings}', "
-                f"{automl.leaderboard[0].train_score}, {automl.leaderboard[0].valid_score}, '{automl.algorithm.title}'); "
+                f"{automl.leaderboard[0].train_score}, {automl.leaderboard[0].valid_score}, '{automl.algorithm.title}', '{automl.leaderboard_metric}'); "
             )
 
     def list_preprocessors(self, name: str = None) -> pd.DataFrame:
@@ -170,6 +175,7 @@ class Storage(ModelStorage):
                         "TRAIN_ACC",
                         "VALID_ACC",
                         "ALGORITHM",
+                        "METRIC"
                     ]
                 )
                 for model in ensembles:
@@ -195,15 +201,17 @@ class Storage(ModelStorage):
             return pd.DataFrame(res, columns=col_names)
 
     def save_leaderboard(
-        self, leaderboard: List[ModelBoard], name: str, top: int = None
+        self, metric: str, leaderboard: List[ModelBoard], name: str, top: int = None
     ):
         """
         Saves algorithms from leaderboard.
 
         Parameters
         ----------
+        metric: str
+            Leaderboard metric. You can access it via automl.leaderboard_metric.
         leaderboard: list[ModelBoard]
-            Leaderboard from AutoML.
+            Leaderboard from AutoML. Access it via automl.get_leaderboard()
         name: str
             Leaderboard's name in database.
         top: int, optional
@@ -214,6 +222,8 @@ class Storage(ModelStorage):
         ----
         Models from leaderboard will be saved to HANA as 'name_leaderboard_Y', where Y is number of model.
         """
+        if metric is None or metric == "":
+            raise StorageError("Please provide correct metric!")
         counter = 1
         if top is not None:
             leaderboard = leaderboard[: top + 1]
@@ -231,17 +241,19 @@ class Storage(ModelStorage):
                     f"JSON='{str(json_settings)}', "
                     f"TRAIN_ACC={model_member.train_score}, "
                     f"VALID_ACC={model_member.valid_score}, "
-                    f"ALGORITHM='{model_member.algorithm.title}' "
+                    f"ALGORITHM='{model_member.algorithm.title}', "
+                    f"METRIC='{metric}' "
                     f"WHERE MODEL='{model_name}';"
                 )
             else:
                 self.cursor.execute(
                     f"INSERT INTO {self.schema}.{PREPROCESSORS} "
-                    f"(MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM) "
+                    f"(MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM, METRIC) "
                     f"VALUES ('{model_name}', {model_member.algorithm.model.version}, '{str(json_settings)}', "
-                    f"{model_member.train_score}, {model_member.valid_score}, '{model_member.algorithm.title}'); "
+                    f"{model_member.train_score}, {model_member.valid_score}, '{model_member.algorithm.title}', '{metric}'); "
                 )
             super().save_model(model_member.algorithm.model, if_exists="replace")
+            model_member.algorithm.model.name = None
             counter += 1
 
     def load_leaderboard(self, name: str, show: bool = False) -> list:
@@ -270,7 +282,7 @@ class Storage(ModelStorage):
                 )
                 columns = self.cursor.fetchall()[
                     0
-                ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
+                ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM, METRIC
                 prep = self.__setup_preprocessor(columns[2])
                 if "Regressor" in columns[5]:
                     algo = self.reg_dict[columns[5]]
@@ -291,9 +303,9 @@ class Storage(ModelStorage):
                             str(place)
                             + ".  "
                             + str(member.algorithm.model)
-                            + f"\n Train score: "
+                            + f"\n Train {columns[6]} score: "
                             + str(member.train_score)
-                            + f"\n Holdout score: "
+                            + f"\n Holdout {columns[6]} score: "
                             + str(member.valid_score)
                         )
                     )
@@ -392,7 +404,7 @@ class Storage(ModelStorage):
                 )
                 columns = self.cursor.fetchall()[
                     0
-                ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
+                ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM, METRIC
                 prep = self.__setup_preprocessor(columns[2])
                 if "Regressor" in columns[5]:
                     algo = self.reg_dict[columns[5]]
@@ -406,6 +418,7 @@ class Storage(ModelStorage):
                 prep_list.append(prep)
                 model_list.append(model_board_member)
             automl.preprocessor_settings = prep_list
+            automl.leaderboard_metric = columns[6]
             if "cls" in ensembles[0][0]:
                 automl.model = BlendingCls(
                     model_list=model_list, connection_context=self.connection_context
@@ -416,6 +429,10 @@ class Storage(ModelStorage):
                 )
             automl.ensemble = True
         else:
+            if name is None or name == "":
+                raise StorageError("Please provide correct model name")
+            if version is None:
+                raise StorageError("Please provide correct version")
             automl.model = super().load_model(name, version, **kwargs)
 
             self.cursor.execute(
@@ -424,7 +441,7 @@ class Storage(ModelStorage):
             )
             columns = self.cursor.fetchall()[
                 0
-            ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM
+            ]  # MODEL, VERSION, JSON, TRAIN_ACC, VALID_ACC, ALGORITHM, METRIC
             automl.preprocessor_settings = self.__setup_preprocessor(columns[2])
             if "Regressor" in columns[5]:
                 algo = self.reg_dict[columns[5]]
@@ -433,6 +450,7 @@ class Storage(ModelStorage):
             algo.title = columns[5]
             algo.model = super().load_model(name, version, **kwargs)
             automl.algorithm = algo
+            automl.leaderboard_metric = columns[6]
 
         return automl
 

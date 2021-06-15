@@ -1,64 +1,13 @@
-import base64
-import sys
-from contextlib import contextmanager
-from io import StringIO
-from threading import current_thread
 import hdbcli
 import optuna.visualization as optuna_vs
 import pandas as pd
 import streamlit as st
 from hana_ml.dataframe import ConnectionContext
-from streamlit.report_thread import REPORT_CONTEXT_ATTR_NAME
 
 from hana_automl.automl import AutoML
 from hana_automl.storage import Storage
 from web.session import session_state
-
-
-# from https://discuss.streamlit.io/t/cannot-print-the-terminal-output-in-streamlit/6602/2
-@contextmanager
-def st_redirect(src, dst):
-    placeholder = st.empty()
-    output_func = getattr(placeholder, dst)
-
-    with StringIO() as buffer:
-        old_write = src.write
-
-        def new_write(b):
-            if getattr(current_thread(), REPORT_CONTEXT_ATTR_NAME, None):
-                buffer.write(b)
-                output_func(buffer.getvalue())
-            else:
-                old_write(b)
-
-        try:
-            src.write = new_write
-            yield
-        finally:
-            src.write = old_write
-
-
-@contextmanager
-def st_stdout(dst):
-    with st_redirect(sys.stdout, dst):
-        yield
-
-
-@contextmanager
-def st_stderr(dst):
-    with st_redirect(sys.stderr, dst):
-        yield
-
-
-def get_table_download_link(df, file_name):
-    """Generates a link allowing the data in a given panda dataframe to be downloaded
-    in:  dataframe, file name
-    out: href string
-    """
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    return f'<a href="data:file/csv;base64,{b64}" download="{file_name}.csv">Download file</a>'
-
+from web.utility import st_stdout, get_table_download_link, get_types
 
 st.title("Welcome to SAP HANA AutoML!")
 st.write(
@@ -87,12 +36,10 @@ if not session_state.show_results and session_state.cc is None:
     st.write("👈 Complete all steps to start training!")
 
 st.sidebar.title("1. Enter your HANA database credentials:")
-user = st.sidebar.text_input(label="Username", value="MINECRAFT")
-password = st.sidebar.text_input(
-    label="Password", type="password", value="cdsofvhsoeifhJHDJHJKDH3829382"
-)
-host = st.sidebar.text_input(label="Host", value="localhost")
-port = st.sidebar.text_input(label="Port", value="39015")
+user = st.sidebar.text_input(label="Username")
+password = st.sidebar.text_input(label="Password", type="password")
+host = st.sidebar.text_input(label="Host")
+port = st.sidebar.text_input(label="Port")
 
 df = None
 automl = None
@@ -147,7 +94,7 @@ if uploaded_file is not None:
 st.sidebar.markdown("## Or from HANA database:")
 schema = st.sidebar.text_input(label="Enter schema", value="")
 if (
-        schema != "" or schema != "None" or schema is not None
+    schema != "" or schema != "None" or schema is not None
 ) and session_state.cc is not None:
     tables = session_state.cc.sql(
         f"SELECT * FROM TABLES WHERE SCHEMA_NAME='{schema}'"
@@ -178,10 +125,14 @@ else:
     st.sidebar.write("Load dataset first")
 
 st.sidebar.title("5. Select categorical features:")
+st.sidebar.write(
+    "Confused what is it? Read more [here](https://towardsdatascience.com/understanding-feature-engineering-part-2-categorical-data-f54324193e63)"
+)
 if df is not None:
     categorical = st.sidebar.multiselect(
-        "",
-        df.columns,
+        "We have chosen them for you, please check",
+        list(df.columns),
+        default=get_types(df),
         key="ftr",
     )
 else:
@@ -217,7 +168,7 @@ optimizer = st.sidebar.selectbox(
 )
 verbose = st.sidebar.selectbox("Level of output", [0, 1, 2], key="verbose", index=2)
 
-if task == 'reg':
+if task == "reg":
     metric = st.sidebar.selectbox("Metric", ["mae", "mse", "rmse"])
 
 start_training = st.sidebar.button("Start training!")
@@ -227,7 +178,7 @@ if start_training:
     if id_col == no_id_msg:
         id_col = None
     with st.spinner(
-            "Please wait, magic is happening (well, just tuning the models)..."
+        "Please wait, magic is happening (well, just tuning the models)..."
     ):
         with st.beta_expander("Show output"):
             with st_stdout("text"):
@@ -250,30 +201,28 @@ if start_training:
                     ensemble=ensemble,
                     output_leaderboard=leaderboard,
                     verbose=verbose,
-                    tuning_metric=metric
+                    tuning_metric=metric,
                 )
                 session_state.show_results = True
 
 if session_state.show_results:
     st.markdown("## Success!, here is best model's params:")
     st.write(session_state.automl.opt.get_tuned_params())
-    if (
-            optimizer == "OptunaSearch"
-            and session_state.automl.opt.study.trials_dataframe().shape[0] >= 2
-    ):
-        st.markdown("## Some cool statistics")
-        plot1 = optuna_vs.plot_optimization_history(session_state.automl.opt.study)
-        plot2 = optuna_vs.plot_param_importances(session_state.automl.opt.study)
-        st.plotly_chart(plot1)
-        st.plotly_chart(plot2)
+    if optimizer == "OptunaSearch":
+        if session_state.automl.opt.study.trials_dataframe().shape[0] >= 2:
+            st.markdown("## Some cool statistics")
+            plot1 = optuna_vs.plot_optimization_history(session_state.automl.opt.study)
+            plot2 = optuna_vs.plot_param_importances(session_state.automl.opt.study)
+            st.plotly_chart(plot1)
+            st.plotly_chart(plot2)
 
     left_column, right_column = st.beta_columns(2)
     with left_column:
         st.markdown("## Save model")
         model_name = st.text_input(label="Enter model name:")
-        schema = st.text_input(label="Enter schema:")
+        schema = st.text_input(label="Enter schema:", value=user)
         if st.button("Save"):
-            if model_name != "" and schema != "":
+            if model_name != "" and schema != "" and schema is not None:
                 storage = Storage(
                     session_state.cc,
                     schema,
@@ -282,13 +231,13 @@ if session_state.show_results:
                 storage.save_model(session_state.automl)
                 st.success("Saved!")
                 st.dataframe(storage.list_models())
+            else:
+                st.error("Please provide valid schema and name!")
 
     with right_column:
         st.markdown("## Test/predict with model")
 
-        predict_file = st.file_uploader(
-            label="File to predict:", type=["csv", "xlsx"]
-        )
+        predict_file = st.file_uploader(label="File to predict:", type=["csv", "xlsx"])
         if predict_file is not None:
             predict_df = pd.read_csv(predict_file)
             predict_slot = st.empty()
@@ -304,9 +253,14 @@ if session_state.show_results:
                 predict_id_column = "ID"
 
             if right_column.button("Predict"):
-                predicted = session_state.automl.predict(df=predict_df, id_column=predict_id_column)
+                predicted = session_state.automl.predict(
+                    df=predict_df, id_column=predict_id_column
+                )
                 st.write(predicted)
-                st.write(get_table_download_link(predicted, 'predictions'), unsafe_allow_html=True)
+                st.write(
+                    get_table_download_link(predicted, "predictions"),
+                    unsafe_allow_html=True,
+                )
 
         test_file = st.file_uploader(label="File to test:", type=["csv", "xlsx"])
 
@@ -318,9 +272,7 @@ if session_state.show_results:
             test_slot.write(test_df.head(5))
             test_columns = list(test_df.columns)
             test_columns.append(no_id_msg)
-            test_id = st.selectbox(
-                "Select ID column", test_columns, key="id_test"
-            )
+            test_id = st.selectbox("Select ID column", test_columns, key="id_test")
             test_target = st.selectbox(
                 "Select target column", test_columns, key="test_t"
             )
