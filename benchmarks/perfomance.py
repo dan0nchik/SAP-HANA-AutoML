@@ -98,8 +98,7 @@ class Benchmark:
         self.automl_model.fit(
             df,
             table_name="BENCHMARK_AUTOML_TABLE",
-            steps=200,
-            time_limit=1000,
+            steps=15,
             target=label,
             categorical_features=categorical,
             id_column=id_column,
