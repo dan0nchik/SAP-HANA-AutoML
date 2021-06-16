@@ -65,7 +65,7 @@ SAP HANA is a high-performance in-memory database that speeds data-driven, real-
 https://sap-hana-automl.readthedocs.io/en/latest/index.html
 
 ## Benchmarks
-https://github.com/dan0nchik/SAP-HANA-AutoML/tree/main/benchmarks
+https://github.com/dan0nchik/SAP-HANA-AutoML/blob/main/comparison_openml.ipynb
 
 ## ML tasks:
 -   [x] Binary classification
