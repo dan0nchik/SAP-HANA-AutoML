@@ -45,7 +45,6 @@
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgements">Acknowledgements</a></li>
   </ol>
 </details>
 
@@ -53,13 +52,18 @@
 
 <!-- ABOUT THE PROJECT -->
 # About the project
+### Disclaimer
+This library is an open-source research project and is not part of any official SAP products.  
 ### What's this?
 This is a simple but accurate Automated Machine Learning library. 
 Based on SAP HANA powerful in-memory algorithms, it provides high accuracy in multiple machine learning tasks. 
 Our library also uses numerous data preprocessing functions to automate routine data cleaning tasks. So, hana_automl goes through all AutoML steps and makes Data Science work easier.  
 ### What is SAP HANA?
 From [www.sap.com](https://www.sap.com/products/hana.html): 
-SAP HANA is a high-performance in-memory database that speeds data-driven, real-time decisions and actions.
+SAP HANA is a high-performance in-memory database that speeds data-driven, real-time decisions and actions.  
+
+## Web app
+https://share.streamlit.io/dan0nchik/sap-hana-automl/main/web.py
 
 ## Documentation
 https://sap-hana-automl.readthedocs.io/en/latest/index.html
@@ -86,7 +90,7 @@ https://github.com/dan0nchik/SAP-HANA-AutoML/blob/main/comparison_openml.ipynb
 
 ## Clients
 
-* GUI (Streamlit app)
+* GUI ([Streamlit app](https://share.streamlit.io/dan0nchik/sap-hana-automl/main/web.py))
 * Python library
 * CLI (coming soon)
 
