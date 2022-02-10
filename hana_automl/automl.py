@@ -49,6 +49,7 @@ class AutoML:
         self.leaderboard_metric = None
         self.val_data = None
         self.ensemble_score = 0
+        self.data = None
 
     def fit(
         self,
@@ -190,7 +191,9 @@ class AutoML:
         if columns_to_remove is not None:
             self.columns_to_remove = columns_to_remove
             data.drop(droplist_columns=columns_to_remove)
+        
         data.drop_duplicates()
+
         self.val_data = copy.copy(data)
         self.val_data.train = None
         pipe = Pipeline(
@@ -204,10 +207,13 @@ class AutoML:
         self.opt = pipe.train(
             categorical_features=categorical_features, optimizer=optimizer
         )
+        
         if output_leaderboard:
             self.opt.print_leaderboard(self.opt.tuning_metric)
         self.model = self.opt.get_model()
         self.algorithm = self.opt.get_algorithm()
+        self.data = copy.copy(pipe.data)
+
         self.preprocessor_settings = self.opt.get_preprocessor_settings()
         self.leaderboard = copy.copy(self.opt.leaderboard)
         if tuning_metric is None and pipe.task == "cls":

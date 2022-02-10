@@ -166,5 +166,5 @@ class Data:
         cols.remove(self.id_colm)
         df = df.drop_duplicates(cols)
         self.train, self.test, self.valid = train_test_val_split(
-            data=df, id_column=self.id_colm, random_seed=17
+            data=df, id_column=self.id_colm, random_seed=42, training_percentage=0.6, testing_percentage=0.3, validation_percentage=0.1
         )

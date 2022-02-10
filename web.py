@@ -71,7 +71,7 @@ if st.sidebar.button(label="Submit"):
     if user != "" and password != "" and host != "" and port != "":
         try:
             host, port, user, password = get_database_connection()
-            session_state.cc = ConnectionContext(host, port, user, password, sslValidateCertificate = 'false', encrypt=True)
+            session_state.cc = ConnectionContext(host, port, user, password)
             session_state.show_results = False
             st.success("Successfully connected to the database! 😎")
         except Exception as ex:
