@@ -180,7 +180,7 @@ if start_training:
     with st.spinner(
         "Please wait, magic is happening (well, just tuning the models)..."
     ):
-        with st.beta_expander("Show output"):
+        with st.expander("Show output"):
             with st_stdout("text"):
                 session_state.automl = AutoML(session_state.cc)
                 if existing_table is not None and uploaded_file is None:
@@ -216,7 +216,7 @@ if session_state.show_results:
             st.plotly_chart(plot1)
             st.plotly_chart(plot2)
 
-    left_column, right_column = st.beta_columns(2)
+    left_column, right_column = st.columns(2)
     with left_column:
         st.markdown("## Save model")
         model_name = st.text_input(label="Enter model name:")
