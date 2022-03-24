@@ -202,8 +202,9 @@ _For more examples, please refer to the [Documentation](https://sap-hana-automl.
 
 ## How to run Streamlit client
 1. Clone repository: `git clone https://github.com/dan0nchik/SAP-HANA-AutoML.git`
-2. Install dependencies: `pip3 install -r requirements.txt`
-3. Run GUI: `streamlit run ./web.py`
+2. Install Cython `pip3 install Cython`
+3. Install dependencies: `pip3 install -r requirements.txt`
+4. Run GUI: `streamlit run ./web.py`
 
 
 <!-- ROADMAP -->
