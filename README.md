@@ -52,8 +52,9 @@
 
 <!-- ABOUT THE PROJECT -->
 # About the project
-### Disclaimer
-This library is an open-source research project and is not part of any official SAP products.  
+### ❗️ Warning ❗️
+The project has been frozen for uncertain time 🥶. However, you can still use our [web-app](https://share.streamlit.io/dan0nchik/sap-hana-automl/main/web.py). 
+Also, this library is an open-source research project and is not a part of any official SAP products.  
 ### What's this?
 This is a simple but accurate Automated Machine Learning library. 
 Based on SAP HANA powerful in-memory algorithms, it provides high accuracy in multiple machine learning tasks. 
